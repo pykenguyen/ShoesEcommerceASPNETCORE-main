@@ -1,0 +1,393 @@
+﻿@using ShoesEcommerce.ViewModels.Product
+@{
+    ViewData["Title"] = "Giày Thể Thao Chính Hãng - Giày Đá Bóng, Futsal";
+    ViewData["MetaDescription"] = "SPORTS - Chuyên giày thể thao, giày đá bóng, futsal chính hãng Nike, Adidas, Puma, Mizuno. Miễn phí ship. Đổi trả 30 ngày.";
+    ViewData["MetaKeywords"] = "giày thể thao, giày đá bóng, giày futsal, nike mercurial, adidas predator, puma future, mizuno, giày cỏ nhân tạo";
+    var featuredVariants = ViewBag.FeaturedProductVariants as IEnumerable<ProductVariantDisplayInfo> ?? new List<ProductVariantDisplayInfo>();
+    var newArrivals = ViewBag.NewArrivals as IEnumerable<ProductVariantDisplayInfo> ?? new List<ProductVariantDisplayInfo>();
+    var hotDeals = ViewBag.HotDeals as IEnumerable<ProductVariantDisplayInfo> ?? new List<ProductVariantDisplayInfo>();
+    var categories = ViewBag.Categories as IEnumerable<dynamic> ?? new List<object>();
+    var brands = ViewBag.Brands as IEnumerable<dynamic> ?? new List<object>();
+}
+
+<!-- Hero Banner Slider -->
+<section class="hero-banner">
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+        </div>
+        <div class="carousel-inner">
+            <!-- Slide 1: Main Banner -->
+            <div class="carousel-item active">
+                <div class="hero-slide hero-gradient-1">
+                    <div class="container">
+                        <div class="row align-items-center min-vh-hero">
+                            <div class="col-lg-7">
+                                <div class="hero-content">
+                                    <span class="hero-badge">NEW ARRIVAL 2025</span>
+                                    <h1 class="hero-title">GIAY DA BONG<br><span class="text-accent">CHINH HANG</span></h1>
+                                    <p class="hero-subtitle">Nike, Adidas, Puma, Mizuno - Cap nhat mau moi nhat</p>
+                                    <a href="/san-pham" class="btn-hero">XEM TAT CA SAN PHAM</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+                                <div class="hero-icon-showcase">
+                                    <i class="fas fa-shoe-prints"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 2: Sale Banner - Use h2 instead of h1 -->
+            <div class="carousel-item">
+                <div class="hero-slide hero-gradient-sale">
+                    <div class="container">
+                        <div class="row align-items-center min-vh-hero">
+                            <div class="col-lg-7">
+                                <div class="hero-content">
+                                    <span class="hero-badge hot">HOT DEAL</span>
+                                    <p class="hero-title" aria-label="Giam den 50 phan tram">GIAM DEN<br><span class="text-accent">50%</span></p>
+                                    <p class="hero-subtitle">Chuong trinh khuyen mai dac biet - So luong co han!</p>
+                                    <a href="/khuyen-mai" class="btn-hero btn-hot">XEM DEAL NGAY</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+                                <div class="hero-icon-showcase sale">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+</section>
+
+<!-- Dynamic Category Quick Links -->
+<section class="category-links">
+    <div class="container">
+        <div class="row g-3">
+            @{
+                var categoryList = categories.Take(3).ToList();
+                foreach (var category in categoryList)
+                {
+                    <div class="col-6 col-md-3">
+                        <a href="/san-pham?categoryId=@category.Id" class="category-card">
+                            <div class="category-icon">
+                                <i class="fas fa-shoe-prints"></i>
+                            </div>
+                            <span>@category.Name</span>
+                        </a>
+                    </div>
+                }
+            }
+            <div class="col-6 col-md-3">
+                <a href="/khuyen-mai" class="category-card hot">
+                    <div class="category-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <span>🔥 Hot Deal</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Store Features -->
+<section class="store-features">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">GIỚI THIỆU VỀ CỬA HÀNG</h2>
+        <div class="row g-4">
+            <div class="col-md-4 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-user-tie"></i></div>
+                    <h4>Tư vấn bán hàng</h4>
+                    <p>chuyên nghiệp</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-users"></i></div>
+                    <h4>Hỗ trợ khách hàng</h4>
+                    <p>đo chân chính xác</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-gift"></i></div>
+                    <h4>Quà tặng khi mua</h4>
+                    <p>giày (Túi, Vớ, Bình Xịt)</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-credit-card"></i></div>
+                    <h4>Thanh toán linh hoạt</h4>
+                    <p>Tiền mặt, Thẻ, Chuyển khoản</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-truck"></i></div>
+                    <h4>Giao hàng nhanh</h4>
+                    <p>toàn quốc 2-5 ngày</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="feature-box">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h4>Chính sách bảo hành</h4>
+                    <p>đổi trả 30 ngày</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOT SALE Section -->
+@if (hotDeals.Any())
+{
+<section class="products-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">🔥 SẢN PHẨM HOT SALE</h2>
+            <a href="/khuyen-mai" class="view-all-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="row g-3">
+            @foreach (var variant in hotDeals.Take(4))
+            {
+                @await Html.PartialAsync("_ProductCard", variant)
+            }
+        </div>
+    </div>
+</section>
+}
+
+<!-- New Arrivals Section -->
+@if (newArrivals.Any())
+{
+<section class="products-section alt-bg">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">SẢN PHẨM MỚI</h2>
+            <a href="/san-pham" class="view-all-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="row g-3">
+            @foreach (var variant in newArrivals.Take(4))
+            {
+                @await Html.PartialAsync("_ProductCard", variant)
+            }
+        </div>
+    </div>
+</section>
+}
+
+<!-- Featured Products Section with Dynamic Brands -->
+@if (featuredVariants.Any())
+{
+<section class="products-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">SẢN PHẨM NỔI BẬT</h2>
+            <div class="brand-filter">
+                @foreach (var brand in brands.Take(4))
+                {
+                    <a href="/san-pham?brandId=@brand.Id" class="brand-btn">@brand.Name</a>
+                }
+            </div>
+        </div>
+        
+        <div class="row g-3">
+            @foreach (var variant in featuredVariants.Take(8))
+            {
+                @await Html.PartialAsync("_ProductCard", variant)
+            }
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/san-pham" class="btn-view-all">XEM TẤT CẢ SẢN PHẨM</a>
+        </div>
+    </div>
+</section>
+}
+
+<!-- Dynamic Brand Partners -->
+<section class="brand-partners">
+    <div class="container">
+        <div class="brand-logos">
+            @foreach (var brand in brands)
+            {
+                <div class="brand-item">
+                    <a href="/san-pham?brandId=@brand.Id">
+                        <span class="brand-name">@brand.Name</span>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Subscribe Section -->
+@await Html.PartialAsync("_NewsletterSubscribe")
+
+@section Styles {
+<style>
+    :root {
+        --primary-black: #1a1a1a;
+        --accent-red: #c41e3a;
+        --white: #ffffff;
+        --gray-50: #fafafa;
+        --gray-100: #f5f5f5;
+        --gray-200: #e5e5e5;
+        --gray-300: #d4d4d4;
+        --gray-500: #737373;
+    }
+
+    .hero-banner { background: var(--primary-black); }
+    .hero-slide { position: relative; min-height: 500px; display: flex; align-items: center; }
+    .hero-gradient-1 { 
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+    }
+    .hero-gradient-sale { 
+        background: linear-gradient(135deg, #1a1a1a 0%, #3d1f1f 50%, #1a1a1a 100%);
+    }
+    .min-vh-hero { min-height: 500px; }
+    .hero-content { position: relative; z-index: 2; color: white; padding-left: 60px; }
+    .hero-badge { display: inline-block; background: rgba(255,255,255,0.15); color: #fff; padding: 8px 20px; border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 2px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.3); }
+    .hero-badge.hot { background: var(--accent-red); border-color: var(--accent-red); }
+    .hero-title { font-size: 48px; font-weight: 900; line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; }
+    .text-accent { color: var(--accent-red); }
+    .hero-subtitle { font-size: 18px; opacity: 0.9; margin-bottom: 30px; }
+    .btn-hero { display: inline-block; background: var(--white); color: var(--primary-black); padding: 16px 40px; border-radius: 4px; font-weight: 700; font-size: 14px; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
+    .btn-hero:hover { background: var(--accent-red); color: var(--white); transform: translateY(-2px); }
+    .btn-hero.btn-hot { background: var(--accent-red); color: var(--white); }
+    
+    /* Hero Icon Showcase - replaces images */
+    .hero-icon-showcase {
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        border: 2px solid rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: float 3s ease-in-out infinite;
+    }
+    .hero-icon-showcase i {
+        font-size: 100px;
+        color: rgba(255,255,255,0.8);
+    }
+    .hero-icon-showcase.sale {
+        background: linear-gradient(145deg, rgba(196,30,58,0.3) 0%, rgba(196,30,58,0.1) 100%);
+        border-color: rgba(196,30,58,0.5);
+    }
+    .hero-icon-showcase.sale i {
+        color: var(--accent-red);
+    }
+    
+    @@keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+    }
+    
+    .carousel-control-prev, .carousel-control-next { 
+        width: 50px; 
+        height: 50px; 
+        background: rgba(255,255,255,0.15); 
+        border-radius: 4px; 
+        top: 50%; 
+        transform: translateY(-50%); 
+        opacity: 1; 
+    }
+    .carousel-control-prev:hover, .carousel-control-next:hover { background: var(--accent-red); }
+    .carousel-control-prev { left: 10px; }
+    .carousel-control-next { right: 10px; }
+    
+    /* Add padding to hero content to avoid overlap with arrows */
+    .hero-content {
+        padding-left: 60px;
+    }
+    
+    .carousel-indicators button { width: 40px; height: 4px; border-radius: 2px; margin: 0 5px; opacity: 0.5; }
+    .carousel-indicators button.active { opacity: 1; background: var(--accent-red); }
+
+    .category-links { padding: 40px 0; background: var(--gray-100); }
+    .category-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 15px; background: var(--white); border-radius: 12px; text-decoration: none; color: var(--primary-black); transition: all 0.3s ease; border: 2px solid transparent; }
+    .category-card:hover { border-color: var(--primary-black); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .category-card.hot { background: var(--accent-red); color: var(--white); }
+    .category-card.hot:hover { background: #a01830; border-color: #a01830; }
+    .category-icon { width: 60px; height: 60px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 24px; }
+    .category-card.hot .category-icon { background: rgba(255,255,255,0.2); }
+    .category-card span { font-weight: 600; font-size: 14px; }
+
+    .store-features { padding: 60px 0; background: var(--white); }
+    .feature-box { text-align: center; padding: 25px 15px; background: var(--gray-50); border-radius: 12px; height: 100%; transition: all 0.3s ease; border: 1px solid var(--gray-200); }
+    .feature-box:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    .feature-icon { width: 70px; height: 70px; border-radius: 50%; background: var(--accent-red); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 28px; }
+    .feature-box h4 { font-size: 14px; font-weight: 700; color: var(--primary-black); margin-bottom: 5px; }
+    .feature-box p { font-size: 12px; color: var(--gray-500); margin: 0; }
+
+    .products-section { padding: 60px 0; background: var(--white); }
+    .products-section.alt-bg { background: var(--gray-50); }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid var(--gray-200); flex-wrap: wrap; gap: 15px; }
+    .section-title { font-size: 24px; font-weight: 800; color: var(--primary-black); margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+    .view-all-link { color: var(--accent-red); font-weight: 600; text-decoration: none; font-size: 14px; }
+    .view-all-link:hover { color: var(--primary-black); }
+
+    .brand-filter { display: flex; gap: 10px; flex-wrap: wrap; }
+    .brand-btn { padding: 8px 20px; border: 2px solid var(--primary-black); border-radius: 4px; color: var(--primary-black); font-size: 12px; font-weight: 700; text-decoration: none; transition: all 0.3s ease; text-transform: uppercase; }
+    .brand-btn:hover { background: var(--primary-black); color: var(--white); }
+    .btn-view-all { display: inline-block; padding: 16px 48px; background: var(--primary-black); color: var(--white); border-radius: 4px; font-weight: 700; font-size: 14px; text-decoration: none; text-transform: uppercase; transition: all 0.3s ease; }
+    .btn-view-all:hover { background: var(--accent-red); color: var(--white); transform: translateY(-2px); }
+
+    .brand-partners { padding: 50px 0; background: var(--gray-100); }
+    .brand-logos { display: flex; justify-content: center; align-items: center; gap: 60px; flex-wrap: wrap; }
+    .brand-item { text-align: center; }
+    .brand-item a { text-decoration: none; }
+    .brand-name { font-size: 24px; font-weight: 900; color: var(--gray-300); transition: color 0.3s ease; }
+    .brand-item:hover .brand-name { color: var(--primary-black); }
+
+    @@media (max-width: 991px) {
+        .hero-title { font-size: 36px; }
+        .hero-slide, .min-vh-hero { min-height: 400px; }
+        .brand-filter { display: none; }
+        .hero-icon-showcase { width: 180px; height: 180px; }
+        .hero-icon-showcase i { font-size: 70px; }
+    }
+    @@media (max-width: 768px) {
+        .hero-title { font-size: 28px; }
+        .hero-slide, .min-vh-hero { min-height: 350px; }
+        .section-header { flex-direction: column; text-align: center; }
+        .section-title { font-size: 20px; }
+        .brand-logos { gap: 30px; }
+        .brand-name { font-size: 18px; }
+    }
+</style>
+}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/Cart/GetCartCount')
+        .then(r => r.json())
+        .then(d => {
+            const badge = document.getElementById('cartCount');
+            if (badge && d.count !== undefined) {
+                badge.textContent = d.count;
+                badge.style.display = d.count > 0 ? 'block' : 'none';
+            }
+        }).catch(() => {});
+});
+</script>

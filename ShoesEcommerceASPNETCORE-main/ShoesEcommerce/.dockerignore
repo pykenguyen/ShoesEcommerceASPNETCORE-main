@@ -1,0 +1,105 @@
+# .dockerignore for ShoesEcommerce
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vs
+.vscode
+.idea
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUNIT
+*.VisualState.xml
+TestResult.xml
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Logs
+logs/
+*.log
+
+# Misc
+*.bak
+*.cache
+*.orig
+*.tmp
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Local settings
+appsettings.Development.json
+appsettings.Local.json
+
+# Render specific
+render.yaml
+
+# Docker
+Dockerfile*
+docker-compose*
+.docker
+
+# SQL files
+*.sql
+
+# Sensitive credentials (should never be in Docker image)
+credentials/
+*.pfx
+*.p12
+*.key
+*.pem
+firebase-adminsdk*.json
+
+# Exclude only uploaded product images with special characters
+# Keep static assets like hero, banners, placeholders
+wwwroot/Images/product-variants/
+wwwroot/images/uploads/
+
+# Keep these directories (do NOT exclude)
+!wwwroot/images/hero/
+!wwwroot/images/placeholders/
+!wwwroot/images/og-*.jpg

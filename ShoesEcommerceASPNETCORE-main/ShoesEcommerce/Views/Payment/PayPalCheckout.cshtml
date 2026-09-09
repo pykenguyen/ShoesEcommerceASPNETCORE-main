@@ -1,0 +1,227 @@
+@model int
+
+@{
+    ViewData["Title"] = "PayPal Checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var orderId = Model;
+    // Parse string values from TempData back to decimals
+    var subtotal = decimal.TryParse(TempData["Subtotal"]?.ToString(), out decimal subVal) ? subVal : 0;
+    var discountAmount = decimal.TryParse(TempData["DiscountAmount"]?.ToString(), out decimal discVal) ? discVal : 0;
+    var totalAmount = decimal.TryParse(TempData["TotalAmount"]?.ToString(), out decimal totalVal) ? totalVal : 0;
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Thanh toán PayPal</h2>
+                <p class="text-muted">??n hàng #@orderId</p>
+            </div>
+
+            <!-- Order Summary Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-shopping-cart text-primary"></i>
+                        Thông tin ??n hàng
+                    </h5>
+                    
+                    <div class="order-summary">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>T?m tính:</span>
+                            <span class="fw-bold">@subtotal.ToString("N0") ?</span>
+                        </div>
+                        
+                        @if (discountAmount > 0)
+                        {
+                            <div class="d-flex justify-content-between mb-2 text-success">
+                                <span>
+                                    <i class="fas fa-tag"></i> Gi?m giá:
+                                </span>
+                                <span class="fw-bold">-@discountAmount.ToString("N0") ?</span>
+                            </div>
+                        }
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between">
+                            <span class="fs-5 fw-bold">T?ng c?ng:</span>
+                            <span class="fs-5 fw-bold text-primary">@totalAmount.ToString("N0") ?</span>
+                        </div>
+                        
+                        <div class="text-muted small mt-2">
+                            <i class="fas fa-info-circle"></i>
+                            T??ng ???ng: ~$@Math.Round(totalAmount / 24000, 2)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PayPal Button Container -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fab fa-paypal text-primary"></i>
+                        Thanh toán qua PayPal
+                    </h5>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-shield-alt"></i>
+                        Thanh toán an toàn và b?o m?t v?i PayPal
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="paypal-loading" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">?ang t?i...</span>
+                        </div>
+                        <p class="mt-2 text-muted">?ang t?i PayPal...</p>
+                    </div>
+
+                    <!-- PayPal Button will be rendered here -->
+                    <div id="paypal-button-container" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Back to Cart -->
+            <div class="text-center">
+                <a href="@Url.Action("Index", "Cart")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay l?i gi? hàng
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .order-summary {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        #paypal-button-container {
+            min-height: 150px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AQ-J5MVltsGtqYFW0OrcELkpILUkJG0ztT2ZsWsSX9zV76XW8Xtey7fRjw-AnNaN7dX7Mw8d-8WYEdNv&currency=USD"></script>
+    
+    <script>
+        console.log('Initializing PayPal button for order @orderId');
+        
+        // Hide loading, show button container when SDK is ready
+        document.getElementById('paypal-loading').style.display = 'none';
+        document.getElementById('paypal-button-container').style.display = 'block';
+
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color: 'gold',
+                shape: 'rect',
+                label: 'paypal',
+                tagline: false,
+                height: 45
+            },
+            
+            // Create order on PayPal
+            async createOrder() {
+                try {
+                    console.log('Creating PayPal order...');
+                    
+                    const response = await fetch("/payment/create-paypal-order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                        },
+                        body: JSON.stringify({
+                            "orderId": @orderId,
+                            "subtotal": @subtotal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                            "discountAmount": @discountAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                            "totalAmount": @totalAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Không th? t?o ??n hàng PayPal');
+                    }
+
+                    const order = await response.json();
+                    console.log('PayPal order created:', order.id);
+                    
+                    return order.id;
+                } catch (error) {
+                    console.error('Error creating PayPal order:', error);
+                    alert('L?i: ' + error.message);
+                    throw error;
+                }
+            },
+            
+            // Approve and capture payment
+            async onApprove(data) {
+                try {
+                    console.log('Capturing PayPal order:', data.orderID);
+                    
+                    // Show loading
+                    const container = document.getElementById('paypal-button-container');
+                    container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">?ang x? lý thanh toán...</p></div>';
+                    
+                    const response = await fetch(`/payment/capture-paypal-order?orderId=${data.orderID}&orderIdLocal=@orderId`, {
+                        method: "POST"
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Không th? xác nh?n thanh toán');
+                    }
+
+                    const details = await response.json();
+                    console.log('Payment captured:', details);
+                    
+                    // Redirect to success page
+                    window.location.href = `/Payment/PayPalSuccess?orderId=@orderId&token=${data.orderID}`;
+                    
+                } catch (error) {
+                    console.error('Error capturing payment:', error);
+                    alert('L?i x? lý thanh toán: ' + error.message);
+                    window.location.href = `/Payment/PayPalCancel?orderId=@orderId`;
+                }
+            },
+            
+            // Handle cancellation
+            onCancel(data) {
+                console.log('PayPal payment cancelled by user');
+                window.location.href = `/Payment/PayPalCancel?orderId=@orderId`;
+            },
+            
+            // Handle errors
+            onError(err) {
+                console.error('PayPal error:', err);
+                alert('Có l?i x?y ra v?i PayPal. Vui lòng th? l?i.');
+            }
+            
+        }).render('#paypal-button-container');
+    </script>
+}

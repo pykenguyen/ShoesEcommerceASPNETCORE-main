@@ -1,0 +1,1843 @@
+﻿@model ShoesEcommerce.Models.Carts.Cart
+@using ShoesEcommerce.Models.Orders
+
+@{
+    ViewData["Title"] = "Thanh toán";
+    var addresses = ViewBag.Addresses as List<ShippingAddress>;
+    var activeDiscounts = ViewBag.ActiveDiscounts as List<ShoesEcommerce.Models.Promotions.Discount>;
+    var subtotal = Model?.CartItems?.Sum(x => x.Quantity * x.ProductVariant.Price) ?? 0;
+    var shipping = 0m; // Free shipping
+    var itemCount = Model?.CartItems?.Sum(x => x.Quantity) ?? 0;
+}
+
+<!-- Modern Minimalist Checkout Page -->
+<div class="checkout-container">
+    <!-- Breadcrumb -->
+    <div class="checkout-breadcrumb">
+        <a href="@Url.Action("Index", "Home")" class="breadcrumb-link">Trang chủ</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="@Url.Action("Index", "Product")" class="breadcrumb-link">Sản phẩm</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="@Url.Action("Index", "Cart")" class="breadcrumb-link">Giỏ hàng</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Thanh toán</span>
+    </div>
+
+    @if (Model == null || !Model.CartItems.Any())
+    {
+        <!-- Empty Cart State -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h2 class="empty-title">Giỏ hàng của bạn đang trống</h2>
+            <p class="empty-text">Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.</p>
+            <a href="@Url.Action("Index", "Product")" class="btn-primary-large">
+                <span>Tiếp tục mua sắm</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    }
+    else
+    {
+        <!-- Checkout Header -->
+        <div class="checkout-header">
+            <h1 class="checkout-title">Thanh toán</h1>
+            <p class="checkout-subtitle">@itemCount sản phẩm · @subtotal.ToString("N0") đ</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Thông tin</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-label">Thanh toán</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Hoàn tất</div>
+            </div>
+        </div>
+
+        <!-- Checkout Grid -->
+        <form asp-action="PlaceOrder" method="post" id="checkoutForm">
+            @Html.AntiForgeryToken()
+            
+            <div class="checkout-grid">
+                <!-- Left Column: Forms -->
+                <div class="checkout-forms">
+                    <!-- Shipping Address Section -->
+                    <div class="checkout-section">
+                        <div class="section-header">
+                            <div class="section-number">1</div>
+                            <h2 class="section-title">Địa chỉ giao hàng</h2>
+                        </div>
+
+                        <div class="section-content">
+                            @if (addresses != null && addresses.Any())
+                            {
+                                <div class="address-selector">
+                                    @foreach (var addr in addresses)
+                                    {
+                                        <label class="address-card">
+                                            <input type="radio" 
+                                                   name="shippingAddress" 
+                                                   value="@addr.Id" 
+                                                   class="address-radio"
+                                                   required />
+                                            <div class="address-content">
+                                                <div class="address-main">
+                                                    <span class="address-name">@addr.FullName</span>
+                                                    <span class="address-phone">@addr.PhoneNumber</span>
+                                                </div>
+                                                <div class="address-detail">
+                                                    @addr.Address, @addr.District, @addr.City
+                                                </div>
+                                                <div class="address-checkmark">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    }
+                                </div>
+
+                                <button type="button" class="btn-add-address" onclick="openAddressModal()">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Thêm địa chỉ mới</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="empty-addresses">
+                                    <div class="empty-addresses-icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <p class="empty-addresses-text">Bạn chưa có địa chỉ giao hàng nào.</p>
+                                    <button type="button" class="btn-add-address-primary" onclick="openAddressModal()">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Thêm địa chỉ mới</span>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Discount Code Section -->
+                    @if (activeDiscounts != null && activeDiscounts.Any())
+                    {
+                        <div class="checkout-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                                <h2 class="section-title">Mã giảm giá</h2>
+                            </div>
+
+                            <div class="section-content">
+                                <div class="discount-input-group">
+                                    <input type="text" 
+                                           name="discountCode" 
+                                           id="discountCode" 
+                                           class="discount-input" 
+                                           placeholder="Nhập mã giảm giá (nếu có)" />
+                                    <button type="button" class="btn-apply-discount" onclick="applyDiscount()">
+                                        Áp dụng
+                                    </button>
+                                </div>
+
+                                <!-- Available Discounts -->
+                                <div class="discount-suggestions">
+                                    <p class="discount-suggestions-title">Mã giảm giá khả dụng:</p>
+                                    <div class="discount-list">
+                                        @foreach (var discount in activeDiscounts.Take(3))
+                                        {
+                                            <div class="discount-tag" onclick="selectDiscount('@discount.Code')">
+                                                <div class="discount-tag-icon">
+                                                    <i class="fas fa-ticket-alt"></i>
+                                                </div>
+                                                <div class="discount-tag-info">
+                                                    <span class="discount-tag-code">@discount.Code</span>
+                                                    <span class="discount-tag-desc">@discount.Name</span>
+                                                </div>
+                                                <div class="discount-tag-value">
+                                                    @if (discount.Type == ShoesEcommerce.Models.Promotions.DiscountType.Percentage)
+                                                    {
+                                                        <text>-@discount.PercentageValue%</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <text>-@((discount.FixedValue ?? 0).ToString("N0"))đ</text>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Payment Method Section -->
+                    <div class="checkout-section">
+                        <div class="section-header">
+                            <div class="section-number">2</div>
+                            <h2 class="section-title">Phương thức thanh toán</h2>
+                        </div>
+
+                        <div class="section-content">
+                            <div class="payment-methods">
+                                <!-- PayPal -->
+                                <label class="payment-card">
+                                    <input type="radio" 
+                                           name="paymentMethod" 
+                                           value="PayPal" 
+                                           class="payment-radio" 
+                                           checked 
+                                           required />
+                                    <div class="payment-content">
+                                        <div class="payment-icon paypal">
+                                            <i class="fab fa-paypal"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <span class="payment-name">PayPal</span>
+                                            <span class="payment-desc">Thanh toán an toàn qua PayPal</span>
+                                        </div>
+                                        <div class="payment-checkmark">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- VNPay -->
+                                <label class="payment-card">
+                                    <input type="radio" 
+                                           name="paymentMethod" 
+                                           value="VNPay" 
+                                           class="payment-radio" />
+                                    <div class="payment-content">
+                                        <div class="payment-icon vnpay">
+                                            <i class="fas fa-credit-card"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <span class="payment-name">VNPay</span>
+                                            <span class="payment-desc">Thẻ ATM, Visa, MasterCard</span>
+                                        </div>
+                                        <div class="payment-checkmark">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- COD -->
+                                <label class="payment-card">
+                                    <input type="radio" 
+                                           name="paymentMethod" 
+                                           value="COD" 
+                                           class="payment-radio" />
+                                    <div class="payment-content">
+                                        <div class="payment-icon cod">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <span class="payment-name">Thanh toán khi nhận hàng</span>
+                                            <span class="payment-desc">Thanh toán bằng tiền mặt</span>
+                                        </div>
+                                        <div class="payment-checkmark">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <div class="order-summary-col">
+                    <div class="order-summary-sticky">
+                        <div class="order-summary-card">
+                            <h3 class="summary-card-title">Đơn hàng của bạn</h3>
+
+                            <!-- Products List -->
+                            <div class="summary-products">
+                                @foreach (var item in Model.CartItems)
+                                {
+                                    <div class="summary-product">
+                                        <div class="summary-product-image">
+                                            <img src="@item.ProductVariant.ImageUrl" 
+                                                 alt="@item.ProductVariant.Product.Name"
+                                                 onerror="this.src='/images/no-image.svg'" />
+                                            <span class="product-qty">@item.Quantity</span>
+                                        </div>
+                                        <div class="summary-product-info">
+                                            <p class="product-name">@item.ProductVariant.Product.Name</p>
+                                            <p class="product-variant">@item.ProductVariant.Color · @item.ProductVariant.Size</p>
+                                        </div>
+                                        <div class="summary-product-price">
+                                            @((item.Quantity * item.ProductVariant.Price).ToString("N0")) đ
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="summary-divider"></div>
+
+                            <!-- Pricing Details -->
+                            <div class="summary-pricing">
+                                <div class="pricing-row">
+                                    <span class="pricing-label">Tạm tính</span>
+                                    <span class="pricing-value">@subtotal.ToString("N0") đ</span>
+                                </div>
+                                <div class="pricing-row">
+                                    <span class="pricing-label">Phí vận chuyển</span>
+                                    <span class="pricing-value pricing-free">Miễn phí</span>
+                                </div>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="summary-divider"></div>
+
+                            <!-- Total -->
+                            <div class="summary-total">
+                                <span class="total-label">Tổng cộng</span>
+                                <span class="total-value">@((subtotal + shipping).ToString("N0")) đ</span>
+                            </div>
+
+                            <!-- Place Order Button -->
+                            <button type="submit" class="btn-place-order">
+                                <span>Đặt hàng ngay</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+
+                            <!-- Security Badge -->
+                            <div class="security-info">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Thanh toán được bảo mật bởi SSL</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    }
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Add Address Modal -->
+<div id="addressModal" class="address-modal">
+    <div class="address-modal-content">
+        <div class="address-modal-header">
+            <h3 class="address-modal-title">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Thêm địa chỉ giao hàng mới</span>
+            </h3>
+            <button type="button" class="address-modal-close" onclick="closeAddressModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="addressForm" class="address-modal-body">
+            @Html.AntiForgeryToken()
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-user"></i>
+                    <span>Họ và tên</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="text" 
+                       name="fullName" 
+                       class="form-input" 
+                       placeholder="Nhập họ và tên" 
+                       required />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-phone"></i>
+                    <span>Số điện thoại</span>
+                    <span class="required">*</span>
+                </label>
+                <input type="tel" 
+                       name="phoneNumber" 
+                       class="form-input" 
+                       placeholder="Nhập số điện thoại" 
+                       pattern="[0-9]{10,11}"
+                       required />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-home"></i>
+                    <span>Địa chỉ</span>
+                    <span class="required">*</span>
+                </label>
+                <textarea name="address" 
+                          class="form-textarea" 
+                          placeholder="Số nhà, tên đường..." 
+                          rows="2"
+                          required></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-city"></i>
+                        <span>Thành phố</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" 
+                           name="city" 
+                           class="form-input" 
+                           placeholder="Thành phố" 
+                           required />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>Quận/Huyện</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" 
+                           name="district" 
+                           class="form-input" 
+                           placeholder="Quận/Huyện" 
+                           required />
+                </div>
+            </div>
+
+            <div class="address-modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeAddressModal()">
+                    <span>Hủy</span>
+                </button>
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i>
+                    <span>Lưu địa chỉ</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    /* === Variables === */
+    :root {
+        --color-primary: #000000;
+        --color-secondary: #2d2d2d;
+        --color-text: #1a1a1a;
+        --color-text-light: #666666;
+        --color-text-lighter: #999999;
+        --color-border: #e5e5e5;
+        --color-border-light: #f0f0f0;
+        --color-bg: #ffffff;
+        --color-bg-gray: #f8f9fa;
+        --color-bg-page: #fafbfc;
+        --color-success: #10b981;
+        --color-info: #3b82f6;
+        --color-warning: #f59e0b;
+        --color-danger: #ef4444;
+        
+        --spacing-xs: 8px;
+        --spacing-sm: 16px;
+        --spacing-md: 24px;
+        --spacing-lg: 32px;
+        --spacing-xl: 48px;
+        
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* === Reset & Base === */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+        color: var(--color-text);
+        background: var(--color-bg-page);
+        line-height: 1.6;
+    }
+
+    /* === Container === */
+    .checkout-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--spacing-md) var(--spacing-md) var(--spacing-xl);
+        min-height: calc(100vh - 200px);
+    }
+
+    /* === Breadcrumb === */
+    .checkout-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-lg);
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .breadcrumb-link {
+        color: var(--color-text-light);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .breadcrumb-link:hover {
+        color: var(--color-primary);
+    }
+
+    .breadcrumb-separator {
+        color: var(--color-text-lighter);
+    }
+
+    .breadcrumb-current {
+        color: var(--color-text);
+        font-weight: 500;
+    }
+
+    /* === Empty State === */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 500px;
+        text-align: center;
+        padding: var(--spacing-xl);
+        background: var(--color-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .empty-icon {
+        font-size: 80px;
+        color: var(--color-text-lighter);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .empty-title {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: var(--spacing-sm);
+        letter-spacing: -0.01em;
+    }
+
+    .empty-text {
+        font-size: 16px;
+        color: var(--color-text-light);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .btn-primary-large {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: 14px 32px;
+        background: var(--color-primary);
+        color: white;
+        border-radius: var(--radius-md);
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn-primary-large:hover {
+        background: var(--color-secondary);
+        gap: 12px;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* === Checkout Header === */
+    .checkout-header {
+        margin-bottom: var(--spacing-lg);
+        padding: var(--spacing-md);
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .checkout-title {
+        font-size: 32px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .checkout-subtitle {
+        font-size: 16px;
+        color: var(--color-text-light);
+    }
+
+    /* === Progress Steps === */
+    .progress-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+        padding: var(--spacing-md);
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--color-bg-gray);
+        color: var(--color-text-lighter);
+        font-weight: 600;
+        font-size: 16px;
+        transition: var(--transition);
+    }
+
+    .step.active .step-number {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .step-label {
+        font-size: 14px;
+        color: var(--color-text-lighter);
+        font-weight: 500;
+    }
+
+    .step.active .step-label {
+        color: var(--color-primary);
+    }
+
+    .step-line {
+        flex: 1;
+        height: 2px;
+        background: var(--color-border-light);
+        min-width: 40px;
+    }
+
+    /* === Checkout Grid === */
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: var(--spacing-lg);
+        align-items: start;
+    }
+
+    /* === Checkout Section === */
+    .checkout-section {
+        background: var(--color-bg);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .section-number {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: white;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .section-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--color-bg-gray);
+        color: var(--color-text);
+        font-size: 16px;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .section-content {
+        padding: 0;
+    }
+
+    /* === Address Cards === */
+    .address-selector {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .address-card {
+        position: relative;
+        display: block;
+        padding: var(--spacing-md);
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .address-card:hover {
+        border-color: var(--color-primary);
+        background: var(--color-bg-gray);
+    }
+
+    .address-card:has(.address-radio:checked) {
+        border-color: var(--color-primary);
+        background: #f0f9ff;
+    }
+
+    .address-radio {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .address-content {
+        position: relative;
+    }
+
+    .address-main {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .address-name {
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--color-text);
+    }
+
+    .address-phone {
+        font-size: 14px;
+        color: var(--color-text-light);
+    }
+
+    .address-detail {
+        font-size: 14px;
+        color: var(--color-text-light);
+        line-height: 1.5;
+    }
+
+    .address-checkmark {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 24px;
+        color: var(--color-primary);
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .address-card:has(.address-radio:checked) .address-checkmark {
+        opacity: 1;
+    }
+
+    .btn-add-address {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: 12px 24px;
+        background: transparent;
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-md);
+        color: var(--color-text-light);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-add-address:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        background: var(--color-bg-gray);
+    }
+
+    .empty-addresses {
+        text-align: center;
+        padding: var(--spacing-lg);
+    }
+
+    .empty-addresses-icon {
+        font-size: 48px;
+        color: var(--color-text-lighter);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .empty-addresses-text {
+        font-size: 15px;
+        color: var(--color-text-light);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .btn-add-address-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: 12px 24px;
+        background: var(--color-primary);
+        color: white;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn-add-address-primary:hover {
+        background: var(--color-secondary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* === Discount Section === */
+    .discount-input-group {
+        display: flex;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .discount-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        transition: var(--transition);
+    }
+
+    .discount-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-apply-discount {
+        padding: 12px 24px;
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+
+    .btn-apply-discount:hover {
+        background: var(--color-secondary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .discount-suggestions-title {
+        font-size: 13px;
+        color: var(--color-text-light);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .discount-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .discount-tag {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: 12px;
+        background: var(--color-bg-gray);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .discount-tag:hover {
+        border-color: var(--color-warning);
+        background: #fffbeb;
+    }
+
+    .discount-tag-icon {
+        font-size: 20px;
+        color: var(--color-warning);
+    }
+
+    .discount-tag-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .discount-tag-code {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--color-text);
+    }
+
+    .discount-tag-desc {
+        font-size: 12px;
+        color: var(--color-text-light);
+    }
+
+    .discount-tag-value {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--color-warning);
+    }
+
+    /* === Payment Methods === */
+    .payment-methods {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .payment-card {
+        position: relative;
+        display: block;
+        padding: var(--spacing-md);
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .payment-card:hover {
+        border-color: var(--color-primary);
+        background: var(--color-bg-gray);
+    }
+
+    .payment-card:has(.payment-radio:checked) {
+        border-color: var(--color-primary);
+        background: #f0f9ff;
+    }
+
+    .payment-radio {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .payment-content {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .payment-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        font-size: 24px;
+    }
+
+    .payment-icon.paypal {
+        background: #f0f7ff;
+        color: #0070ba;
+    }
+
+    .payment-icon.vnpay {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+
+    .payment-icon.cod {
+        background: #f0fdf4;
+        color: #10b981;
+    }
+
+    .payment-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .payment-name {
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--color-text);
+    }
+
+    .payment-desc {
+        font-size: 14px;
+        color: var(--color-text-light);
+    }
+
+    .payment-checkmark {
+        font-size: 24px;
+        color: var(--color-primary);
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .payment-card:has(.payment-radio:checked) .payment-checkmark {
+        opacity: 1;
+    }
+
+    /* === Order Summary === */
+    .order-summary-sticky {
+        position: sticky;
+        top: 24px;
+    }
+
+    .order-summary-card {
+        background: var(--color-bg);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-md);
+        box-shadow: var(--shadow-md);
+    }
+
+    .summary-card-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+        letter-spacing: -0.01em;
+    }
+
+    .summary-products {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .summary-product {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .summary-product-image {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 1px solid var(--color-border-light);
+        flex-shrink: 0;
+    }
+
+    .summary-product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-qty {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-primary);
+        color: white;
+        border-radius: 50%;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .summary-product-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .product-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--color-text);
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-variant {
+        font-size: 12px;
+        color: var(--color-text-light);
+    }
+
+    .summary-product-price {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--color-text);
+        white-space: nowrap;
+    }
+
+    .summary-divider {
+        height: 1px;
+        background: var(--color-border-light);
+        margin: var(--spacing-md) 0;
+    }
+
+    .summary-pricing {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .pricing-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 15px;
+    }
+
+    .pricing-label {
+        color: var(--color-text-light);
+    }
+
+    .pricing-value {
+        font-weight: 600;
+        color: var(--color-text);
+    }
+
+    .pricing-free {
+        color: var(--color-success);
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .total-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--color-text);
+    }
+
+    .total-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+
+    .btn-place-order {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-xs);
+        width: 100%;
+        padding: 16px;
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-place-order:hover {
+        background: var(--color-secondary);
+        gap: 12px;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-place-order:active {
+        transform: translateY(0);
+    }
+
+    .security-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-xs);
+        margin-top: var(--spacing-md);
+        padding: var(--spacing-sm);
+        background: var(--color-bg-gray);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        color: var(--color-text-light);
+    }
+
+    .security-info i {
+        color: var(--color-success);
+    }
+
+    /* === Toast Notifications === */
+    .toast-container {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    /* === Modal === */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0 0 0 / 50%);
+        padding: var(--spacing-md);
+    }
+
+    .modal-content {
+        background: white;
+        margin: 15% auto;
+        padding: var(--spacing-md);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-width: 500px;
+        width: 100%;
+    }
+
+    .close {
+        color: var(--color-text);
+        float: right;
+        font-size: 28px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .close:hover {
+        color: var(--color-danger);
+    }
+
+    .modal-title {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        transition: var(--transition);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-secondary {
+        background: var(--color-bg);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-secondary:hover {
+        background: var(--color-bg-gray);
+    }
+
+    .btn-primary {
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+        background: var(--color-secondary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* === Responsive Design === */
+    @@media (max-width: 1200px) {
+        .checkout-grid {
+            grid-template-columns: 1fr 360px;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .order-summary-sticky {
+            position: static;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .checkout-container {
+            padding: var(--spacing-sm);
+        }
+
+        .checkout-title {
+            font-size: 24px;
+        }
+
+        .progress-steps {
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+
+        .step-label {
+            font-size: 12px;
+        }
+
+        .step-line {
+            min-width: 20px;
+        }
+
+        .discount-input-group {
+            flex-direction: column;
+        }
+
+        .btn-apply-discount {
+            width: 100%;
+        }
+
+        .modal-content {
+            margin: 10% auto;
+            padding: var(--spacing-sm);
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .checkout-title {
+            font-size: 20px;
+        }
+
+        .progress-steps {
+            overflow-x: auto;
+        }
+    }
+
+    /* Modal Styles */
+    .address-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .address-modal.show {
+        opacity: 1;
+    }
+
+    .address-modal-content {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @@keyframes modalSlideIn {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .address-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-md);
+        border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .address-modal-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .address-modal-title i {
+        color: var(--color-primary);
+    }
+
+    .address-modal-close {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--color-text-light);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .address-modal-close:hover {
+        background: var(--color-bg-gray);
+        color: var(--color-text);
+    }
+
+    .address-modal-body {
+        padding: var(--spacing-md);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--color-text);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .form-label i {
+        color: var(--color-text-light);
+        font-size: 14px;
+    }
+
+    .required {
+        color: var(--color-danger);
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        transition: var(--transition);
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .address-modal-footer {
+        display: flex;
+        gap: var(--spacing-sm);
+        padding-top: var(--spacing-md);
+        border-top: 1px solid var(--color-border-light);
+    }
+
+    .btn-cancel,
+    .btn-save {
+        flex: 1;
+        padding: 12px 24px;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-xs);
+    }
+
+    .btn-cancel {
+        background: var(--color-bg-gray);
+        color: var(--color-text);
+    }
+
+    .btn-cancel:hover {
+        background: var(--color-border);
+    }
+
+    .btn-save {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .btn-save:hover {
+        background: var(--color-secondary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Toast Styles */
+    .toast {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        min-width: 300px;
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: white;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .toast.success {
+        border-left: 4px solid var(--color-success);
+    }
+
+    .toast.error {
+        border-left: 4px solid var(--color-danger);
+    }
+
+    .toast-icon {
+        font-size: 20px;
+    }
+
+    .toast.success .toast-icon {
+        color: var(--color-success);
+    }
+
+    .toast.error .toast-icon {
+        color: var(--color-danger);
+    }
+
+    .toast-message {
+        flex: 1;
+        font-size: 14px;
+        color: var(--color-text);
+    }
+
+    .toast-close {
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        color: var(--color-text-light);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .toast-close:hover {
+        color: var(--color-text);
+    }
+
+    /* === Animation keyframes === */
+    @@keyframes slideIn {
+        0% {
+            transform: translateY(10px);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes fadeOut {
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+</style>
+}
+
+@section Scripts {
+<!-- PayPal SDK - Load at the top -->
+<script src="https://www.paypal.com/sdk/js?client-id=AQ-J5MVltsGtqYFW0OrcELkpILUkJG0ztT2ZsWsSX9zV76XW8Xtey7fRjw-AnNaN7dX7Mw8d-8WYEdNv&currency=USD&intent=capture"></script>
+
+<!-- Checkout PayPal Integration Script (uses CreateOrderAjax properly) -->
+<script src="~/js/checkout-paypal.js" asp-append-version="true"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select discount code
+    window.selectDiscount = function(code) {
+        document.getElementById('discountCode').value = code;
+    };
+
+    // Apply discount (placeholder)
+    window.applyDiscount = function() {
+        const code = document.getElementById('discountCode').value;
+        if (code) {
+            showToast('Mã giảm giá đã được áp dụng: ' + code, 'success');
+        }
+    };
+
+    // Open address modal
+    window.openAddressModal = function() {
+        const modal = document.getElementById('addressModal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    };
+
+    // Close address modal
+    window.closeAddressModal = function() {
+        const modal = document.getElementById('addressModal');
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
+        document.getElementById('addressForm').reset();
+    };
+
+    // Close modal on overlay click
+    document.getElementById('addressModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAddressModal();
+        }
+    });
+
+    // Handle address form submission
+    document.getElementById('addressForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+        try {
+            const formData = new FormData(this);
+            const response = await fetch('@Url.Action("AddShippingAddress", "Checkout")', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Add new address card to the list
+                const addressSelector = document.querySelector('.address-selector') || createAddressSelector();
+                const newAddressCard = createAddressCard(result.address);
+                addressSelector.appendChild(newAddressCard);
+
+                // Remove empty state if exists
+                const emptyState = document.querySelector('.empty-addresses');
+                if (emptyState) {
+                    emptyState.remove();
+                    // Add the address selector container
+                    const sectionContent = document.querySelector('.checkout-section .section-content');
+                    sectionContent.insertAdjacentHTML('afterbegin', '<div class="address-selector"></div><button type="button" class="btn-add-address" onclick="openAddressModal()"><i class="fas fa-plus"></i><span>Thêm địa chỉ mới</span></button>');
+                }
+
+                // Show success toast
+                showToast(result.message, 'success');
+                
+                // Close modal
+                closeAddressModal();
+            } else {
+                showToast(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Có lỗi xảy ra khi thêm địa chỉ', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+
+    // Helper function to create address selector if it doesn't exist
+    function createAddressSelector() {
+        const sectionContent = document.querySelector('.checkout-section .section-content');
+        const selector = document.createElement('div');
+        selector.className = 'address-selector';
+        selector.style.marginBottom = 'var(--spacing-md)';
+        sectionContent.insertBefore(selector, sectionContent.firstChild);
+        return selector;
+    }
+
+    // Helper function to create address card
+    function createAddressCard(address) {
+        const label = document.createElement('label');
+        label.className = 'address-card';
+        label.innerHTML = `
+            <input type="radio" 
+                   name="shippingAddress" 
+                   value="${address.id}" 
+                   class="address-radio"
+                   checked
+                   required />
+            <div class="address-content">
+                <div class="address-main">
+                    <span class="address-name">${address.fullName}</span>
+                    <span class="address-phone">${address.phoneNumber}</span>
+                </div>
+                <div class="address-detail">
+                    ${address.address}, ${address.district}, ${address.city}
+                </div>
+                <div class="address-checkmark">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        `;
+        return label;
+    }
+
+    // Toast notification - make it globally accessible
+    window.showToast = function(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icon = type === 'success' ? 'fa-check-circle' : 
+                     type === 'error' ? 'fa-exclamation-circle' : 
+                     type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+        
+        toast.innerHTML = `
+            <i class="fas ${icon} toast-icon"></i>
+            <span class="toast-message">${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
+    };
+
+    // Show temp messages
+    @if (TempData["Error"] != null)
+    {
+        <text>
+        showToast('@Html.Raw(TempData["Error"])', 'error');
+        </text>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <text>
+        showToast('@Html.Raw(TempData["Success"])', 'success');
+        </text>
+    }
+});
+</script>
+}

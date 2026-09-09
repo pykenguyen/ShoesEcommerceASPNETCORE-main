@@ -1,0 +1,101 @@
+@model ShoesEcommerce.ViewModels.Product.EditSupplierViewModel
+
+@{
+    ViewData["Title"] = "Ch?nh s?a Nhà cung c?p";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div style="background: #f8f9fa; min-height: 100vh; padding: 20px;">
+    <!-- Page Header -->
+    <div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0; color: #2d3748; font-weight: 600; font-size: 20px;">
+                    <i class="fas fa-edit" style="color: #718096; margin-right: 8px; font-size: 16px;"></i>
+                    Ch?nh s?a nhà cung c?p
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #718096; font-size: 14px;">
+                    C?p nh?t thông tin nhà cung c?p ID: @Model.Id
+                </p>
+            </div>
+            <div>
+                <a href="@Url.Action("Suppliers")" class="btn btn-sm" 
+                   style="background: #e2e8f0; color: #4a5568; border: none; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                    <i class="fas fa-arrow-left" style="margin-right: 4px;"></i> Quay l?i
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div style="max-width: 600px; margin: 0 auto;">
+        <div style="background: white; border-radius: 8px; padding: 32px; border: 1px solid #e9ecef;">
+            <form asp-action="EditSupplier" method="post">
+                @Html.AntiForgeryToken()
+                <input asp-for="Id" type="hidden" />
+                
+                <div style="margin-bottom: 24px;">
+                    <label asp-for="Name" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 8px; display: block; font-size: 14px;">
+                        Tên nhà cung c?p <span style="color: #f56565;">*</span>
+                    </label>
+                    <input asp-for="Name" type="text" class="form-control" 
+                           placeholder="Nh?p tên nhà cung c?p" required
+                           style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 14px;">
+                    <span asp-validation-for="Name" class="text-danger" style="font-size: 12px;"></span>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label asp-for="ContactInfo" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 8px; display: block; font-size: 14px;">
+                        Thông tin liên h?
+                    </label>
+                    <textarea asp-for="ContactInfo" class="form-control" rows="3" 
+                              placeholder="Nh?p thông tin liên h? (email, s? ?i?n tho?i, ??a ch?)"
+                              style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 14px; resize: vertical;"></textarea>
+                    <span asp-validation-for="ContactInfo" class="text-danger" style="font-size: 12px;"></span>
+                    <small style="color: #718096; font-size: 12px; margin-top: 4px; display: block;">
+                        Ví d?: nike@vietnam.com - 0901234567 - S? 123 ???ng ABC, Qu?n XYZ
+                    </small>
+                </div>
+
+                <!-- Information -->
+                <div style="background: #f0fff4; border-left: 3px solid #48bb78; padding: 16px; border-radius: 6px; margin-bottom: 24px;">
+                    <h6 style="color: #22543d; margin-bottom: 8px; font-size: 13px; font-weight: 600;">
+                        <i class="fas fa-info-circle"></i> Thông tin c?p nh?t
+                    </h6>
+                    <ul style="margin: 0; padding-left: 16px; color: #22543d; font-size: 12px; line-height: 1.4;">
+                        <li>C?p nh?t thông tin s? ?nh h??ng ??n t?t c? phi?u nh?p trong t??ng lai</li>
+                        <li>Các phi?u nh?p ?ã t?n t?i s? không b? thay ??i</li>
+                        <li>??m b?o thông tin liên h? chính xác ?? d? dàng liên l?c</li>
+                    </ul>
+                </div>
+
+                <!-- Form Actions -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                    <div>
+                        <small style="color: #718096; font-size: 11px;">
+                            <i class="fas fa-asterisk" style="margin-right: 4px; color: #f56565;"></i>
+                            Các tr??ng có d?u <span style="color: #f56565;">*</span> là b?t bu?c
+                        </small>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px;">
+                        <a href="@Url.Action("Suppliers")" class="btn" 
+                           style="background: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                            <i class="fas fa-times" style="margin-right: 4px;"></i>
+                            H?y
+                        </a>
+                        <button type="submit" class="btn" 
+                                style="background: #4299e1; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px;">
+                            <i class="fas fa-save" style="margin-right: 4px;"></i>
+                            C?p nh?t
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

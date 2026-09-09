@@ -1,0 +1,142 @@
+# ===========================================
+# .gitignore for ShoesEcommerce ASP.NET Core
+# ===========================================
+
+# ==================
+# Build Results
+# ==================
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# ==================
+# Visual Studio
+# ==================
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+
+# ==================
+# Rider
+# ==================
+.idea/
+
+# ==================
+# VS Code
+# ==================
+.vscode/
+
+# ==================
+# NuGet Packages
+# ==================
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# ==================
+# MSBuild
+# ==================
+*.log
+msbuild*.binlog
+[Ll]og/
+
+# ==================
+# Windows
+# ==================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ==================
+# macOS
+# ==================
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ==================
+# Sensitive Configuration Files - IMPORTANT!
+# ==================
+# Environment-specific configs - NEVER commit
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+secrets.json
+*.secrets.json
+
+# Keep base config and template
+!appsettings.json
+!appsettings.template.json
+
+# ==================
+# Firebase/Credentials
+# ==================
+**/credentials/
+firebase-adminsdk*.json
+*.p12
+*.key
+*.pem
+
+# ==================
+# Logs
+# ==================
+logs/
+*.log
+nlog-*.log
+
+# ==================
+# Test Results
+# ==================
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# ==================
+# Publish Output
+# ==================
+publish/
+PublishOutput/
+
+# ==================
+# Docker
+# ==================
+**/docker-compose.override.yml
+**/.docker/
+
+# ==================
+# Database
+# ==================
+*.mdf
+*.ldf
+*.ndf
+*.db
+*.sqlite
+
+# ==================
+# Temporary Files
+# ==================
+*.tmp
+*.temp
+*.swp
+*~

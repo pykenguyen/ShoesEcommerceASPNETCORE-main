@@ -1,0 +1,183 @@
+@model ShoesEcommerce.ViewModels.Stock.InventoryListViewModel
+
+@{
+    ViewData["Title"] = "Qu?n lý T?n kho";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div style="background: #f8f9fa; min-height: 100vh; padding: 20px;">
+    <!-- Page Header -->
+    <div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h4 style="margin: 0; color: #2d3748; font-weight: 600; font-size: 20px;">
+                    <i class="fas fa-list" style="color: #718096; margin-right: 8px; font-size: 16px;"></i>
+                    Danh sách s?n ph?m
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #718096; font-size: 14px;">
+                    Qu?n lý t?n kho và theo dõi s? l??ng s?n ph?m
+                </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn btn-sm" style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px;">
+                    <i class="fas fa-plus" style="margin-right: 4px;"></i> Thêm s?n ph?m
+                </button>
+                <button type="button" class="btn btn-sm" style="background: #4299e1; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px;">
+                    <i class="fas fa-download" style="margin-right: 4px;"></i> Xu?t Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Filter Row -->
+        <form method="get" action="/Admin/Stock/Inventory">
+            <div style="display: flex; gap: 12px; align-items: end;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #4a5568; font-size: 13px;">Nh?p tên s?n ph?m ho?c mã</label>
+                    <div style="position: relative;">
+                        <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" 
+                               placeholder="Tìm ki?m s?n ph?m..." 
+                               style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px 8px 36px; font-size: 14px;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a0aec0; font-size: 12px;"></i>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #4a5568; font-size: 13px;">Theo mã phi?u ki?m</label>
+                    <select name="statusFilter" class="form-select" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 14px; width: 140px;">
+                        <option value="">T?t c?</option>
+                        <option value="in-stock" selected="@(Model.StatusFilter == "in-stock")">Còn hàng</option>
+                        <option value="low-stock" selected="@(Model.StatusFilter == "low-stock")">S?p h?t</option>
+                        <option value="out-of-stock" selected="@(Model.StatusFilter == "out-of-stock")">H?t hàng</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="btn" style="background: #4299e1; color: white; border: none; padding: 8px 12px; border-radius: 6px;">
+                        <i class="fas fa-search" style="font-size: 12px;"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Stats Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <div style="font-size: 24px; font-weight: 700; color: #2d3748; margin-bottom: 4px;">@Model.Stats.TotalProducts</div>
+            <div style="font-size: 13px; color: #718096;">SL hàng t?n</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <div style="font-size: 24px; font-weight: 700; color: #48bb78; margin-bottom: 4px;">@Model.Stats.InStockProducts</div>
+            <div style="font-size: 13px; color: #718096;">Còn hàng</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <div style="font-size: 24px; font-weight: 700; color: #ed8936; margin-bottom: 4px;">@Model.Stats.LowStockProducts</div>
+            <div style="font-size: 13px; color: #718096;">S?p h?t</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <div style="font-size: 24px; font-weight: 700; color: #f56565; margin-bottom: 4px;">@Model.Stats.OutOfStockProducts</div>
+            <div style="font-size: 13px; color: #718096;">H?t hàng</div>
+        </div>
+    </div>
+
+    <!-- Product Table -->
+    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <div style="background: #f7fafc; padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h5 style="margin: 0; color: #2d3748; font-size: 15px; font-weight: 600;">Danh sách s?n ph?m (@Model.TotalItems)</h5>
+                <small style="color: #718096; font-size: 12px;">C?p nh?t l?n cu?i: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="table mb-0" style="font-size: 14px;">
+                <thead style="background: #f7fafc;">
+                    <tr>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">ID_SP</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Tên S?n Ph?m</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Giá bán</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">S? L??ng</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Tr?ng Thái</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Chi ti?t</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <img src="@(!string.IsNullOrEmpty(item.ImageUrl) ? item.ImageUrl : "/images/no-image.png")" 
+                                         alt="@item.ProductName" 
+                                         style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid #e2e8f0;">
+                                    <span style="font-weight: 500; color: #2d3748; font-size: 13px;">@item.ProductId</span>
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div>
+                                    <div style="font-weight: 600; color: #2d3748; margin-bottom: 4px; font-size: 14px;">@item.ProductName</div>
+                                    <div style="font-size: 11px; color: #718096;">
+                                        <span style="background: #edf2f7; padding: 2px 6px; border-radius: 3px; margin-right: 4px;">@item.Color</span>
+                                        <span style="background: #edf2f7; padding: 2px 6px; border-radius: 3px;">@item.Size</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <span style="font-weight: 600; color: #2d3748; font-size: 14px;">@item.Price.ToString("N0") VN?</span>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 16px; font-weight: 700; color: #2d3748; margin-bottom: 2px;">@item.AvailableQuantity</div>
+                                    @if (item.ReservedQuantity > 0)
+                                    {
+                                        <div style="font-size: 10px; color: #718096;">(@item.ReservedQuantity ?ang gi?)</div>
+                                    }
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                @if (item.Status == "Còn hàng")
+                                {
+                                    <span style="background: #c6f6d5; color: #22543d; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">
+                                        Còn hàng
+                                    </span>
+                                }
+                                else if (item.Status == "S?p h?t")
+                                {
+                                    <span style="background: #fed7a1; color: #9c4221; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">
+                                        S?p h?t
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="background: #fed7d7; color: #9b2c2c; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">
+                                        H?t hàng
+                                    </span>
+                                }
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none; text-align: center;">
+                                <button type="button" class="btn btn-sm" onclick="showStockDetails(@item.ProductVariantId)" 
+                                        style="background: #4299e1; color: white; border: none; font-size: 11px; padding: 4px 12px; border-radius: 4px;">
+                                    Chi ti?t
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Items.Any())
+        {
+            <div style="text-align: center; padding: 48px 20px;">
+                <i class="fas fa-inbox" style="font-size: 32px; color: #cbd5e0; margin-bottom: 16px;"></i>
+                <p style="color: #718096; font-size: 14px; margin: 0;">Không tìm th?y s?n ph?m nào</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function showStockDetails(productVariantId) {
+        window.location.href = '/Admin/Stock/Details/' + productVariantId;
+    }
+</script>
+}

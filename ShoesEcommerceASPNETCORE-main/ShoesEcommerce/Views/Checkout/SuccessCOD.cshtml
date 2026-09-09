@@ -1,0 +1,450 @@
+﻿@model ShoesEcommerce.Models.ViewModels.OrderViewModel
+
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Ultra-minimalist COD Success Page */
+    .success-wrapper {
+        background: #f9fafb;
+        min-height: 100vh;
+        padding: 3rem 0;
+    }
+
+    .success-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: scaleIn 0.5s ease-out;
+    }
+
+    .success-icon i {
+        font-size: 2.5rem;
+        color: white;
+    }
+
+    @@keyframes scaleIn {
+        from { transform: scale(0); }
+        to { transform: scale(1); }
+    }
+
+    .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #000;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .success-subtitle {
+        text-align: center;
+        color: #6b7280;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .info-card h5 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .info-value {
+        color: #000;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.875rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-cod {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fbbf24;
+    }
+
+    .badge-pending {
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #60a5fa;
+    }
+
+    .product-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .product-table thead th {
+        padding: 0.75rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .product-table tbody td {
+        padding: 1rem 0.75rem;
+        font-size: 0.875rem;
+        color: #000;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .product-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .product-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #e5e7eb;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 0.25rem;
+    }
+
+    .product-variant {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .total-label {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #000;
+    }
+
+    .total-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ef4444;
+    }
+
+    .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-action {
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #000;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1f2937;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #374151;
+        border: 1.5px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #000;
+    }
+
+    .info-alert {
+        background: #dbeafe;
+        border: 1px solid #60a5fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .info-alert-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1e40af;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-alert ul {
+        margin: 0;
+        padding-left: 1.25rem;
+        color: #1e40af;
+        font-size: 0.813rem;
+    }
+
+    .info-alert ul li {
+        margin-bottom: 0.375rem;
+    }
+
+    @@media (max-width: 768px) {
+        .success-wrapper {
+            padding: 2rem 0;
+        }
+
+        .info-card {
+            padding: 1.5rem;
+        }
+
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+
+        .product-table {
+            font-size: 0.813rem;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+        }
+    }
+</style>
+
+<div class="success-wrapper">
+    <div class="success-container">
+        <!-- Success Icon -->
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+
+        <!-- Success Title -->
+        <h1 class="success-title">Đặt hàng thành công!</h1>
+        <p class="success-subtitle">Cảm ơn bạn đã mua hàng tại ShoesEcommerce</p>
+
+        <!-- Order Info Card -->
+        <div class="info-card">
+            <h5>
+                <i class="fas fa-receipt"></i>
+                Thông tin đơn hàng
+            </h5>
+            
+            <div class="info-row">
+                <span class="info-label">Mã đơn hàng:</span>
+                <span class="info-value">#@Model.OrderNumber</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Ngày đặt:</span>
+                <span class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Phương thức thanh toán:</span>
+                <span class="badge badge-cod">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Thanh toán khi nhận hàng (COD)
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Trạng thái:</span>
+                <span class="badge badge-pending">
+                    <i class="fas fa-clock"></i>
+                    @Model.Status
+                </span>
+            </div>
+        </div>
+
+        <!-- Products Card -->
+        <div class="info-card">
+            <h5>
+                <i class="fas fa-shopping-bag"></i>
+                Sản phẩm đã đặt (@Model.OrderDetails.Count sản phẩm)
+            </h5>
+
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th style="text-align: center;">Số lượng</th>
+                        <th style="text-align: right;">Đơn giá</th>
+                        <th style="text-align: right;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderDetails)
+                    {
+                        <tr>
+                            <td>
+                                <div class="product-info">
+                                    @if (!string.IsNullOrEmpty(item.ProductVariant?.ImageUrl))
+                                    {
+                                        <img src="@item.ProductVariant.ImageUrl" 
+                                             alt="@item.ProductVariant?.Name" 
+                                             class="product-image">
+                                    }
+                                    <div>
+                                        <div class="product-name">@item.ProductVariant?.Name</div>
+                                        @if (item.ProductVariant != null)
+                                        {
+                                            <div class="product-variant">
+                                                @item.ProductVariant.Color - Size @item.ProductVariant.Size
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="badge" style="background: #f3f4f6; color: #374151;">@item.Quantity</span>
+                            </td>
+                            <td style="text-align: right;">@item.UnitPrice.ToString("N0")₫</td>
+                            <td style="text-align: right;">
+                                <strong>@item.SubTotal.ToString("N0")₫</strong>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Total -->
+            <div class="total-row">
+                <span class="total-label">Tổng cộng:</span>
+                <span class="total-value">@Model.TotalAmount.ToString("N0")₫</span>
+            </div>
+        </div>
+
+        <!-- Shipping Address Card -->
+        @if (Model.ShippingAddress != null)
+        {
+            <div class="info-card">
+                <h5>
+                    <i class="fas fa-map-marker-alt"></i>
+                    Địa chỉ giao hàng
+                </h5>
+
+                <div class="info-row">
+                    <span class="info-label">Người nhận:</span>
+                    <span class="info-value">@Model.ShippingAddress.FullName</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Số điện thoại:</span>
+                    <span class="info-value">@Model.ShippingAddress.PhoneNumber</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Địa chỉ:</span>
+                    <span class="info-value">
+                        @Model.ShippingAddress.Address, @Model.ShippingAddress.District, @Model.ShippingAddress.City
+                    </span>
+                </div>
+            </div>
+        }
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="@Url.Action("Index", "Home")" class="btn-action btn-secondary">
+                <i class="fas fa-home"></i>
+                Về trang chủ
+            </a>
+            <a href="@Url.Action("Index", "Order")" class="btn-action btn-primary">
+                <i class="fas fa-list"></i>
+                Xem đơn hàng của tôi
+            </a>
+        </div>
+
+        <!-- Info Alert -->
+        <div class="info-alert">
+            <div class="info-alert-title">
+                <i class="fas fa-info-circle"></i>
+                Thông tin quan trọng
+            </div>
+            <ul>
+                <li>Đơn hàng của bạn sẽ được xử lý trong vòng 1-2 ngày làm việc</li>
+                <li>Bạn sẽ nhận được email/SMS xác nhận khi đơn hàng được giao cho đơn vị vận chuyển</li>
+                <li>Thời gian giao hàng dự kiến: 3-5 ngày làm việc</li>
+                <li>Bạn sẽ thanh toán khi nhận hàng (COD)</li>
+                <li>Vui lòng kiểm tra kỹ sản phẩm trước khi thanh toán</li>
+            </ul>
+        </div>
+    </div>
+</div>

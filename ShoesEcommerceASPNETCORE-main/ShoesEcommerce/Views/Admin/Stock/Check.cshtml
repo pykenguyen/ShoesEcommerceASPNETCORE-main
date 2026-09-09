@@ -1,0 +1,186 @@
+@model ShoesEcommerce.ViewModels.Stock.StockAuditListViewModel
+
+@{
+    ViewData["Title"] = "Ki?m kho";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div style="background: #f8f9fa; min-height: 100vh; padding: 20px;">
+    <!-- Page Header -->
+    <div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h4 style="margin: 0; color: #2d3748; font-weight: 600; font-size: 20px;">
+                    <i class="fas fa-clipboard-check" style="color: #718096; margin-right: 8px; font-size: 16px;"></i>
+                    KI?M KHO (4)
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #718096; font-size: 14px;">
+                    Ki?m tra và ??i chi?u s? l??ng hàng t?n kho
+                </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn btn-sm" style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px;">
+                    <i class="fas fa-plus" style="margin-right: 4px;"></i> Xu?t kho
+                </button>
+                <button type="button" class="btn btn-sm" style="background: #4299e1; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px;">
+                    <i class="fas fa-print" style="margin-right: 4px;"></i> Xu?t file
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Filter Row -->
+        <form method="get" action="/Admin/Stock/Check">
+            <div style="display: flex; gap: 12px; align-items: end;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #4a5568; font-size: 13px;">Theo mã phi?u ki?m</label>
+                    <select class="form-select" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 14px;">
+                        <option>T?t c?</option>
+                        <option>KK01</option>
+                        <option>KK02</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #4a5568; font-size: 13px;">T? ngày</label>
+                    <input type="date" name="startDate" value="@(Model.StartDate?.ToString("yyyy-MM-dd"))" class="form-control" 
+                           style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 14px; width: 140px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #4a5568; font-size: 13px;">??n ngày</label>
+                    <input type="date" name="endDate" value="@(Model.EndDate?.ToString("yyyy-MM-dd"))" class="form-control" 
+                           style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 14px; width: 140px;">
+                </div>
+                <div>
+                    <button type="submit" class="btn" style="background: #4299e1; color: white; border: none; padding: 8px 12px; border-radius: 6px;">
+                        <i class="fas fa-search" style="font-size: 12px;"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Stats Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <div style="font-size: 24px; font-weight: 700; color: #2d3748; margin-bottom: 4px;">@Model.Stats.TotalAudited</div>
+            <div style="font-size: 13px; color: #718096;">T?ng ?ã ki?m</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <div style="font-size: 24px; font-weight: 700; color: #48bb78; margin-bottom: 4px;">@Model.Stats.CorrectCount</div>
+            <div style="font-size: 13px; color: #718096;">Chính xác</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <div style="font-size: 24px; font-weight: 700; color: #4299e1; margin-bottom: 4px;">@Model.Stats.OverCount</div>
+            <div style="font-size: 13px; color: #718096;">Th?a</div>
+        </div>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+            <div style="font-size: 24px; font-weight: 700; color: #9f7aea; margin-bottom: 4px;">@Model.Stats.AccuracyRate.ToString("F1")%</div>
+            <div style="font-size: 13px; color: #718096;">?? chính xác</div>
+        </div>
+    </div>
+
+    <!-- Audit Table -->
+    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <div style="background: #f7fafc; padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h5 style="margin: 0; color: #2d3748; font-size: 15px; font-weight: 600;">Danh sách ki?m kho</h5>
+                <small style="color: #718096; font-size: 12px;">C?p nh?t l?n cu?i: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="table mb-0" style="font-size: 14px;">
+                <thead style="background: #f7fafc;">
+                    <tr>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Mã ki?m kho</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Th?i gian</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">SL th?c t?</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">SL l?ch s?</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Ghi chú</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Nhân viên</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Tr?ng thái</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <img src="@(!string.IsNullOrEmpty(item.ImageUrl) ? item.ImageUrl : "/images/no-image.png")" 
+                                         alt="Product" 
+                                         style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid #e2e8f0;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #2d3748; font-size: 13px;">KK@(item.Id.ToString("000"))</div>
+                                        <div style="font-size: 11px; color: #718096;">@item.ProductName</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div style="color: #2d3748; font-weight: 500; font-size: 13px;">
+                                    @(item.LastAuditDate?.ToString("dd/MM/yyyy") ?? "04/01/2025")
+                                </div>
+                                <div style="font-size: 11px; color: #718096;">
+                                    @(item.LastAuditDate?.ToString("HH:mm") ?? "14:53")
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div style="text-align: center;">
+                                    <span style="font-size: 16px; font-weight: 700; color: #2d3748;">@item.SystemQuantity</span>
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div style="text-align: center;">
+                                    <span style="font-size: 16px; font-weight: 700; color: #718096;">0</span>
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <span style="color: #718096; font-size: 12px;">D?</span>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <span style="color: #2d3748; font-weight: 500; font-size: 13px;">Nhung</span>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <span style="background: #bee3f8; color: #2c5282; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">
+                                    ?ã cân b?ng
+                                </span>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none; text-align: center;">
+                                <div style="display: flex; gap: 6px; justify-content: center;">
+                                    <button type="button" class="btn btn-sm" onclick="performAudit(@item.ProductVariantId)" 
+                                            style="background: #4299e1; color: white; border: none; font-size: 11px; padding: 4px 12px; border-radius: 4px;">
+                                        Ki?m tra
+                                    </button>
+                                    <button type="button" class="btn btn-sm" onclick="viewAuditHistory(@item.ProductVariantId)" 
+                                            style="background: #718096; color: white; border: none; font-size: 11px; padding: 4px 12px; border-radius: 4px;">
+                                        L?ch s?
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Items.Any())
+        {
+            <div style="text-align: center; padding: 48px 20px;">
+                <i class="fas fa-clipboard-list" style="font-size: 32px; color: #cbd5e0; margin-bottom: 16px;"></i>
+                <p style="color: #718096; font-size: 14px; margin: 0;">Không có d? li?u ki?m kho</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function performAudit(productVariantId) {
+        window.location.href = '/Admin/Stock/PerformAudit/' + productVariantId;
+    }
+
+    function viewAuditHistory(productVariantId) {
+        window.location.href = '/Admin/Stock/AuditHistory/' + productVariantId;
+    }
+</script>
+}

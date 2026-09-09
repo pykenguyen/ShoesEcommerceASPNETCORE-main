@@ -1,0 +1,357 @@
+﻿@model ShoesEcommerce.Models.ViewModels.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "Cart")">
+                            <i class="fas fa-shopping-cart me-1"></i>
+                            Giỏ hàng
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Thanh toán</li>
+                </ol>
+            </nav>
+
+            <h2 class="mb-4">
+                <i class="fas fa-credit-card me-2"></i>
+                Thanh toán đơn hàng
+            </h2>
+
+            <form asp-action="Checkout" method="post" id="checkoutForm">
+                @Html.AntiForgeryToken()
+                
+                <div class="row">
+                    <!-- Thông tin sản phẩm -->
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-shopping-bag me-2"></i>
+                                    Sản phẩm đã chọn
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                @foreach (var item in Model.CartItems)
+                                {
+                                    <div class="row align-items-center mb-3 pb-3 border-bottom">
+                                        <div class="col-md-2">
+                                            <img src="@item.ProductVariant.ImageUrl" 
+                                                 alt="@item.ProductVariant.Name" 
+                                                 class="img-fluid rounded" 
+                                                 style="max-width: 80px;">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="mb-1">@item.ProductVariant.Name</h6>
+                                            <p class="mb-1 text-muted">
+                                                <small>
+                                                    <i class="fas fa-palette me-1"></i>
+                                                    Màu: @item.ProductVariant.Color
+                                                </small>
+                                            </p>
+                                            <p class="mb-0 text-muted">
+                                                <small>
+                                                    <i class="fas fa-ruler me-1"></i>
+                                                    Kích thước: @item.ProductVariant.Size
+                                                </small>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-2 text-center">
+                                            <span class="badge bg-secondary fs-6">SL: @item.Quantity</span>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <div class="text-primary fw-bold">
+                                                @item.UnitPrice.ToString("N0")đ
+                                            </div>
+                                            <small class="text-muted">
+                                                Tổng: @item.SubTotal.ToString("N0")đ
+                                            </small>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Thông tin giao hàng -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-shipping-fast me-2"></i>
+                                    Thông tin giao hàng
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                @if (Model.AvailableAddresses.Any())
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn địa chỉ giao hàng:</label>
+                                        @foreach (var address in Model.AvailableAddresses)
+                                        {
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="ShippingAddressId" 
+                                                       id="address_@address.Id" 
+                                                       value="@address.Id" 
+                                                       @(address.Id == Model.AvailableAddresses.First().Id ? "checked" : "")>
+                                                <label class="form-check-label" for="address_@address.Id">
+                                                    <strong>@address.FullName</strong> - @address.PhoneNumber<br>
+                                                    <small class="text-muted">
+                                                        @address.Address, @address.District, @address.City
+                                                    </small>
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Bạn chưa có địa chỉ giao hàng nào.
+                                    </div>
+                                }
+
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Thêm địa chỉ mới
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Phương thức thanh toán -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-credit-card me-2"></i>
+                                    Phương thức thanh toán
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="PaymentMethod" 
+                                                   id="cod" 
+                                                   value="COD" 
+                                                   checked>
+                                            <label class="form-check-label" for="cod">
+                                                <i class="fas fa-money-bill-wave me-2 text-success"></i>
+                                                Thanh toán khi nhận hàng (COD)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="PaymentMethod" 
+                                                   id="banking" 
+                                                   value="Banking">
+                                            <label class="form-check-label" for="banking">
+                                                <i class="fas fa-university me-2 text-primary"></i>
+                                                Chuyển khoản ngân hàng
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="PaymentMethod" 
+                                                   id="vnpay" 
+                                                   value="VNPay">
+                                            <label class="form-check-label" for="vnpay">
+                                                <i class="fas fa-credit-card me-2 text-warning"></i>
+                                                VNPay
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ghi chú -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-sticky-note me-2"></i>
+                                    Ghi chú
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <textarea class="form-control" 
+                                          name="Note" 
+                                          rows="3" 
+                                          placeholder="Ghi chú về đơn hàng (không bắt buộc)..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tổng tiền và xác nhận -->
+                    <div class="col-lg-4">
+                        <div class="card sticky-top" style="top: 20px;">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-calculator me-2"></i>
+                                    Tổng tiền
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Tổng tiền hàng:</span>
+                                    <span>@Model.SubTotal.ToString("N0")đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Phí vận chuyển:</span>
+                                    <span>@Model.ShippingFee.ToString("N0")đ</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <strong>Tổng cộng:</strong>
+                                    <strong class="text-primary fs-4">
+                                        @Model.TotalAmount.ToString("N0")đ
+                                    </strong>
+                                </div>
+
+                                <button type="submit" class="btn btn-success btn-lg w-100" id="submitBtn">
+                                    <i class="fas fa-check me-2"></i>
+                                    Xác nhận đặt hàng
+                                </button>
+
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Bằng việc đặt hàng, bạn đồng ý với 
+                                        <a href="#" class="text-decoration-none">điều khoản sử dụng</a>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thêm địa chỉ mới -->
+<div class="modal fade" id="addAddressModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>
+                    Thêm địa chỉ mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addAddressForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Họ tên *</label>
+                        <input type="text" class="form-control" name="FullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại *</label>
+                        <input type="tel" class="form-control" name="PhoneNumber" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ *</label>
+                        <textarea class="form-control" name="Address" rows="2" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Thành phố *</label>
+                            <input type="text" class="form-control" name="City" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Quận/Huyện *</label>
+                            <input type="text" class="form-control" name="District" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm địa chỉ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Xử lý thêm địa chỉ mới
+            $('#addAddressForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                $.ajax({
+                    url: '@Url.Action("CreateShippingAddress", "Order")',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            // Thêm địa chỉ mới vào danh sách
+                            var newAddress = response.address;
+                            var addressHtml = `
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" 
+                                           name="ShippingAddressId" 
+                                           id="address_${newAddress.id}" 
+                                           value="${newAddress.id}" 
+                                           checked>
+                                    <label class="form-check-label" for="address_${newAddress.id}">
+                                        <strong>${newAddress.fullName}</strong> - ${newAddress.phoneNumber}<br>
+                                        <small class="text-muted">
+                                            ${newAddress.address}, ${newAddress.district}, ${newAddress.city}
+                                        </small>
+                                    </label>
+                                </div>
+                            `;
+                            
+                            $('.form-check').last().after(addressHtml);
+                            $('#addAddressModal').modal('hide');
+                            $('#addAddressForm')[0].reset();
+                            
+                            // Hiển thị thông báo thành công
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi thêm địa chỉ');
+                    }
+                });
+            });
+
+            // Xử lý submit form checkout
+            $('#checkoutForm').on('submit', function() {
+                var selectedAddress = $('input[name="ShippingAddressId"]:checked').val();
+                var selectedPayment = $('input[name="PaymentMethod"]:checked').val();
+                
+                if (!selectedAddress) {
+                    alert('Vui lòng chọn địa chỉ giao hàng');
+                    return false;
+                }
+                
+                if (!selectedPayment) {
+                    alert('Vui lòng chọn phương thức thanh toán');
+                    return false;
+                }
+                
+                // Disable nút submit để tránh double submit
+                $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...');
+                
+                return true;
+            });
+        });
+    </script>
+}

@@ -1,0 +1,639 @@
+﻿@model List<ShoesEcommerce.Models.ViewModels.OrderViewModel>
+
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<style>
+    /* 🎨 ULTRA-MINIMALIST ORDER HISTORY - APPLE STYLE */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: #ffffff;
+    }
+
+    .order-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    }
+
+    /* 📌 Header - Minimal */
+    .page-header {
+        margin-bottom: 3rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #000;
+        letter-spacing: -0.5px;
+    }
+
+    /* ✅ Success Alert - Clean */
+    .alert-success {
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideIn 0.3s ease;
+    }
+
+    .alert-icon {
+        width: 20px;
+        height: 20px;
+        background: #22c55e;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .alert-text {
+        flex: 1;
+        font-size: 0.875rem;
+        color: #166534;
+        font-weight: 500;
+    }
+
+    .alert-close {
+        background: none;
+        border: none;
+        color: #166534;
+        cursor: pointer;
+        font-size: 1.25rem;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+    }
+
+    .alert-close:hover {
+        opacity: 1;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* 📦 Order Card - Ultra Clean */
+    .order-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: all 0.2s ease;
+    }
+
+    .order-card:hover {
+        border-color: #000;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 📋 Order Header */
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .order-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .order-number {
+        font-size: 0.938rem;
+        font-weight: 600;
+        color: #000;
+        letter-spacing: -0.2px;
+    }
+
+    .order-date {
+        font-size: 0.813rem;
+        color: #6b7280;
+    }
+
+    .order-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    /* 🏷️ Status Badge - Minimal */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.875rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        border: 1px solid;
+    }
+
+    .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    /* Status Colors */
+    .badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+        border-color: #fbbf24;
+    }
+
+    .badge-pending .badge-dot {
+        background: #f59e0b;
+    }
+
+    .badge-processing {
+        background: #dbeafe;
+        color: #1e40af;
+        border-color: #60a5fa;
+    }
+
+    .badge-processing .badge-dot {
+        background: #3b82f6;
+    }
+
+    .badge-shipping {
+        background: #ccfbf1;
+        color: #115e59;
+        border-color: #5eead4;
+    }
+
+    .badge-shipping .badge-dot {
+        background: #14b8a6;
+    }
+
+    .badge-delivered {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #86efac;
+    }
+
+    .badge-delivered .badge-dot {
+        background: #22c55e;
+    }
+
+    .badge-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fca5a5;
+    }
+
+    .badge-cancelled .badge-dot {
+        background: #ef4444;
+    }
+
+    .badge-paid {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #86efac;
+    }
+
+    .badge-paid .badge-dot {
+        background: #22c55e;
+    }
+
+    .badge-unpaid {
+        background: #fef3c7;
+        color: #92400e;
+        border-color: #fbbf24;
+    }
+
+    .badge-unpaid .badge-dot {
+        background: #f59e0b;
+    }
+
+    /* 📦 Order Body */
+    .order-body {
+        padding: 1.5rem;
+    }
+
+    .order-layout {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 2rem;
+    }
+
+    /* 📋 Product List */
+    .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .product-item {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .product-image-wrapper {
+        width: 56px;
+        height: 56px;
+        background: #f3f4f6;
+        border-radius: 12px;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* 🎨 Placeholder Icon - No 404 error */
+    .product-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        color: #9ca3af;
+        font-size: 1.5rem;
+    }
+
+    .product-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .product-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .product-variant {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .product-quantity {
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+
+    .more-items {
+        text-align: center;
+        padding: 1rem;
+        color: #9ca3af;
+        font-size: 0.813rem;
+    }
+
+    /* 💰 Order Summary */
+    .order-summary {
+        min-width: 180px;
+        padding: 1.25rem;
+        background: #fafafa;
+        border-radius: 12px;
+        align-self: start;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .summary-row:last-child {
+        margin-bottom: 0;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .summary-label {
+        font-size: 0.813rem;
+        color: #6b7280;
+    }
+
+    .summary-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #000;
+    }
+
+    .summary-total .summary-value {
+        font-size: 1.125rem;
+        color: #000;
+    }
+
+    .summary-address {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e7eb;
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .summary-actions {
+        margin-top: 1rem;
+    }
+
+    .btn-details {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        background: #000;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.813rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-details:hover {
+        background: #1f2937;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+    /* 📭 Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #fafafa;
+        border-radius: 16px;
+    }
+
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1.5rem;
+        background: #000;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: white;
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-shop {
+        padding: 0.75rem 2rem;
+        background: #000;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-shop:hover {
+        background: #1f2937;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        color: white;
+    }
+
+    /* 📱 Responsive */
+    @@media (max-width: 768px) {
+        .order-container {
+            padding: 2rem 1rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .order-layout {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .order-summary {
+            width: 100%;
+        }
+
+        .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="order-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">Đơn hàng của tôi</h1>
+    </div>
+
+    <!-- Success Alert -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert-success" id="successAlert">
+            <div class="alert-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="alert-text">
+                @TempData["SuccessMessage"]
+            </div>
+            <button type="button" class="alert-close" onclick="document.getElementById('successAlert').style.display='none'">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    }
+
+    <!-- Orders or Empty State -->
+    @if (Model == null || !Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h4 class="empty-title">Chưa có đơn hàng</h4>
+            <p class="empty-text">Khám phá và mua sắm ngay hôm nay</p>
+            <a href="@Url.Action("Index", "Product")" class="btn-shop">
+                <i class="fas fa-shopping-cart"></i>
+                Khám phá sản phẩm
+            </a>
+        </div>
+    }
+    else
+    {
+        @foreach (var order in Model)
+        {
+            <div class="order-card">
+                <!-- Order Header -->
+                <div class="order-header">
+                    <div class="order-info">
+                        <div class="order-number">#@order.OrderNumber</div>
+                        <div class="order-date">@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                    <div class="order-badges">
+                        @{
+                            var (orderClass, orderText) = order.Status.ToLower() switch
+                            {
+                                "pending" => ("badge-pending", "Chờ xử lý"),
+                                "processing" => ("badge-processing", "Đang xử lý"),
+                                "shipping" => ("badge-shipping", "Đang giao"),
+                                "delivered" => ("badge-delivered", "Đã giao"),
+                                "cancelled" => ("badge-cancelled", "Đã hủy"),
+                                _ => ("badge-pending", order.Status)
+                            };
+
+                            var (paymentClass, paymentText) = order.PaymentStatus == "Paid" 
+                                ? ("badge-paid", "Đã thanh toán") 
+                                : ("badge-unpaid", "Chưa thanh toán");
+                        }
+
+                        <span class="badge @orderClass">
+                            <span class="badge-dot"></span>
+                            @orderText
+                        </span>
+                        <span class="badge @paymentClass">
+                            <span class="badge-dot"></span>
+                            @paymentText
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Order Body -->
+                <div class="order-body">
+                    <div class="order-layout">
+                        <!-- Products -->
+                        <div class="product-list">
+                            @foreach (var detail in order.OrderDetails.Take(3))
+                            {
+                                <div class="product-item">
+                                    <div class="product-image-wrapper">
+                                        @if (!string.IsNullOrEmpty(detail.ProductVariant.ImageUrl))
+                                        {
+                                            <img src="@detail.ProductVariant.ImageUrl" 
+                                                 alt="@detail.ProductVariant.Name" 
+                                                 class="product-image"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="product-placeholder" style="display:none;">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="product-placeholder">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="product-details">
+                                        <div class="product-name">@detail.ProductVariant.Name</div>
+                                        <div class="product-variant">@detail.ProductVariant.Color • @detail.ProductVariant.Size</div>
+                                        <div class="product-quantity">SL: @detail.Quantity × @detail.UnitPrice.ToString("N0")₫</div>
+                                    </div>
+                                </div>
+                            }
+                            @if (order.OrderDetails.Count > 3)
+                            {
+                                <div class="more-items">
+                                    +@(order.OrderDetails.Count - 3) sản phẩm khác
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="order-summary">
+                            <div class="summary-row">
+                                <div class="summary-label">Sản phẩm</div>
+                                <div class="summary-value">@order.OrderDetails.Count</div>
+                            </div>
+                            <div class="summary-row summary-total">
+                                <div class="summary-label">Tổng tiền</div>
+                                <div class="summary-value">@order.TotalAmount.ToString("N0")₫</div>
+                            </div>
+                            <div class="summary-address">
+                                <i class="fas fa-map-marker-alt"></i>
+                                @order.ShippingAddress.City, @order.ShippingAddress.District
+                            </div>
+                            <div class="summary-actions">
+                                <a href="@Url.Action("Details", "Order", new { id = order.Id })" 
+                                   class="btn-details">
+                                    <i class="fas fa-eye"></i>
+                                    Chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-dismiss success alert
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('#successAlert').fadeOut('slow', function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        });
+
+        // ✅ NO MORE 404 ERRORS - Placeholder handled in CSS
+    </script>
+}

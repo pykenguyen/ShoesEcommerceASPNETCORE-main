@@ -1,0 +1,1357 @@
+﻿@model ShoesEcommerce.Models.Products.Product
+@using ShoesEcommerce.ViewModels.Product
+@using Microsoft.AspNetCore.Http.Extensions
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Model.Name;
+    var variants = ViewBag.Variants as IEnumerable<ShoesEcommerce.ViewModels.Product.ProductVariantInfo>;
+    var discountInfo = ViewBag.DiscountInfo as ShoesEcommerce.Services.Interfaces.ProductDiscountInfo;
+    var comments = ViewBag.Comments as List<ProductCommentViewModel>;
+    var qas = ViewBag.QAs as List<ProductQAViewModel>;
+    var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+    
+    // Get pre-selected variant from query params
+    var selectedColorParam = ViewBag.SelectedColor as string;
+    var selectedSizeParam = ViewBag.SelectedSize as string;
+    
+    // Group variants by color for better UX
+    var variantsByColor = variants?.GroupBy(v => v.Color).ToDictionary(g => g.Key, g => g.ToList()) 
+                          ?? new Dictionary<string, List<ProductVariantInfo>>();
+    var colors = variantsByColor.Keys.ToList();
+    
+    // Use pre-selected color if available, otherwise first color
+    var defaultColor = !string.IsNullOrEmpty(selectedColorParam) && colors.Contains(selectedColorParam) 
+                       ? selectedColorParam 
+                       : colors.FirstOrDefault() ?? "";
+    
+    // SEO and Social Sharing Meta Data - Use configured SiteUrl for production
+    var siteUrl = Configuration["SiteUrl"] ?? $"{Context.Request.Scheme}://{Context.Request.Host}";
+    
+    // Get image for selected variant/color if available
+    var selectedVariant = !string.IsNullOrEmpty(selectedColorParam) 
+        ? variants?.FirstOrDefault(v => v.Color == selectedColorParam && (string.IsNullOrEmpty(selectedSizeParam) || v.Size == selectedSizeParam))
+        : null;
+    var productImage = selectedVariant?.ImageUrl ?? variants?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.svg";
+    
+    // Always create absolute URL for OG image
+    string productImageUrl;
+    if (string.IsNullOrEmpty(productImage) || productImage == "/images/no-image.svg")
+    {
+        productImageUrl = "https://placehold.co/1200x630/1a1a1a/ffffff?text=" + Uri.EscapeDataString(Model.Name ?? "SPORTS");
+    }
+    else if (productImage.StartsWith("http"))
+    {
+        productImageUrl = productImage;
+    }
+    else
+    {
+        productImageUrl = $"{siteUrl}{productImage}";
+    }
+    
+    // Use SEO-friendly URL for canonical (with variant params if selected)
+    var productSlug = ShoesEcommerce.Helpers.SlugHelper.ToSlugWithId(Model.Name ?? "", Model.Id);
+    var canonicalUrl = ShoesEcommerce.Helpers.SlugHelper.ToProductUrl(siteUrl, Model.Name ?? "", Model.Id, selectedColorParam, selectedSizeParam);
+    
+    // Create share title with variant info
+    var shareTitle = ShoesEcommerce.Helpers.SlugHelper.ToShareTitle(
+        Model.Name ?? "", 
+        Model.Brand?.Name, 
+        selectedColorParam, 
+        selectedSizeParam);
+    
+    var productDescription = !string.IsNullOrEmpty(Model.Description) && Model.Description.Length > 160
+        ? Model.Description.Substring(0, 157) + "..."
+        : Model.Description ?? $"Mua {Model.Name} chính hãng với giá tốt nhất tại Sports Shop";
+    
+    // Set ViewData for Layout to pick up OG meta tags
+    ViewData["MetaDescription"] = productDescription;
+    ViewData["OgType"] = "product";
+    ViewData["OgImage"] = productImageUrl;
+    ViewData["OgImageWidth"] = "1200";
+    ViewData["OgImageHeight"] = "630";
+    ViewData["OgImageAlt"] = shareTitle;
+    ViewData["CanonicalUrl"] = canonicalUrl;
+    
+    // For _SocialShare partial
+    ViewData["ShareUrl"] = canonicalUrl;
+    ViewData["ShareTitle"] = shareTitle;
+    ViewData["ShareDescription"] = productDescription;
+    ViewData["ShareImage"] = productImageUrl;
+    
+    // Price info for OG product meta
+    var minPrice = variants?.Min(v => v.Price) ?? 0;
+    var maxPrice = variants?.Max(v => v.Price) ?? 0;
+    var displayPrice = discountInfo?.HasActiveDiscount == true ? discountInfo.DiscountedPrice : minPrice;
+    ViewData["ProductPrice"] = displayPrice.ToString("F0");
+    ViewData["ProductCurrency"] = "VND";
+    ViewData["ProductAvailability"] = variants?.Any(v => v.StockQuantity > 0) == true ? "in stock" : "out of stock";
+}
+
+@section StructuredData {
+    <!-- Product Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org/",
+        "@@type": "Product",
+        "name": "@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Name))",
+        "image": "@productImageUrl",
+        "description": @Html.Raw(System.Text.Json.JsonSerializer.Serialize(productDescription)),
+        "brand": {
+            "@@type": "Brand",
+            "name": "@Model.Brand?.Name"
+        },
+        "category": "@Model.Category?.Name",
+        "url": "@canonicalUrl",
+        "offers": {
+            "@@type": "AggregateOffer",
+            "priceCurrency": "VND",
+            "lowPrice": "@minPrice",
+            "highPrice": "@maxPrice",
+            "offerCount": "@(variants?.Count() ?? 0)",
+            "availability": "@(variants?.Any(v => v.StockQuantity > 0) == true ? "https://schema.org/InStock" : "https://schema.org/OutOfStock")"
+        }
+        @if (comments != null && comments.Any())
+        {
+            <text>,
+            "aggregateRating": {
+                "@@type": "AggregateRating",
+                "ratingValue": "4.5",
+                "reviewCount": "@comments.Count"
+            }</text>
+        }
+    }
+    </script>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="product-page">
+    <div class="product-grid">
+        <!-- Left: Images -->
+        <div class="product-gallery">
+            <div class="main-image-wrapper">
+                <img id="mainImage" src="@productImage" alt="@Model.Name" onerror="this.src='/images/no-image.svg'" />
+                
+                <!-- Favorite Button on Image -->
+                <button type="button" 
+                        class="btn-favorite-detail" 
+                        id="favoriteBtn"
+                        data-product-id="@Model.Id"
+                        title="Thêm vào yêu thích">
+                    <svg class="heart-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Color-based thumbnails -->
+            @if (variantsByColor.Any())
+            {
+                <div class="thumbnail-strip" id="thumbnailStrip">
+                    @foreach (var colorGroup in variantsByColor)
+                    {
+                        var firstVariant = colorGroup.Value.FirstOrDefault(v => !string.IsNullOrEmpty(v.ImageUrl));
+                        if (firstVariant != null)
+                        {
+                            <div class="thumb-item" 
+                                 data-color="@colorGroup.Key" 
+                                 data-image="@firstVariant.ImageUrl"
+                                 onclick="selectColor('@colorGroup.Key', '@firstVariant.ImageUrl')">
+                                <img src="@firstVariant.ImageUrl" alt="@colorGroup.Key" onerror="this.parentElement.style.display='none'" />
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Right: Info -->
+        <div class="product-details">
+            <div class="product-header">
+                <span class="product-brand">@Model.Brand?.Name</span>
+                <h1 class="product-name">@Model.Name</h1>
+            </div>
+            
+            <!-- Social Share Buttons -->
+            @{ await Html.RenderPartialAsync("_SocialShare"); }
+            
+            <!-- Price -->
+            <div class="product-price">
+                @if (variants != null && variants.Any())
+                {
+                    @if (discountInfo != null && discountInfo.HasActiveDiscount)
+                    {
+                        <span class="price-old">@minPrice.ToString("N0") ₫</span>
+                        <span class="price-current" id="displayPrice">@discountInfo.DiscountedPrice.ToString("N0") ₫</span>
+                        <span class="discount-badge">-@discountInfo.DiscountPercentage%</span>
+                    }
+                    else
+                    {
+                        <span class="price-current" id="displayPrice">
+                            @if (minPrice == maxPrice)
+                            {
+                                @minPrice.ToString("N0")<text> ₫</text>
+                            }
+                            else
+                            {
+                                @minPrice.ToString("N0")<text> - </text>@maxPrice.ToString("N0")<text> ₫</text>
+                            }
+                        </span>
+                    }
+                }
+            </div>
+
+            <!-- Variant Selection -->
+            @if (variantsByColor.Any())
+            {
+                <div class="variant-section">
+                    <!-- Color Selection -->
+                    <div class="option-row">
+                        <label class="option-title">Màu sắc: <span id="selectedColorName">@defaultColor</span></label>
+                        <div class="color-selector" id="colorSelector">
+                            @foreach (var color in colors)
+                            {
+                                var colorVariant = variantsByColor[color].FirstOrDefault();
+                                var hasStock = variantsByColor[color].Any(v => v.StockQuantity > 0);
+                                <button type="button" 
+                                        class="color-btn @(color == defaultColor ? "active" : "") @(!hasStock ? "out-of-stock" : "")"
+                                        data-color="@color"
+                                        data-image="@colorVariant?.ImageUrl"
+                                        onclick="selectColor('@color', '@colorVariant?.ImageUrl')"
+                                        @(!hasStock ? "disabled" : "")>
+                                    @color
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Size Selection -->
+                    <div class="option-row">
+                        <label class="option-title">Kích cỡ: <span id="selectedSizeName">Chọn size</span></label>
+                        <div class="size-selector" id="sizeSelector"></div>
+                        <div class="size-guide">
+                            <a href="#" onclick="return false;">Hướng dẫn chọn size</a>
+                        </div>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="option-row">
+                        <label class="option-title">Số lượng:</label>
+                        <div class="quantity-control">
+                            <button type="button" class="qty-btn" onclick="changeQuantity(-1)">−</button>
+                            <input type="number" id="quantityInput" value="1" min="1" max="99" readonly />
+                            <button type="button" class="qty-btn" onclick="changeQuantity(1)">+</button>
+                            <span class="stock-info" id="stockInfo"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="action-buttons">
+                    <button type="button" class="btn-favorite-text" id="favoriteBtnText" data-product-id="@Model.Id">
+                        <svg class="heart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        <span class="fav-text">Yêu thích</span>
+                    </button>
+                    <button type="button" class="btn-cart" id="addToCartBtn" onclick="addToCart()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                        </svg>
+                        Thêm vào giỏ
+                    </button>
+                    <button type="button" class="btn-buy" onclick="buyNow()">Mua ngay</button>
+                </div>
+
+                <!-- Hidden variant data -->
+                <div id="variantData" style="display:none;">
+                    @foreach (var colorGroup in variantsByColor)
+                    {
+                        foreach (var variant in colorGroup.Value)
+                        {
+                            <div class="variant-info"
+                                 data-id="@variant.Id"
+                                 data-color="@variant.Color"
+                                 data-size="@variant.Size"
+                                 data-price="@variant.Price"
+                                 data-stock="@variant.StockQuantity"
+                                 data-image="@variant.ImageUrl">
+                            </div>
+                        }
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="no-variant-msg">
+                    <p>Sản phẩm này hiện chưa có sẵn.</p>
+                </div>
+            }
+
+            <!-- Product Description -->
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="product-desc">
+                    <h3>Mô tả sản phẩm</h3>
+                    <p>@Model.Description</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Reviews & Q&A -->
+    <div class="product-extras">
+        <div class="section-tabs">
+            <button class="tab-btn active" onclick="showTab('reviews')">Đánh giá (@(comments?.Count ?? 0))</button>
+            <button class="tab-btn" onclick="showTab('qa')">Hỏi đáp (@(qas?.Count ?? 0))</button>
+        </div>
+
+        <div class="tab-content" id="tab-reviews">
+            @if (comments != null && comments.Any())
+            {
+                foreach (var comment in comments.Take(5))
+                {
+                    <div class="review-card">
+                        <div class="review-meta">
+                            <strong>@comment.CustomerName</strong>
+                            <span>@comment.CreatedAt.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <p>@comment.Content</p>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="empty-msg">Chưa có đánh giá nào.</p>
+            }
+            
+            @if (isAuthenticated)
+            {
+                <form asp-action="AddComment" method="post" class="comment-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ProductId" value="@Model.Id" />
+                    <textarea name="Content" placeholder="Viết đánh giá của bạn..." required maxlength="500"></textarea>
+                    <button type="submit">Gửi đánh giá</button>
+                </form>
+            }
+            else
+            {
+                <p class="login-prompt">Vui lòng <a href="@Url.Action("Login", "Account")">đăng nhập</a> để đánh giá.</p>
+            }
+        </div>
+
+        <div class="tab-content" id="tab-qa" style="display:none;">
+            @if (qas != null && qas.Any())
+            {
+                foreach (var qa in qas.Take(5))
+                {
+                    <div class="qa-card">
+                        <div class="qa-q"><strong>Hỏi:</strong> @qa.Question</div>
+                        <div class="qa-meta">@qa.CustomerName • @qa.AskedAt.ToString("dd/MM/yyyy")</div>
+                        @if (!string.IsNullOrEmpty(qa.Answer))
+                        {
+                            <div class="qa-a"><strong>Đáp:</strong> @qa.Answer</div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="empty-msg">Chưa có câu hỏi nào.</p>
+            }
+            
+            @if (isAuthenticated)
+            {
+                <form asp-action="AddQA" method="post" class="comment-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ProductId" value="@Model.Id" />
+                    <textarea name="Question" placeholder="Đặt câu hỏi về sản phẩm..." required maxlength="500"></textarea>
+                    <button type="submit">Gửi câu hỏi</button>
+                </form>
+            }
+            else
+            {
+                <p class="login-prompt">Vui lòng <a href="@Url.Action("Login", "Account")">đăng nhập</a> để đặt câu hỏi.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+        <button type="button" class="modal-close" onclick="closeLoginModal()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+        <div class="modal-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <h3>Đăng nhập để tiếp tục</h3>
+        <p id="loginModalMessage">Bạn cần đăng nhập để thực hiện thao tác này</p>
+        <div class="modal-actions">
+            <a href="/Account/Login?returnUrl=@Uri.EscapeDataString(Context.Request.Path)" class="btn-login-modal">Đăng nhập</a>
+            <a href="/Account/Register" class="btn-register-modal">Đăng ký tài khoản</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    /* Gallery */
+    .product-gallery {
+        position: sticky;
+        top: 2rem;
+        align-self: start;
+    }
+
+    .main-image-wrapper {
+        position: relative;
+        background: #f5f5f5;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 1;
+        margin-bottom: 1rem;
+    }
+
+    .main-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    /* Favorite Button on Image */
+    .btn-favorite-detail {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 48px;
+        height: 48px;
+        background: #fff;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        color: #999;
+        z-index: 2;
+    }
+
+    .btn-favorite-detail:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .btn-favorite-detail.active {
+        color: #ff4757;
+    }
+
+    .btn-favorite-detail.active .heart-icon {
+        fill: #ff4757;
+        stroke: #ff4757;
+    }
+
+    .thumbnail-strip {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .thumb-item {
+        flex-shrink: 0;
+        width: 72px;
+        height: 72px;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+
+    .thumb-item:hover, .thumb-item.active {
+        border-color: #000;
+    }
+
+    .thumb-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Details */
+    .product-header {
+        margin-bottom: 1rem;
+    }
+
+    .product-brand {
+        font-size: 0.8rem;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-name {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin: 0;
+        color: #1a1a1a;
+        line-height: 1.3;
+    }
+
+    .product-price {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 1.5rem 0;
+    }
+
+    .price-old {
+        font-size: 1rem;
+        color: #999;
+        text-decoration: line-through;
+    }
+
+    .price-current {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #000;
+    }
+
+    .discount-badge {
+        background: #ff4757;
+        color: #fff;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* Variant Selection */
+    .variant-section {
+        border-top: 1px solid #eee;
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .option-row {
+        margin-bottom: 1.5rem;
+    }
+
+    .option-title {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #666;
+        margin-bottom: 0.75rem;
+    }
+
+    .option-title span {
+        color: #000;
+        font-weight: 600;
+    }
+
+    .color-selector, .size-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .color-btn, .size-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .color-btn:hover:not(.out-of-stock), .size-btn:hover:not(.out-of-stock) {
+        border-color: #000;
+    }
+
+    .color-btn.active, .size-btn.active {
+        border-color: #000;
+        background: #000;
+        color: #fff;
+    }
+
+    .color-btn.out-of-stock, .size-btn.out-of-stock {
+        opacity: 0.4;
+        cursor: not-allowed;
+        text-decoration: line-through;
+    }
+
+    .size-btn {
+        min-width: 48px;
+        height: 40px;
+        font-weight: 500;
+    }
+
+    .size-guide {
+        margin-top: 0.5rem;
+    }
+
+    .size-guide a {
+        font-size: 0.75rem;
+        color: #666;
+        text-decoration: underline;
+    }
+
+    /* Quantity */
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .qty-btn {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .qty-btn:hover {
+        border-color: #000;
+    }
+
+    #quantityInput {
+        width: 60px;
+        height: 40px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    .stock-info {
+        font-size: 0.8rem;
+        color: #666;
+        margin-left: 0.5rem;
+    }
+
+    .stock-info.low {
+        color: #ff4757;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 2rem;
+    }
+
+    .btn-favorite-text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: #fff;
+        color: #666;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 120px;
+    }
+
+    .btn-favorite-text:hover {
+        border-color: #ff4757;
+        color: #ff4757;
+    }
+
+    .btn-favorite-text.active {
+        border-color: #ff4757;
+        color: #ff4757;
+        background: #fff5f5;
+    }
+
+    .btn-favorite-text.active .heart-icon {
+        fill: #ff4757;
+        stroke: #ff4757;
+    }
+
+    .btn-cart, .btn-buy {
+        flex: 1;
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cart {
+        background: #fff;
+        color: #000;
+        border: 2px solid #000;
+    }
+
+    .btn-cart:hover {
+        background: #f5f5f5;
+    }
+
+    .btn-cart:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-buy {
+        background: #000;
+        color: #fff;
+    }
+
+    .btn-buy:hover {
+        background: #333;
+    }
+
+    /* Description */
+    .product-desc {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    .product-desc h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .product-desc p {
+        color: #666;
+        line-height: 1.7;
+    }
+
+    /* Tabs */
+    .product-extras {
+        border-top: 1px solid #eee;
+        padding-top: 2rem;
+    }
+
+    .section-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .tab-btn {
+        padding: 0.75rem 0;
+        border: none;
+        background: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #666;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .tab-btn.active {
+        color: #000;
+    }
+
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #000;
+    }
+
+    .tab-content {
+        padding: 1rem 0;
+    }
+
+    .review-card, .qa-card {
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .review-meta, .qa-meta {
+        font-size: 0.75rem;
+        color: #999;
+        margin-bottom: 0.5rem;
+    }
+
+    .qa-a {
+        margin-top: 0.5rem;
+        padding-left: 1rem;
+        border-left: 2px solid #ddd;
+        color: #666;
+    }
+
+    .comment-form textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        resize: vertical;
+        min-height: 80px;
+        margin-bottom: 0.75rem;
+        font-family: inherit;
+    }
+
+    .comment-form button {
+        padding: 0.5rem 1.5rem;
+        background: #000;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .empty-msg, .login-prompt {
+        color: #999;
+        font-size: 0.9rem;
+    }
+
+    .login-prompt a {
+        color: #000;
+        text-decoration: underline;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+        display: flex;
+    }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 16px;
+        padding: 2.5rem;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #999;
+    }
+
+    .modal-icon {
+        width: 80px;
+        height: 80px;
+        background: #f5f5f5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: #666;
+    }
+
+    .modal-box h3 {
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-box p {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn-login-modal {
+        padding: 14px;
+        background: #000;
+        color: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .btn-register-modal {
+        padding: 14px;
+        background: #fff;
+        color: #000;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+
+    /* Toast */
+    .toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: #1a1a1a;
+        color: #fff;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        z-index: 10001;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .product-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .product-gallery {
+            position: static;
+        }
+
+        .action-buttons {
+            flex-wrap: wrap;
+        }
+
+        .btn-favorite-text {
+            width: 100%;
+            order: 3;
+        }
+
+        .btn-cart, .btn-buy {
+            flex: 1;
+        }
+
+        .product-name {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isAuthenticated = @(isAuthenticated ? "true" : "false");
+    const productId = @Model.Id;
+    const productName = '@Html.Raw(Model.Name?.Replace("'", "\\'") ?? "")';
+    const productSlug = '@productSlug';
+    const brandName = '@Html.Raw(Model.Brand?.Name?.Replace("'", "\\'") ?? "")';
+    const siteUrl = '@siteUrl';
+    
+    // Pre-selected variant from URL params
+    const preSelectedColor = '@Html.Raw(selectedColorParam?.Replace("'", "\\'") ?? "")';
+    const preSelectedSize = '@Html.Raw(selectedSizeParam?.Replace("'", "\\'") ?? "")';
+    
+    // Load favorite state
+    loadFavoriteState();
+
+    const variantData = [];
+    document.querySelectorAll('#variantData .variant-info').forEach(el => {
+        variantData.push({
+            id: el.dataset.id,
+            color: el.dataset.color,
+            size: el.dataset.size,
+            price: parseInt(el.dataset.price),
+            stock: parseInt(el.dataset.stock),
+            image: el.dataset.image
+        });
+    });
+
+    let selectedColor = '@defaultColor';
+    let selectedSize = preSelectedSize || '';
+    let selectedVariant = null;
+
+    if (selectedColor) {
+        updateSizesForColor(selectedColor);
+        
+        // Auto-select size if provided in URL
+        if (preSelectedSize) {
+            selectSize(preSelectedSize);
+        }
+    }
+
+    // Update browser URL and ShareThis when variant changes
+    function updateShareUrl() {
+        // Build new URL with variant params
+        let newUrl = `/san-pham/${productSlug}`;
+        const params = new URLSearchParams();
+        
+        if (selectedColor) {
+            params.set('color', selectedColor);
+        }
+        if (selectedSize) {
+            params.set('size', selectedSize);
+        }
+        
+        if (params.toString()) {
+            newUrl += '?' + params.toString();
+        }
+        
+        // Update browser URL without reload
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, '', newUrl);
+        }
+        
+        // Build share title
+        let shareTitle = '';
+        if (brandName) shareTitle += brandName + ' ';
+        shareTitle += productName;
+        if (selectedColor || selectedSize) {
+            const variantParts = [];
+            if (selectedColor) variantParts.push(selectedColor);
+            if (selectedSize) variantParts.push('Size ' + selectedSize);
+            shareTitle += ' (' + variantParts.join(' - ') + ')';
+        }
+        
+        // Update ShareThis buttons data
+        const shareContainer = document.querySelector('.sharethis-inline-share-buttons');
+        if (shareContainer) {
+            const fullUrl = siteUrl + newUrl;
+            shareContainer.setAttribute('data-url', fullUrl);
+            shareContainer.setAttribute('data-title', shareTitle);
+            
+            // Try to refresh ShareThis if available
+            if (typeof __sharethis__ !== 'undefined' && __sharethis__.load) {
+                __sharethis__.load('inline-share-buttons', {
+                    url: fullUrl,
+                    title: shareTitle
+                });
+            }
+        }
+        
+        console.log('Share URL updated:', siteUrl + newUrl, 'Title:', shareTitle);
+    }
+
+    // Favorite functionality
+    async function loadFavoriteState() {
+        if (!isAuthenticated) return;
+        
+        try {
+            const response = await fetch(`/Favorite/Check?productId=${productId}`);
+            const data = await response.json();
+            
+            if (data.isFavorite) {
+                document.getElementById('favoriteBtn')?.classList.add('active');
+                document.getElementById('favoriteBtnText')?.classList.add('active');
+                const textEl = document.querySelector('#favoriteBtnText .fav-text');
+                if (textEl) textEl.textContent = 'Đã yêu thích';
+            }
+        } catch (error) {
+            console.error('Error loading favorite state:', error);
+        }
+    }
+
+    // Toggle favorite
+    async function toggleFavorite() {
+        if (!isAuthenticated) {
+            showLoginModal('Bạn cần đăng nhập để thêm vào yêu thích');
+            return;
+        }
+
+        try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const formData = new FormData();
+            formData.append('productId', productId);
+            if (token) formData.append('__RequestVerificationToken', token);
+
+            const response = await fetch('/Favorite/Toggle', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const btn1 = document.getElementById('favoriteBtn');
+                const btn2 = document.getElementById('favoriteBtnText');
+                const textEl = document.querySelector('#favoriteBtnText .fav-text');
+                
+                btn1?.classList.toggle('active', data.isFavorite);
+                btn2?.classList.toggle('active', data.isFavorite);
+                if (textEl) textEl.textContent = data.isFavorite ? 'Đã yêu thích' : 'Yêu thích';
+                
+                showToast(data.message, 'success');
+            } else if (data.requireLogin) {
+                showLoginModal('Bạn cần đăng nhập để thêm vào yêu thích');
+            } else {
+                showToast(data.message || 'Có lỗi xảy ra', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Có lỗi xảy ra', 'error');
+        }
+    }
+
+    document.getElementById('favoriteBtn')?.addEventListener('click', toggleFavorite);
+    document.getElementById('favoriteBtnText')?.addEventListener('click', toggleFavorite);
+
+    // Select color
+    window.selectColor = function(color, image) {
+        selectedColor = color;
+        selectedSize = '';
+        selectedVariant = null;
+
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.color === color);
+        });
+
+        document.querySelectorAll('.thumb-item').forEach(thumb => {
+            thumb.classList.toggle('active', thumb.dataset.color === color);
+        });
+
+        document.getElementById('selectedColorName').textContent = color;
+
+        if (image) {
+            document.getElementById('mainImage').src = image;
+        }
+
+        updateSizesForColor(color);
+        document.getElementById('selectedSizeName').textContent = 'Chọn size';
+        document.getElementById('stockInfo').textContent = '';
+        updateAddToCartButton();
+        
+        // Update share URL when color changes
+        updateShareUrl();
+    };
+
+    function updateSizesForColor(color) {
+        const sizeSelector = document.getElementById('sizeSelector');
+        sizeSelector.innerHTML = '';
+
+        const sizesForColor = variantData.filter(v => v.color === color);
+        const uniqueSizes = [...new Set(sizesForColor.map(v => v.size))].sort((a, b) => {
+            return (parseFloat(a) || 0) - (parseFloat(b) || 0);
+        });
+
+        uniqueSizes.forEach(size => {
+            const variant = sizesForColor.find(v => v.size === size);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'size-btn' + (variant.stock <= 0 ? ' out-of-stock' : '');
+            btn.textContent = size;
+            btn.dataset.size = size;
+            btn.onclick = () => selectSize(size);
+            if (variant.stock <= 0) btn.disabled = true;
+            sizeSelector.appendChild(btn);
+        });
+    }
+
+    window.selectSize = function(size) {
+        selectedSize = size;
+
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.size === size);
+        });
+
+        document.getElementById('selectedSizeName').textContent = size;
+        selectedVariant = variantData.find(v => v.color === selectedColor && v.size === size);
+
+        const stockInfo = document.getElementById('stockInfo');
+        if (selectedVariant) {
+            if (selectedVariant.stock > 0 && selectedVariant.stock <= 5) {
+                stockInfo.textContent = `Chỉ còn ${selectedVariant.stock} sản phẩm`;
+                stockInfo.className = 'stock-info low';
+            } else if (selectedVariant.stock > 0) {
+                stockInfo.textContent = `Còn ${selectedVariant.stock} sản phẩm`;
+                stockInfo.className = 'stock-info';
+            } else {
+                stockInfo.textContent = 'Hết hàng';
+                stockInfo.className = 'stock-info low';
+            }
+            document.getElementById('displayPrice').textContent = selectedVariant.price.toLocaleString('vi-VN') + ' ₫';
+        }
+
+        updateAddToCartButton();
+        
+        // Update share URL when size changes
+        updateShareUrl();
+    };
+
+    function updateAddToCartButton() {
+        const btn = document.getElementById('addToCartBtn');
+        btn.disabled = !(selectedVariant && selectedVariant.stock > 0);
+    }
+
+    window.changeQuantity = function(delta) {
+        const input = document.getElementById('quantityInput');
+        let value = parseInt(input.value) + delta;
+        const maxStock = selectedVariant ? selectedVariant.stock : 99;
+        value = Math.max(1, Math.min(maxStock, value));
+        input.value = value;
+    };
+
+    window.addToCart = function() {
+        if (!isAuthenticated) {
+            showLoginModal('Bạn cần đăng nhập để thêm vào giỏ hàng');
+            return;
+        }
+
+        if (!selectedVariant) {
+            showToast('Vui lòng chọn màu sắc và kích cỡ', 'warning');
+            return;
+        }
+
+        const quantity = parseInt(document.getElementById('quantityInput').value);
+        if (quantity > selectedVariant.stock) {
+            showToast('Số lượng vượt quá tồn kho', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('addToCartBtn');
+        btn.disabled = true;
+        btn.innerHTML = 'Đang thêm...';
+
+        const formData = new FormData();
+        formData.append('productVariantId', selectedVariant.id);
+        formData.append('quantity', quantity);
+        
+        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (token) formData.append('__RequestVerificationToken', token.value);
+
+        fetch('/Cart/AddToCart', { method: 'POST', body: formData })
+            .then(res => res.ok ? res.text().then(t => { try { return JSON.parse(t); } catch { return { success: true }; } }) : res.json())
+            .then(data => {
+                if (data.success !== false) {
+                    showToast('Đã thêm vào giỏ hàng!', 'success');
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra', 'error');
+                }
+            })
+            .catch(() => showToast('Có lỗi xảy ra', 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Thêm vào giỏ';
+            });
+    };
+
+    window.buyNow = function() {
+        if (!isAuthenticated) {
+            showLoginModal('Bạn cần đăng nhập để mua hàng');
+            return;
+        }
+
+        if (!selectedVariant) {
+            showToast('Vui lòng chọn màu sắc và kích cỡ', 'warning');
+            return;
+        }
+
+        const quantity = parseInt(document.getElementById('quantityInput').value);
+        const formData = new FormData();
+        formData.append('productVariantId', selectedVariant.id);
+        formData.append('quantity', quantity);
+        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+        if (token) formData.append('__RequestVerificationToken', token.value);
+
+        fetch('/Cart/AddToCart', { method: 'POST', body: formData })
+            .then(() => window.location.href = '/Cart')
+            .catch(() => showToast('Có lỗi xảy ra', 'error'));
+    };
+
+    window.showTab = function(tabName) {
+        document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+            btn.classList.toggle('active', (tabName === 'reviews' && idx === 0) || (tabName === 'qa' && idx === 1));
+        });
+        document.getElementById('tab-reviews').style.display = tabName === 'reviews' ? 'block' : 'none';
+        document.getElementById('tab-qa').style.display = tabName === 'qa' ? 'block' : 'none';
+    };
+
+    // Login Modal
+    function showLoginModal(message) {
+        document.getElementById('loginModalMessage').textContent = message || 'Bạn cần đăng nhập';
+        document.getElementById('loginModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    window.closeLoginModal = function() {
+        document.getElementById('loginModal').classList.remove('show');
+        document.body.style.overflow = '';
+    };
+
+    document.getElementById('loginModal').addEventListener('click', function(e) {
+        if (e.target === this) closeLoginModal();
+    });
+
+    window.showLoginModal = showLoginModal;
+
+    // Toast
+    function showToast(message, type = 'info') {
+        document.querySelectorAll('.toast').forEach(t => t.remove());
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                ${type === 'success' 
+                    ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/>'
+                    : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}
+            </svg>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    window.showToast = showToast;
+});
+</script>

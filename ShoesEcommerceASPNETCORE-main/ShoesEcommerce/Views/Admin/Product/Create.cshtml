@@ -1,0 +1,750 @@
+﻿@model ShoesEcommerce.ViewModels.Product.CreateProductViewModel
+@{
+    ViewData["Title"] = "Thêm Sản phẩm mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<!-- Minimalist Product Create -->
+<div class="minimalist-product-create">
+    <!-- Clean Header -->
+    <div class="page-header-minimal">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="page-title-minimal">Thêm Sản phẩm mới</h1>
+                <p class="page-subtitle-minimal">Tạo sản phẩm mới với thông tin chi tiết</p>
+            </div>
+            <a asp-action="Index" class="btn-minimal-outline">
+                <i class="fas fa-arrow-left me-2"></i>
+                Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="quick-links-grid">
+        <a asp-action="CreateCategory" target="_blank" class="quick-link-card">
+            <div class="quick-link-icon primary">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="quick-link-content">
+                <div class="quick-link-title">Thêm danh mục</div>
+                <div class="quick-link-desc">Tạo danh mục mới</div>
+            </div>
+        </a>
+
+        <a asp-action="CreateBrand" target="_blank" class="quick-link-card">
+            <div class="quick-link-icon success">
+                <i class="fas fa-award"></i>
+            </div>
+            <div class="quick-link-content">
+                <div class="quick-link-title">Thêm thương hiệu</div>
+                <div class="quick-link-desc">Tạo thương hiệu mới</div>
+            </div>
+        </a>
+
+        <a asp-action="CreateSupplier" target="_blank" class="quick-link-card">
+            <div class="quick-link-icon warning">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div class="quick-link-content">
+                <div class="quick-link-title">Thêm nhà cung cấp</div>
+                <div class="quick-link-desc">Tạo nhà cung cấp</div>
+            </div>
+        </a>
+
+        <div class="quick-link-card disabled">
+            <div class="quick-link-icon info">
+                <i class="fas fa-palette"></i>
+            </div>
+            <div class="quick-link-content">
+                <div class="quick-link-title">Thêm phiên bản</div>
+                <div class="quick-link-desc">Sau khi tạo sản phẩm</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert-minimal alert-minimal-success">
+            <i class="fas fa-check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
+            <button onclick="this.parentElement.remove()" class="alert-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert-minimal alert-minimal-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>@TempData["ErrorMessage"]</span>
+            <button onclick="this.parentElement.remove()" class="alert-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    }
+
+    <!-- Form Container -->
+    <div class="form-container-minimal">
+        <div class="form-header">
+            <h2 class="form-title">
+                <i class="fas fa-edit me-2"></i>
+                Thông tin sản phẩm
+            </h2>
+        </div>
+
+        <form asp-action="Create" method="post" class="form-minimal">
+            @Html.AntiForgeryToken()
+
+            <!-- Product Name -->
+            <div class="form-section">
+                <div class="form-group-minimal">
+                    <label asp-for="Name" class="label-minimal">
+                        <i class="fas fa-tag me-1"></i>
+                        Tên sản phẩm <span class="required-mark">*</span>
+                    </label>
+                    <input asp-for="Name" class="input-minimal" 
+                           placeholder="VD: Giày Nike Air Max 90" 
+                           maxlength="200" required>
+                    <span asp-validation-for="Name" class="error-text"></span>
+                    <div class="help-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Tên sản phẩm nên rõ ràng, mô tả chính xác sản phẩm
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category & Brand -->
+            <div class="form-section">
+                <div class="form-grid-2">
+                    <!-- Category -->
+                    <div class="form-group-minimal">
+                        <label asp-for="CategoryId" class="label-minimal">
+                            <i class="fas fa-tags me-1"></i>
+                            Danh mục <span class="required-mark">*</span>
+                        </label>
+                        <select asp-for="CategoryId" class="select-minimal" required>
+                            <option value="">-- Chọn danh mục --</option>
+                            @if (ViewBag.Categories is SelectList categories)
+                            {
+                                @foreach (var item in categories)
+                                {
+                                    <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId" class="error-text"></span>
+                        <div class="form-actions">
+                            <a asp-action="CreateCategory" target="_blank" class="form-link">
+                                <i class="fas fa-plus me-1"></i>Thêm danh mục mới
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Brand -->
+                    <div class="form-group-minimal">
+                        <label asp-for="BrandId" class="label-minimal">
+                            <i class="fas fa-award me-1"></i>
+                            Thương hiệu <span class="required-mark">*</span>
+                        </label>
+                        <select asp-for="BrandId" class="select-minimal" required>
+                            <option value="">-- Chọn thương hiệu --</option>
+                            @if (ViewBag.Brands is SelectList brands)
+                            {
+                                @foreach (var item in brands)
+                                {
+                                    <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="BrandId" class="error-text"></span>
+                        <div class="form-actions">
+                            <a asp-action="CreateBrand" target="_blank" class="form-link">
+                                <i class="fas fa-plus me-1"></i>Thêm thương hiệu mới
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-section">
+                <div class="form-group-minimal">
+                    <label asp-for="Description" class="label-minimal">
+                        <i class="fas fa-align-left me-1"></i>
+                        Mô tả sản phẩm
+                    </label>
+                    <textarea asp-for="Description" class="textarea-minimal" rows="4" 
+                              placeholder="Mô tả chi tiết về sản phẩm, chất liệu, tính năng đặc biệt..." 
+                              maxlength="1000"></textarea>
+                    <span asp-validation-for="Description" class="error-text"></span>
+                    <div class="help-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Mô tả chi tiết giúp khách hàng hiểu rõ hơn về sản phẩm (tối đa 1000 ký tự)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="form-section">
+                <div class="form-group-minimal">
+                    <label class="label-minimal">
+                        <i class="fas fa-toggle-on me-1"></i>
+                        Trạng thái
+                    </label>
+                    <div class="switch-container">
+                        <label class="switch-minimal">
+                            <input asp-for="IsActive" type="checkbox" checked>
+                            <span class="switch-slider"></span>
+                        </label>
+                        <span class="switch-label">Kích hoạt sản phẩm ngay</span>
+                    </div>
+                    <div class="help-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Sản phẩm được kích hoạt sẽ hiển thị trên website
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box">
+                <div class="info-box-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="info-box-content">
+                    <div class="info-box-title">Lưu ý quan trọng</div>
+                    <div class="info-box-text">
+                        Sau khi tạo sản phẩm, bạn cần thêm các <strong>phiên bản sản phẩm</strong> 
+                        với giá cụ thể, màu sắc, kích thước và hình ảnh. Mỗi phiên bản sẽ có giá riêng 
+                        và số lượng tồn kho riêng.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions-bar">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save me-2"></i>
+                    Lưu sản phẩm
+                </button>
+                <button type="reset" class="btn-reset">
+                    <i class="fas fa-undo me-2"></i>
+                    Đặt lại
+                </button>
+                <a asp-action="Index" class="btn-cancel">
+                    <i class="fas fa-times me-2"></i>
+                    Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* ===== COLOR PALETTE ===== */
+        :root {
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #eeeeee;
+            --gray-300: #e0e0e0;
+            --gray-400: #bdbdbd;
+            --gray-500: #9e9e9e;
+            --gray-600: #757575;
+            --gray-700: #616161;
+            --gray-800: #424242;
+            --gray-900: #212121;
+            
+            --primary: #2196f3;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --info: #3498db;
+            --danger: #e74c3c;
+            
+            --border-radius: 8px;
+            --transition: all 0.2s ease;
+        }
+
+        /* ===== CONTAINER ===== */
+        .minimalist-product-create {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header-minimal {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .page-title-minimal {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0 0 0.5rem 0;
+            letter-spacing: -0.02em;
+        }
+
+        .page-subtitle-minimal {
+            font-size: 0.95rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-minimal-outline {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.65rem 1.25rem;
+            background: var(--white);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            color: var(--gray-700);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-minimal-outline:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+            color: var(--gray-900);
+        }
+
+        /* ===== QUICK LINKS ===== */
+        .quick-links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-link-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .quick-link-card:not(.disabled):hover {
+            border-color: var(--gray-400);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .quick-link-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quick-link-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .quick-link-icon.primary {
+            background: rgba(33, 150, 243, 0.1);
+            color: var(--primary);
+        }
+
+        .quick-link-icon.success {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+
+        .quick-link-icon.warning {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+        }
+
+        .quick-link-icon.info {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--info);
+        }
+
+        .quick-link-content {
+            flex: 1;
+        }
+
+        .quick-link-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.125rem;
+        }
+
+        .quick-link-desc {
+            font-size: 0.775rem;
+            color: var(--gray-600);
+        }
+
+        /* ===== ALERTS ===== */
+        .alert-minimal {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-minimal i {
+            font-size: 1.1rem;
+        }
+
+        .alert-minimal-success {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(39, 174, 96, 0.2);
+        }
+
+        .alert-minimal-danger {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+
+        .alert-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: inherit;
+            opacity: 0.7;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .alert-close:hover {
+            opacity: 1;
+        }
+
+        /* ===== FORM CONTAINER ===== */
+        .form-container-minimal {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .form-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .form-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-minimal {
+            padding: 1.5rem;
+        }
+
+        .form-section {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ===== FORM GROUPS ===== */
+        .form-group-minimal {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .label-minimal {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+        }
+
+        .required-mark {
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+
+        .input-minimal,
+        .select-minimal,
+        .textarea-minimal {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            color: var(--gray-900);
+            background: var(--white);
+            transition: var(--transition);
+        }
+
+        .input-minimal:focus,
+        .select-minimal:focus,
+        .textarea-minimal:focus {
+            outline: none;
+            border-color: var(--gray-900);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .textarea-minimal {
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .help-text {
+            font-size: 0.825rem;
+            color: var(--gray-600);
+            display: flex;
+            align-items: center;
+        }
+
+        .error-text {
+            font-size: 0.825rem;
+            color: var(--danger);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-link {
+            font-size: 0.85rem;
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .form-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== GRID ===== */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        /* ===== SWITCH ===== */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .switch-minimal {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch-minimal input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: var(--transition);
+            border-radius: 24px;
+        }
+
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        input:checked + .switch-slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .switch-slider:before {
+            transform: translateX(20px);
+        }
+
+        .switch-label {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+        }
+
+        /* ===== INFO BOX ===== */
+        .info-box {
+            display: flex;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: rgba(52, 152, 219, 0.05);
+            border: 1px solid rgba(52, 152, 219, 0.15);
+            border-radius: var(--border-radius);
+            margin-bottom: 1.75rem;
+        }
+
+        .info-box-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--info);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .info-box-content {
+            flex: 1;
+        }
+
+        .info-box-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.375rem;
+        }
+
+        .info-box-text {
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
+
+        /* ===== FORM ACTIONS BAR ===== */
+        .form-actions-bar {
+            display: flex;
+            gap: 0.75rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+        }
+
+        .btn-submit {
+            padding: 0.75rem 1.5rem;
+            background: var(--gray-900);
+            border: 1px solid var(--gray-900);
+            border-radius: var(--border-radius);
+            color: var(--white);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-submit:hover {
+            background: var(--gray-800);
+            border-color: var(--gray-800);
+        }
+
+        .btn-reset,
+        .btn-cancel {
+            padding: 0.75rem 1.5rem;
+            background: var(--white);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            color: var(--gray-700);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-reset:hover,
+        .btn-cancel:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @@media (max-width: 768px) {
+            .minimalist-product-create {
+                padding: 1rem 0.5rem;
+            }
+
+            .page-header-minimal .d-flex {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+
+            .quick-links-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions-bar {
+                flex-direction: column;
+            }
+
+            .btn-submit,
+            .btn-reset,
+            .btn-cancel {
+                width: 100%;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Form validation
+        (function() {
+            'use strict';
+            const forms = document.querySelectorAll('.form-minimal');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    </script>
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,180 @@
+@model ShoesEcommerce.ViewModels.Stock.StockImportListViewModel
+
+@{
+    ViewData["Title"] = "Nh?p hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div style="background: #f8f9fa; min-height: 100vh; padding: 20px;">
+    <!-- Page Header -->
+    <div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+                <h4 style="margin: 0; color: #2d3748; font-weight: 600; font-size: 20px;">
+                    <i class="fas fa-truck" style="color: #718096; margin-right: 8px; font-size: 16px;"></i>
+                    NH?P HÀNG (3)
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #718096; font-size: 14px;">
+                    Qu?n lý phi?u nh?p hàng và c?p nh?t t?n kho
+                </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn btn-sm" onclick="window.location.href='/Admin/Stock/CreateImport'" 
+                        style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px;">
+                    <i class="fas fa-plus" style="margin-right: 4px;"></i> T?o phi?u nh?p
+                </button>
+                <button type="button" class="btn btn-sm" onclick="exportImports()" 
+                        style="background: #4299e1; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px;">
+                    <i class="fas fa-download" style="margin-right: 4px;"></i> Xu?t Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Filter Row -->
+        <form method="get" action="/Admin/Stock/Import">
+            <div style="display: flex; gap: 12px; align-items: end;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #4a5568; font-size: 13px;">Nh?p mã hàng nh?p ho?c tên</label>
+                    <div style="position: relative;">
+                        <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" 
+                               placeholder="Tìm ki?m phi?u nh?p..." 
+                               style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px 8px 36px; font-size: 14px;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a0aec0; font-size: 12px;"></i>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #4a5568; font-size: 13px;">Nhà cung c?p</label>
+                    <select name="supplierId" class="form-select" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 14px; width: 140px;">
+                        <option value="">T?t c?</option>
+                        @foreach (var supplier in Model.Suppliers)
+                        {
+                            <option value="@supplier.Id" selected="@(Model.SupplierId == supplier.Id)">@supplier.Name</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #4a5568; font-size: 13px;">Tr?ng thái</label>
+                    <select name="statusFilter" class="form-select" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 14px; width: 110px;">
+                        <option value="">T?t c?</option>
+                        <option value="unprocessed" selected="@(Model.StatusFilter == "unprocessed")">Ch?a x? lý</option>
+                        <option value="processed" selected="@(Model.StatusFilter == "processed")">?ã x? lý</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="btn" style="background: #4299e1; color: white; border: none; padding: 8px 12px; border-radius: 6px;">
+                        <i class="fas fa-search" style="font-size: 12px;"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Import Table -->
+    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <div style="background: #f7fafc; padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h5 style="margin: 0; color: #2d3748; font-size: 15px; font-weight: 600;">Danh sách phi?u nh?p hàng (@Model.TotalItems)</h5>
+                <small style="color: #718096; font-size: 12px;">C?p nh?t l?n cu?i: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="table mb-0" style="font-size: 14px;">
+                <thead style="background: #f7fafc;">
+                    <tr>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">ID</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Th?i gian</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Nhà cung c?p</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Tr?ng thái</th>
+                        <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Chi ti?t</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 4px; background: #edf2f7; display: flex; align-items: center; justify-content: center; color: #4a5568; font-weight: bold; font-size: 10px;">
+                                        @item.ImportId
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #2d3748; font-size: 13px;">@item.ImportId</div>
+                                        <div style="font-size: 11px; color: #718096;">Phi?u nh?p hàng</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div style="color: #2d3748; font-weight: 500; font-size: 13px;">
+                                    @item.EntryDate.ToString("dd/MM/yyyy")
+                                </div>
+                                <div style="font-size: 11px; color: #718096;">
+                                    @item.EntryDate.ToString("HH:mm")
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                <div>
+                                    <div style="font-weight: 600; color: #2d3748; font-size: 13px;">@item.SupplierName</div>
+                                    <div style="font-size: 12px; color: #718096; margin-top: 2px;">@item.ProductName</div>
+                                    <div style="font-size: 10px; color: #a0aec0; margin-top: 1px;">
+                                        <span style="background: #edf2f7; padding: 1px 4px; border-radius: 3px; margin-right: 3px;">@item.Color</span>
+                                        <span style="background: #edf2f7; padding: 1px 4px; border-radius: 3px;">@item.Size</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none;">
+                                @if (item.IsProcessed)
+                                {
+                                    <span style="background: #c6f6d5; color: #22543d; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">
+                                        Hoàn thành
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="background: #fed7a1; color: #9c4221; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">
+                                        Ch?a x? lý
+                                    </span>
+                                }
+                            </td>
+                            <td style="padding: 16px; vertical-align: middle; border: none; text-align: center;">
+                                <button type="button" class="btn btn-sm" onclick="showImportDetails(@item.Id)" 
+                                        style="background: #4299e1; color: white; border: none; font-size: 11px; padding: 4px 12px; border-radius: 4px;">
+                                    Chi ti?t
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Items.Any())
+        {
+            <div style="text-align: center; padding: 48px 20px;">
+                <i class="fas fa-truck" style="font-size: 32px; color: #cbd5e0; margin-bottom: 16px;"></i>
+                <p style="color: #718096; font-size: 14px; margin: 0 0 16px 0;">Ch?a có phi?u nh?p hàng nào</p>
+                <button type="button" class="btn" onclick="window.location.href='/Admin/Stock/CreateImport'"
+                        style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px;">
+                    <i class="fas fa-plus" style="margin-right: 4px;"></i> T?o phi?u nh?p ??u tiên
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let currentImportId = null;
+
+    function showImportDetails(importId) {
+        currentImportId = importId;
+        
+        // Show simple alert for now - can be enhanced later
+        alert('Chi ti?t phi?u nh?p: NH' + importId.toString().padStart(3, '0'));
+    }
+
+    function exportImports() {
+        alert('Ch?c n?ng xu?t Excel s? ???c tri?n khai sau');
+    }
+</script>
+}

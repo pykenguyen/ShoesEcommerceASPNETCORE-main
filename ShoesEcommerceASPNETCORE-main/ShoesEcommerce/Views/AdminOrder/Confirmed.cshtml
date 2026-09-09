@@ -1,0 +1,349 @@
+﻿@model List<ShoesEcommerce.Models.ViewModels.OrderViewModel>
+@{
+    ViewData["Title"] = "Đơn hàng Đã Xác nhận";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .order-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    .order-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .order-number {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-confirmed {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    .order-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .info-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+    .info-content {
+        flex: 1;
+    }
+    .info-label {
+        font-size: 11px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    .info-value {
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+    .order-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+    .btn-action {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-view {
+        background: #f3f4f6;
+        color: #374151;
+    }
+    .btn-view:hover {
+        background: #e5e7eb;
+    }
+    .btn-complete {
+        background: #10b981;
+        color: white;
+    }
+    .btn-complete:hover {
+        background: #059669;
+        color: white;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+    .empty-icon {
+        font-size: 48px;
+        color: #d1d5db;
+        margin-bottom: 16px;
+    }
+    .filter-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        border: 1px solid #e5e7eb;
+    }
+</style>
+
+<div style="background: #f9fafb; min-height: 100vh; padding: 24px;">
+    <!-- Page Header -->
+    <div style="background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0; color: #1f2937; font-weight: 700; font-size: 24px;">
+                    <i class="fas fa-check-circle" style="color: #3b82f6; margin-right: 8px;"></i>
+                    Đơn hàng Đã Xác nhận
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">
+                    Danh sách đơn hàng đang được xử lý và chuẩn bị giao hàng
+                </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: #dbeafe; padding: 8px 16px; border-radius: 8px;">
+                    <span style="color: #1e40af; font-size: 13px; font-weight: 600;">
+                        <i class="fas fa-box"></i> @Model.Count đơn hàng
+                    </span>
+                </div>
+                <button onclick="refreshOrders()" class="btn-action btn-view">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+            <div>
+                <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 6px; display: block;">TÌM KIẾM</label>
+                <input type="text" id="searchInput" placeholder="Tìm theo mã đơn, khách hàng..." 
+                       style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 6px; display: block;">TỪ NGÀY</label>
+                <input type="date" id="startDate" 
+                       style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 6px; display: block;">ĐẾN NGÀY</label>
+                <input type="date" id="endDate" 
+                       style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px;">
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <button onclick="filterOrders()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <h5 style="color: #1f2937; font-weight: 600; margin-bottom: 8px;">Không có đơn hàng đã xác nhận</h5>
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">Chưa có đơn hàng nào được xác nhận</p>
+        </div>
+    }
+    else
+    {
+        <div id="ordersList">
+            @foreach (var order in Model)
+            {
+                <div class="order-card" data-order-id="@order.Id" data-customer="@order.CustomerName.ToLower()" data-order-number="@order.OrderNumber.ToLower()">
+                    <!-- Order Header -->
+                    <div class="order-header">
+                        <div>
+                            <span class="order-number">@order.OrderNumber</span>
+                            <span class="status-badge status-confirmed">
+                                <i class="fas fa-check-circle"></i> Đã xác nhận
+                            </span>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 20px; font-weight: 700, color: #dc2626;">
+                                @order.TotalAmount.ToString("N0") đ
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280;">
+                                <i class="far fa-clock"></i> @order.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Info -->
+                    <div class="order-info">
+                        <div class="info-item">
+                            <div class="info-icon" style="background: #dbeafe; color: #1e40af;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Khách hàng</div>
+                                <div class="info-value">@order.CustomerName</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon" style="background: #fce7f3; color: #9f1239;">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Số điện thoại</div>
+                                <div class="info-value">@(order.CustomerPhone ?? "Chưa cập nhật")</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon" style="background: #d1fae5; color: #065f46;">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Số sản phẩm</div>
+                                <div class="info-value">@order.OrderDetails.Sum(od => od.Quantity) sản phẩm</div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon" style="background: #fef3c7; color: #92400e;">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Thanh toán</div>
+                                <div class="info-value">@(order.PaymentMethod ?? "Chưa chọn")</div>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(order.Payment?.TransactionId))
+                        {
+                            <div class="info-item" style="grid-column: 1 / -1;">
+                                <div class="info-icon" style="background: #e0e7ff; color: #3730a3;">
+                                    <i class="fab fa-paypal"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-label">Mã giao dịch (Transaction ID)</div>
+                                    <div class="info-value">
+                                        <code style="background: #f3f4f6; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 13px;">@order.Payment.TransactionId</code>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Order Actions -->
+                    <div class="order-actions">
+                        <a href="/Admin/Order/Details/@order.Id" class="btn-action btn-view">
+                            <i class="fas fa-eye"></i> Xem chi tiết
+                        </a>
+                        <button onclick="completeOrder(@order.Id, '@order.OrderNumber')" class="btn-action btn-complete">
+                            <i class="fas fa-check-double"></i> Hoàn thành
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function refreshOrders() {
+            location.reload();
+        }
+
+        function filterOrders() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const orders = document.querySelectorAll('.order-card');
+            
+            orders.forEach(order => {
+                const customer = order.getAttribute('data-customer');
+                const orderNumber = order.getAttribute('data-order-number');
+                
+                const matchesSearch = !searchTerm || customer.includes(searchTerm) || orderNumber.includes(searchTerm);
+                
+                if (matchesSearch) {
+                    order.style.display = 'block';
+                } else {
+                    order.style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('searchInput')?.addEventListener('input', filterOrders);
+
+        function completeOrder(orderId, orderNumber) {
+            if (confirm(`Xác nhận đơn hàng ${orderNumber} đã giao hàng và thanh toán thành công?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/Admin/Order/CompleteOrder';
+                
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                if (token) {
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '__RequestVerificationToken';
+                    tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                }
+                
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                idInput.value = orderId;
+                form.appendChild(idInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+}
+
+@Html.AntiForgeryToken()

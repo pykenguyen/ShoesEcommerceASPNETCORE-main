@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Dang xuat";
+}
+
+<!-- Auto-submit logout form -->
+<div style="display: flex; justify-content: center; align-items: center; min-height: 50vh;">
+    <div style="text-align: center; padding: 40px;">
+        <div style="margin-bottom: 20px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #6b7280;"></i>
+        </div>
+        <h2 style="color: #1a1a1a; margin-bottom: 10px;">Dang dang xuat...</h2>
+        <p style="color: #6b7280;">Vui long doi trong giay lat.</p>
+        
+        <noscript>
+            <form asp-controller="Account" asp-action="Logout" method="post" style="margin-top: 20px;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">Click de dang xuat</button>
+            </form>
+        </noscript>
+    </div>
+</div>
+
+<form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
+</form>
+
+<script>
+    // Auto-submit the form when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('logoutForm');
+        if (form) {
+            form.submit();
+        }
+    });
+</script>

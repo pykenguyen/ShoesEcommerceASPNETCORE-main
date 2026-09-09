@@ -1,0 +1,561 @@
+@model ShoesEcommerce.ViewModels.Account.LoginViewModel
+@inject IConfiguration Configuration
+@{
+    ViewData["Title"] = "Đăng nhập tài khoản";
+    ViewData["MetaDescription"] = "Đăng nhập vào SPORTS để mua giày thể thao, giày đá bóng, futsal chính hãng với nhiều ưu đãi hấp dẫn.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Check if Google OAuth is properly configured
+    var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") 
+                         ?? Configuration["Authentication:Google:ClientId"];
+    var isGoogleConfigured = !string.IsNullOrEmpty(googleClientId) && googleClientId != "not-configured";
+}
+
+<div class="login-page">
+    <div class="login-container">
+        <!-- Left Side - Branding -->
+        <div class="login-brand">
+            <div class="brand-content">
+                <div class="brand-logo">
+                    <span class="logo-text">sports</span>
+                </div>
+                <p class="tagline">Chào mừng bạn quay trở lại</p>
+                
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Theo dõi đơn hàng dễ dàng</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Lưu sản phẩm yêu thích</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Nhận ưu đãi độc quyền</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Thanh toán nhanh chóng</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Form -->
+        <div class="login-form-wrapper">
+            <div class="form-header">
+                <h1>Đăng nhập</h1>
+                <p>Nhập thông tin tài khoản của bạn</p>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>@TempData["SuccessMessage"]</span>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>@TempData["ErrorMessage"]</span>
+                </div>
+            }
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors).Take(3))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <form asp-action="Login" method="post" id="loginForm" novalidate>
+                @Html.AntiForgeryToken()
+
+                @if (!string.IsNullOrEmpty(Model?.ReturnUrl))
+                {
+                    <input asp-for="ReturnUrl" type="hidden" />
+                }
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label asp-for="Email">Email</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input asp-for="Email" class="form-input" placeholder="example@@email.com" type="email" autocomplete="email" />
+                    </div>
+                    <span asp-validation-for="Email" class="error-text"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label asp-for="Password">Mật khẩu</label>
+                    <div class="input-with-icon password-input">
+                        <i class="fas fa-lock"></i>
+                        <input asp-for="Password" class="form-input" placeholder="Nhập mật khẩu" type="password" id="passwordInput" autocomplete="current-password" />
+                        <button type="button" class="toggle-password" id="togglePasswordBtn">
+                            <i class="fas fa-eye eye-open"></i>
+                            <i class="fas fa-eye-slash eye-closed" style="display:none"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="error-text"></span>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input asp-for="RememberMe" type="checkbox" class="checkbox-input" />
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-text">Ghi nhớ đăng nhập</span>
+                    </label>
+                    <a href="#" class="forgot-link">Quên mật khẩu?</a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-text">Đăng nhập</span>
+                    <span class="btn-loading" style="display:none">
+                        <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
+                    </span>
+                </button>
+
+                @if (isGoogleConfigured)
+                {
+                    <!-- Divider -->
+                    <div class="divider">
+                        <span>hoặc</span>
+                    </div>
+
+                    <!-- Social Login -->
+                    <div class="social-login">
+                        <a href="/Account/GoogleLogin?returnUrl=@(Model?.ReturnUrl ?? "/")" class="btn-social btn-google">
+                            <i class="fab fa-google"></i>
+                            Đăng nhập với Google
+                        </a>
+                    </div>
+                }
+
+                <!-- Register Link -->
+                <div class="register-link">
+                    Chưa có tài khoản? <a asp-controller="Account" asp-action="Register" asp-route-returnUrl="@Model?.ReturnUrl">Đăng ký ngay</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --sports-black: #1a1a1a;
+        --sports-dark: #2d2d2d;
+        --sports-accent: #e63946;
+        --sports-white: #ffffff;
+        --sports-gray-100: #f8f9fa;
+        --sports-gray-200: #e9ecef;
+        --sports-gray-500: #6c757d;
+        --sports-gray-700: #495057;
+        --sports-success: #28a745;
+        --sports-error: #dc3545;
+    }
+
+    .login-page {
+        min-height: 100vh;
+        background: var(--sports-gray-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .login-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        max-width: 900px;
+        width: 100%;
+        background: var(--sports-white);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    /* Brand Side */
+    .login-brand {
+        background: var(--sports-black);
+        color: var(--sports-white);
+        padding: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .brand-content { text-align: center; }
+
+    .brand-logo {
+        margin-bottom: 1.5rem;
+    }
+
+    .brand-logo .logo-text {
+        font-family: 'Arial Black', Arial, sans-serif;
+        font-size: 48px;
+        font-weight: 900;
+        color: var(--sports-white);
+        text-transform: lowercase;
+    }
+
+    .tagline {
+        font-size: 1.1rem;
+        margin-bottom: 2.5rem;
+        color: rgba(255,255,255,0.8);
+    }
+
+    .features { text-align: left; }
+
+    .feature {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        color: rgba(255,255,255,0.9);
+    }
+
+    .feature i { color: var(--sports-accent); }
+
+    /* Form Side */
+    .login-form-wrapper { padding: 3rem; }
+    
+    .form-header { margin-bottom: 2rem; }
+
+    .form-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--sports-black);
+    }
+
+    .form-header p { 
+        color: var(--sports-gray-500); 
+        margin: 0; 
+    }
+
+    /* Alert */
+    .alert {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        align-items: flex-start;
+    }
+
+    .alert-error {
+        background: #fff5f5;
+        color: var(--sports-error);
+        border: 1px solid #fed7d7;
+    }
+
+    .alert-success {
+        background: #f0fff4;
+        color: var(--sports-success);
+        border: 1px solid #c6f6d5;
+    }
+
+    .alert i { margin-top: 2px; }
+
+    /* Form */
+    .form-group { margin-bottom: 1.5rem; }
+
+    .form-group > label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--sports-black);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--sports-gray-200);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        background: var(--sports-white);
+        color: var(--sports-black);
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--sports-black);
+        box-shadow: 0 0 0 3px rgba(26,26,26,0.1);
+    }
+
+    .input-with-icon { position: relative; }
+
+    .input-with-icon > i:first-of-type {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--sports-gray-500);
+        z-index: 1;
+    }
+
+    .input-with-icon .form-input { padding-left: 2.75rem; }
+    .password-input .form-input { padding-right: 3rem; }
+
+    .toggle-password {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--sports-gray-500);
+        padding: 0.5rem;
+        z-index: 2;
+    }
+
+    .toggle-password:hover { color: var(--sports-black); }
+
+    .error-text {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--sports-error);
+        margin-top: 0.25rem;
+    }
+
+    /* Form Options */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .checkbox-input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .checkbox-custom {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--sports-gray-200);
+        border-radius: 4px;
+        position: relative;
+        transition: all 0.2s;
+        background: var(--sports-white);
+    }
+
+    .checkbox-label:hover .checkbox-custom {
+        border-color: var(--sports-black);
+    }
+
+    .checkbox-input:checked + .checkbox-custom {
+        background: var(--sports-black);
+        border-color: var(--sports-black);
+    }
+
+    .checkbox-input:checked + .checkbox-custom::after {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 1px;
+        width: 6px;
+        height: 10px;
+        border: solid var(--sports-white);
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .checkbox-text {
+        font-size: 0.875rem;
+        color: var(--sports-gray-500);
+    }
+
+    .forgot-link {
+        font-size: 0.875rem;
+        color: var(--sports-accent);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .forgot-link:hover { text-decoration: underline; }
+
+    /* Submit Button */
+    .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: var(--sports-black);
+        color: var(--sports-white);
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-submit:hover {
+        background: var(--sports-accent);
+        transform: translateY(-2px);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Divider */
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+        color: var(--sports-gray-500);
+        font-size: 0.875rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--sports-gray-200);
+    }
+
+    .divider span { padding: 0 1rem; }
+
+    /* Social Login */
+    .social-login { margin-bottom: 1.5rem; }
+
+    .btn-social {
+        width: 100%;
+        padding: 0.875rem;
+        background: var(--sports-white);
+        border: 2px solid var(--sports-gray-200);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        color: var(--sports-black);
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-social:hover {
+        border-color: var(--sports-black);
+        background: var(--sports-gray-100);
+    }
+
+    .btn-social i { font-size: 1.2rem; }
+
+    /* Register Link */
+    .register-link {
+        text-align: center;
+        color: var(--sports-gray-500);
+        font-size: 0.9rem;
+    }
+
+    .register-link a {
+        color: var(--sports-accent);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .register-link a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .login-container {
+            grid-template-columns: 1fr;
+            max-width: 450px;
+        }
+
+        .login-brand { display: none; }
+        .login-form-wrapper { padding: 2rem; }
+    }
+
+    @@media (max-width: 480px) {
+        .login-page { padding: 1rem; }
+        .login-form-wrapper { padding: 1.5rem; }
+        .form-options { 
+            flex-direction: column; 
+            gap: 1rem; 
+            align-items: flex-start; 
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var toggleBtn = document.getElementById('togglePasswordBtn');
+    var passwordInput = document.getElementById('passwordInput');
+    
+    if (toggleBtn && passwordInput) {
+        toggleBtn.addEventListener('click', function() {
+            var eyeOpen = this.querySelector('.eye-open');
+            var eyeClosed = this.querySelector('.eye-closed');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeOpen.style.display = 'none';
+                eyeClosed.style.display = 'inline';
+            } else {
+                passwordInput.type = 'password';
+                eyeOpen.style.display = 'inline';
+                eyeClosed.style.display = 'none';
+            }
+        });
+    }
+
+    var loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function() {
+            var btn = document.getElementById('submitBtn');
+            var btnText = btn.querySelector('.btn-text');
+            var btnLoading = btn.querySelector('.btn-loading');
+
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'flex';
+
+            setTimeout(function() {
+                btn.disabled = false;
+                btnText.style.display = 'block';
+                btnLoading.style.display = 'none';
+            }, 10000);
+        });
+    }
+});
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,535 @@
+@model ShoesEcommerce.Models.Stocks.Stock
+
+@{
+    ViewData["Title"] = "Chi ti?t t?n kho";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var history = ViewBag.History as List<ShoesEcommerce.Models.Stocks.StockTransaction> ?? new List<ShoesEcommerce.Models.Stocks.StockTransaction>();
+}
+
+<style>
+    /* Ultra Minimalist Reset */
+    .stock-minimal * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    /* Main Container - Pure White */
+    .stock-minimal {
+        background: #ffffff;
+        min-height: 100vh;
+        padding: 48px 64px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #1a1a1a;
+    }
+    
+    /* Minimalist Header */
+    .minimal-header {
+        margin-bottom: 48px;
+        border-bottom: 1px solid #f5f5f5;
+        padding-bottom: 32px;
+    }
+    
+    .minimal-title {
+        font-size: 32px;
+        font-weight: 300;
+        letter-spacing: -0.03em;
+        color: #000;
+        margin-bottom: 12px;
+    }
+    
+    .minimal-subtitle {
+        font-size: 16px;
+        color: #999;
+        font-weight: 400;
+    }
+    
+    .minimal-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 24px;
+    }
+    
+    /* Clean Buttons */
+    .btn-minimal {
+        padding: 12px 32px;
+        border: 1px solid #e5e5e5;
+        background: #fff;
+        color: #1a1a1a;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    
+    .btn-minimal:hover {
+        background: #fafafa;
+        border-color: #d5d5d5;
+    }
+    
+    .btn-primary-minimal {
+        background: #000;
+        border-color: #000;
+        color: #fff;
+    }
+    
+    .btn-primary-minimal:hover {
+        background: #1a1a1a;
+    }
+    
+    /* Layout Grid */
+    .content-layout {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 48px;
+    }
+    
+    /* Stats - Minimalist Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-bottom: 48px;
+    }
+    
+    .stat-minimal {
+        padding: 32px;
+        border: 1px solid #f5f5f5;
+        background: #fff;
+        transition: border-color 0.2s;
+    }
+    
+    .stat-minimal:hover {
+        border-color: #e5e5e5;
+    }
+    
+    .stat-label-minimal {
+        font-size: 11px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 16px;
+    }
+    
+    .stat-value-minimal {
+        font-size: 48px;
+        font-weight: 200;
+        color: #000;
+        line-height: 1;
+    }
+    
+    /* Content Sections */
+    .section-minimal {
+        margin-bottom: 48px;
+    }
+    
+    .section-title-minimal {
+        font-size: 14px;
+        font-weight: 600;
+        color: #000;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    /* Status Grid */
+    .status-minimal-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+    
+    .status-minimal-item {
+        padding: 24px;
+        border: 1px solid #f5f5f5;
+    }
+    
+    .status-minimal-label {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 12px;
+        font-weight: 500;
+    }
+    
+    .status-minimal-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #f5f5f5;
+        color: #1a1a1a;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+    }
+    
+    .status-success { background: #000; color: #fff; }
+    .status-warning { background: #f5f5f5; color: #666; }
+    .status-danger { background: #000; color: #fff; }
+    
+    /* Minimalist Table */
+    .table-minimal {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #f5f5f5;
+    }
+    
+    .table-minimal thead th {
+        padding: 16px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        border-bottom: 1px solid #f5f5f5;
+        background: #fafafa;
+    }
+    
+    .table-minimal tbody td {
+        padding: 20px 16px;
+        font-size: 14px;
+        border-bottom: 1px solid #f5f5f5;
+        color: #1a1a1a;
+    }
+    
+    .table-minimal tbody tr:hover {
+        background: #fafafa;
+    }
+    
+    .table-minimal tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .badge-minimal {
+        display: inline-block;
+        padding: 4px 12px;
+        background: #f5f5f5;
+        color: #666;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+    }
+    
+    /* Product Sidebar */
+    .sidebar-minimal {
+        position: sticky;
+        top: 32px;
+    }
+    
+    .product-minimal {
+        border: 1px solid #f5f5f5;
+        padding: 32px;
+        margin-bottom: 32px;
+    }
+    
+    .product-image-minimal {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        margin-bottom: 24px;
+        border: 1px solid #f5f5f5;
+    }
+    
+    .product-title-minimal {
+        font-size: 18px;
+        font-weight: 400;
+        color: #000;
+        margin-bottom: 16px;
+    }
+    
+    .product-tags-minimal {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+    
+    .tag-minimal {
+        padding: 6px 12px;
+        background: #f5f5f5;
+        color: #666;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .product-info-minimal {
+        border-top: 1px solid #f5f5f5;
+        padding-top: 24px;
+    }
+    
+    .info-row-minimal {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        font-size: 14px;
+    }
+    
+    .info-label-minimal {
+        color: #999;
+    }
+    
+    .info-value-minimal {
+        font-weight: 500;
+        color: #000;
+    }
+    
+    /* Actions Sidebar */
+    .actions-minimal {
+        border: 1px solid #f5f5f5;
+        padding: 32px;
+    }
+    
+    .actions-minimal .section-title-minimal {
+        border: none;
+        padding-bottom: 0;
+    }
+    
+    .action-link-minimal {
+        display: block;
+        padding: 16px;
+        border: 1px solid #e5e5e5;
+        background: #fff;
+        color: #1a1a1a;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: center;
+        margin-bottom: 12px;
+        transition: all 0.2s;
+    }
+    
+    .action-link-minimal:hover {
+        background: #fafafa;
+        border-color: #d5d5d5;
+    }
+    
+    .action-link-minimal.primary {
+        background: #000;
+        border-color: #000;
+        color: #fff;
+    }
+    
+    .action-link-minimal.primary:hover {
+        background: #1a1a1a;
+    }
+    
+    /* Empty State */
+    .empty-minimal {
+        text-align: center;
+        padding: 80px 32px;
+        color: #ccc;
+    }
+    
+    .empty-minimal i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        display: block;
+    }
+    
+    .empty-minimal p {
+        font-size: 14px;
+        color: #999;
+    }
+    
+    /* Responsive */
+    @@media (max-width: 1200px) {
+        .content-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stock-minimal {
+            padding: 32px 24px;
+        }
+    }
+</style>
+
+<div class="stock-minimal">
+    <!-- Header -->
+    <div class="minimal-header">
+        <h1 class="minimal-title">Chi ti?t t?n kho</h1>
+        <p class="minimal-subtitle">@Model.ProductVariant.Product.Name — @Model.ProductVariant.Color / @Model.ProductVariant.Size</p>
+        
+        <div class="minimal-actions">
+            <a href="/Admin/Stock/PerformAudit?productVariantId=@Model.ProductVariantId" class="btn-minimal btn-primary-minimal">
+                Ki?m kho
+            </a>
+            <a href="/Admin/Stock/Inventory" class="btn-minimal">
+                Quay l?i
+            </a>
+        </div>
+    </div>
+
+    <div class="content-layout">
+        <!-- Main Content -->
+        <div>
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-minimal">
+                    <div class="stat-label-minimal">Có s?n</div>
+                    <div class="stat-value-minimal">@Model.AvailableQuantity</div>
+                </div>
+                <div class="stat-minimal">
+                    <div class="stat-label-minimal">?ã ??t</div>
+                    <div class="stat-value-minimal">@Model.ReservedQuantity</div>
+                </div>
+                <div class="stat-minimal">
+                    <div class="stat-label-minimal">T?ng c?ng</div>
+                    <div class="stat-value-minimal">@Model.TotalQuantity</div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="section-minimal">
+                <h2 class="section-title-minimal">Tr?ng thái</h2>
+                
+                <div class="status-minimal-grid">
+                    <div class="status-minimal-item">
+                        <div class="status-minimal-label">Tr?ng thái hi?n t?i</div>
+                        @if (Model.IsOutOfStock)
+                        {
+                            <span class="status-minimal-badge status-danger">H?T HÀNG</span>
+                        }
+                        else if (Model.IsLowStock)
+                        {
+                            <span class="status-minimal-badge status-warning">S?P H?T</span>
+                        }
+                        else
+                        {
+                            <span class="status-minimal-badge status-success">CÒN HÀNG</span>
+                        }
+                    </div>
+                    <div class="status-minimal-item">
+                        <div class="status-minimal-label">C?p nh?t l?n cu?i</div>
+                        <div style="font-size: 16px; font-weight: 500; margin-bottom: 4px;">
+                            @Model.LastUpdated.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                        <div style="font-size: 13px; color: #999;">
+                            @Model.LastUpdatedBy
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="section-minimal">
+                <h2 class="section-title-minimal">L?ch s? v?n chuy?n</h2>
+
+                @if (!history.Any())
+                {
+                    <div class="empty-minimal">
+                        <i class="fas fa-inbox"></i>
+                        <p>Ch?a có l?ch s? v?n chuy?n</p>
+                    </div>
+                }
+                else
+                {
+                    <div style="overflow-x: auto;">
+                        <table class="table-minimal">
+                            <thead>
+                                <tr>
+                                    <th>Ngày gi?</th>
+                                    <th>Lo?i</th>
+                                    <th style="text-align: center;">Thay ??i</th>
+                                    <th style="text-align: center;">Tr??c</th>
+                                    <th style="text-align: center;">Sau</th>
+                                    <th>Lý do</th>
+                                    <th>Ng??i th?c hi?n</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var transaction in history)
+                                {
+                                    var typeName = transaction.Type switch
+                                    {
+                                        ShoesEcommerce.Models.Stocks.StockTransactionType.StockIn => "NH?P",
+                                        ShoesEcommerce.Models.Stocks.StockTransactionType.StockOut => "XU?T",
+                                        ShoesEcommerce.Models.Stocks.StockTransactionType.Adjustment => "?I?U CH?NH",
+                                        _ => "KHÁC"
+                                    };
+
+                                    <tr>
+                                        <td style="color: #999;">
+                                            @transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")
+                                        </td>
+                                        <td>
+                                            <span class="badge-minimal">@typeName</span>
+                                        </td>
+                                        <td style="text-align: center; font-weight: 600;">
+                                            @(transaction.QuantityChange >= 0 ? "+" : "")@transaction.QuantityChange
+                                        </td>
+                                        <td style="text-align: center; color: #999;">
+                                            @transaction.AvailableQuantityBefore
+                                        </td>
+                                        <td style="text-align: center; font-weight: 600;">
+                                            @transaction.AvailableQuantityAfter
+                                        </td>
+                                        <td style="color: #666;">
+                                            @transaction.Reason
+                                        </td>
+                                        <td>
+                                            @transaction.CreatedBy
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar-minimal">
+            <!-- Product -->
+            <div class="product-minimal">
+                <img src="@Model.ProductVariant.ImageUrl" alt="@Model.ProductVariant.Product.Name" class="product-image-minimal">
+                
+                <h3 class="product-title-minimal">@Model.ProductVariant.Product.Name</h3>
+                
+                <div class="product-tags-minimal">
+                    <span class="tag-minimal">@Model.ProductVariant.Color</span>
+                    <span class="tag-minimal">@Model.ProductVariant.Size</span>
+                </div>
+                
+                <div class="product-info-minimal">
+                    <div class="info-row-minimal">
+                        <span class="info-label-minimal">Giá bán</span>
+                        <span class="info-value-minimal">@Model.ProductVariant.Price.ToString("N0") ?</span>
+                    </div>
+                    <div class="info-row-minimal">
+                        <span class="info-label-minimal">Danh m?c</span>
+                        <span class="info-value-minimal">@Model.ProductVariant.Product.Category.Name</span>
+                    </div>
+                    <div class="info-row-minimal">
+                        <span class="info-label-minimal">Th??ng hi?u</span>
+                        <span class="info-value-minimal">@Model.ProductVariant.Product.Brand.Name</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-minimal">
+                <h2 class="section-title-minimal">Thao tác nhanh</h2>
+                
+                <a href="/Admin/Stock/PerformAudit?productVariantId=@Model.ProductVariantId" class="action-link-minimal primary">
+                    Ki?m kho
+                </a>
+                <a href="/Admin/Stock/AuditHistory?productVariantId=@Model.ProductVariantId" class="action-link-minimal">
+                    L?ch s? ki?m
+                </a>
+                <a href="/Admin/Product/Details/@Model.ProductVariant.ProductId" class="action-link-minimal">
+                    Xem s?n ph?m
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

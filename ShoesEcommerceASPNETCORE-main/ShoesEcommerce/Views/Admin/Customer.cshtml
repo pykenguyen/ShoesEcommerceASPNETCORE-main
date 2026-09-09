@@ -1,0 +1,801 @@
+@using Microsoft.EntityFrameworkCore
+@{
+    ViewData["Title"] = "Qu?n lý Khách hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@* Inject DbContext to get customers *@
+@inject ShoesEcommerce.Data.AppDbContext DbContext
+
+@{
+    var customers = await DbContext.Customers
+        .Include(c => c.Orders)
+        .Include(c => c.ShippingAddresses)
+        .OrderByDescending(c => c.Id)
+        .ToListAsync();
+}
+
+<!-- Minimalist Customer Management -->
+<div class="minimalist-customer-management">
+    <!-- Clean Header -->
+    <div class="page-header-minimal">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="page-title-minimal">Qu?n lý Khách hàng</h1>
+                <p class="page-subtitle-minimal">Danh sách và thông tin khách hàng trong h? th?ng</p>
+            </div>
+            <div class="header-actions">
+                <button onclick="exportCustomers()" class="btn-minimal-outline">
+                    <i class="fas fa-download me-2"></i>
+                    Xu?t Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@customers.Count()</div>
+                <div class="stat-label">T?ng khách hàng</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@customers.Count(c => c.Orders.Any())</div>
+                <div class="stat-label">?ã mua hàng</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-user-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@customers.Count(c => !c.Orders.Any())</div>
+                <div class="stat-label">Ch?a mua hàng</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@customers.Sum(c => c.Orders.Count())</div>
+                <div class="stat-label">T?ng ??n hàng</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Tìm ki?m theo tên, email ho?c s? ?i?n tho?i..." onkeyup="filterCustomers()">
+        </div>
+        <div class="filter-actions">
+            <button onclick="filterByStatus('all')" class="filter-btn active" data-filter="all">
+                T?t c? (@customers.Count())
+            </button>
+            <button onclick="filterByStatus('active')" class="filter-btn" data-filter="active">
+                ?ã mua (@customers.Count(c => c.Orders.Any()))
+            </button>
+            <button onclick="filterByStatus('inactive')" class="filter-btn" data-filter="inactive">
+                Ch?a mua (@customers.Count(c => !c.Orders.Any()))
+            </button>
+        </div>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="table-container">
+        @if (customers.Any())
+        {
+            <table class="minimalist-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Khách hàng</th>
+                        <th>Liên h?</th>
+                        <th>??a ch?</th>
+                        <th class="text-center">??n hàng</th>
+                        <th class="text-center">Tr?ng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="customerTableBody">
+                    @foreach (var customer in customers)
+                    {
+                        <tr class="customer-row" data-status="@(customer.Orders.Any() ? "active" : "inactive")">
+                            <td>
+                                <div class="customer-id">#@customer.Id</div>
+                            </td>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">
+                                        @(customer.FirstName?.Substring(0, 1).ToUpper())
+                                    </div>
+                                    <div class="customer-details">
+                                        <div class="customer-name">@customer.FirstName @customer.LastName</div>
+                                        <div class="customer-joined">Tham gia: @customer.Id</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="contact-info">
+                                    @if (!string.IsNullOrEmpty(customer.Email))
+                                    {
+                                        <div class="contact-item">
+                                            <i class="fas fa-envelope"></i>
+                                            <a href="mailto:@customer.Email" class="contact-link">@customer.Email</a>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(customer.PhoneNumber))
+                                    {
+                                        <div class="contact-item">
+                                            <i class="fas fa-phone"></i>
+                                            <a href="tel:@customer.PhoneNumber" class="contact-link">@customer.PhoneNumber</a>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="address-info">
+                                    @if (customer.ShippingAddresses.Any())
+                                    {
+                                        var mainAddress = customer.ShippingAddresses.FirstOrDefault();
+                                        <div class="address-count">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            @customer.ShippingAddresses.Count() ??a ch?
+                                        </div>
+                                        @if (mainAddress != null)
+                                        {
+                                            <div class="address-preview">@mainAddress.City</div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted-minimal">Ch?a có ??a ch?</span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="order-count">
+                                    @if (customer.Orders.Any())
+                                    {
+                                        <div class="count-badge success">
+                                            @customer.Orders.Count()
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="count-badge muted">0</div>
+                                    }
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                @if (customer.Orders.Any())
+                                {
+                                    <span class="status-badge active">
+                                        <i class="fas fa-check-circle"></i>
+                                        Ho?t ??ng
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge inactive">
+                                        <i class="fas fa-clock"></i>
+                                        Ch?a mua
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="action-buttons">
+                                    <button onclick="viewCustomer(@customer.Id)" class="btn-action" title="Xem chi ti?t">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <a href="/Admin/Order?customerId=@customer.Id" class="btn-action" title="Xem ??n hàng">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Empty State (hidden by default) -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-search fa-3x"></i>
+                <h3>Không tìm th?y khách hàng</h3>
+                <p>Th? thay ??i b? l?c ho?c t? khóa tìm ki?m</p>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-users fa-3x"></i>
+                <h3>Ch?a có khách hàng nào</h3>
+                <p>Khách hàng s? xu?t hi?n ? ?ây khi h? ??ng ký tài kho?n</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* ===== COLOR PALETTE ===== */
+        :root {
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #eeeeee;
+            --gray-300: #e0e0e0;
+            --gray-400: #bdbdbd;
+            --gray-500: #9e9e9e;
+            --gray-600: #757575;
+            --gray-700: #616161;
+            --gray-800: #424242;
+            --gray-900: #212121;
+            
+            --success: #27ae60;
+            --warning: #f39c12;
+            --info: #3498db;
+            --danger: #e74c3c;
+            
+            --border-radius: 8px;
+            --transition: all 0.2s ease;
+        }
+
+        /* ===== CONTAINER ===== */
+        .minimalist-customer-management {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header-minimal {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .page-title-minimal {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0 0 0.5rem 0;
+            letter-spacing: -0.02em;
+        }
+
+        .page-subtitle-minimal {
+            font-size: 0.95rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-minimal-outline {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.65rem 1.25rem;
+            background: var(--white);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            color: var(--gray-700);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .btn-minimal-outline:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+            color: var(--gray-900);
+        }
+
+        /* ===== STATS GRID ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--gray-300);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.success {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+
+        .stat-icon.warning {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-icon.info {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--info);
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        /* ===== FILTER SECTION ===== */
+        .filter-section {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--gray-900);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: var(--white);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            color: var(--gray-700);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover {
+            background: var(--gray-50);
+        }
+
+        .filter-btn.active {
+            background: var(--gray-900);
+            border-color: var(--gray-900);
+            color: var(--white);
+        }
+
+        /* ===== TABLE ===== */
+        .table-container {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .minimalist-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .minimalist-table thead {
+            background: var(--gray-50);
+        }
+
+        .minimalist-table th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .minimalist-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 0.9rem;
+            color: var(--gray-800);
+        }
+
+        .minimalist-table tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        /* ===== CUSTOMER INFO ===== */
+        .customer-id {
+            font-family: monospace;
+            color: var(--gray-600);
+            font-size: 0.85rem;
+        }
+
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .customer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gray-900);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .customer-details {
+            flex: 1;
+        }
+
+        .customer-name {
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 0.125rem;
+        }
+
+        .customer-joined {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        /* ===== CONTACT INFO ===== */
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .contact-item i {
+            color: var(--gray-500);
+            font-size: 0.8rem;
+            width: 16px;
+        }
+
+        .contact-link {
+            color: var(--gray-700);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .contact-link:hover {
+            color: var(--gray-900);
+            text-decoration: underline;
+        }
+
+        /* ===== ADDRESS INFO ===== */
+        .address-info {
+            font-size: 0.875rem;
+        }
+
+        .address-count {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-700);
+            margin-bottom: 0.25rem;
+        }
+
+        .address-count i {
+            color: var(--gray-500);
+            font-size: 0.8rem;
+        }
+
+        .address-preview {
+            color: var(--gray-600);
+            font-size: 0.8rem;
+        }
+
+        .text-muted-minimal {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        /* ===== BADGES ===== */
+        .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 0.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .count-badge.success {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+
+        .count-badge.muted {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--border-radius);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.inactive {
+            background: var(--gray-100);
+            color: var(--gray-600);
+        }
+
+        .status-badge i {
+            font-size: 0.75rem;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            background: var(--white);
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            background: var(--gray-900);
+            border-color: var(--gray-900);
+            color: var(--white);
+        }
+
+        .btn-action i {
+            font-size: 0.875rem;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .empty-state i {
+            color: var(--gray-300);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @@media (max-width: 768px) {
+            .minimalist-customer-management {
+                padding: 1rem 0.5rem;
+            }
+
+            .page-header-minimal .d-flex {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .minimalist-table {
+                min-width: 800px;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .filter-btn {
+                width: 100%;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Filter customers by status
+        function filterByStatus(status) {
+            const rows = document.querySelectorAll('.customer-row');
+            const buttons = document.querySelectorAll('.filter-btn');
+            let visibleCount = 0;
+
+            // Update active button
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === status) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Filter rows
+            rows.forEach(row => {
+                if (status === 'all' || row.dataset.status === status) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Show/hide empty state
+            const emptyState = document.getElementById('emptyState');
+            const tableBody = document.getElementById('customerTableBody');
+            if (visibleCount === 0) {
+                emptyState.style.display = 'block';
+                tableBody.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                tableBody.style.display = '';
+            }
+        }
+
+        // Search customers
+        function filterCustomers() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const rows = document.querySelectorAll('.customer-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Show/hide empty state
+            const emptyState = document.getElementById('emptyState');
+            const tableBody = document.getElementById('customerTableBody');
+            if (visibleCount === 0) {
+                emptyState.style.display = 'block';
+                tableBody.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                tableBody.style.display = '';
+            }
+        }
+
+        // View customer details
+        function viewCustomer(customerId) {
+            alert(`Chi ti?t khách hàng #${customerId} s? ???c phát tri?n trong t??ng lai`);
+            // TODO: Navigate to customer details page
+            // window.location.href = `/Admin/Customer/Details/${customerId}`;
+        }
+
+        // Export to Excel
+        function exportCustomers() {
+            alert('Tính n?ng xu?t Excel s? ???c phát tri?n trong t??ng lai');
+            // TODO: Implement Excel export
+        }
+    </script>
+}

@@ -1,0 +1,74 @@
+# Render Blueprint for ShoesEcommerce ASP.NET Core Application
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Web Service - Main ASP.NET Core Application
+  - type: web
+    name: shoes-ecommerce
+    runtime: docker
+    
+    # Docker configuration
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    
+    # Environment settings
+    envVars:
+      # ASP.NET Core environment
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      
+      # Application URL (Render provides this automatically)
+      - key: ASPNETCORE_URLS
+        value: http://+:10000
+      
+      # Database connection - Set in Render dashboard
+      - key: DATABASE_CONNECTION_STRING
+        sync: false  # Set manually in Render dashboard for security
+      
+      # PayPal Configuration (set in Render dashboard)
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_MODE
+        value: Sandbox  # Change to "Live" for production
+      
+      # VNPay Configuration (set in Render dashboard)
+      - key: VNPAY_TMN_CODE
+        sync: false
+      - key: VNPAY_HASH_SECRET
+        sync: false
+      - key: VNPAY_URL
+        value: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+      - key: VNPAY_RETURN_URL
+        sync: false
+      
+      # Logging
+      - key: Logging__LogLevel__Default
+        value: Information
+      - key: Logging__LogLevel__Microsoft.AspNetCore
+        value: Warning
+      - key: Logging__LogLevel__Microsoft.EntityFrameworkCore
+        value: Warning
+    
+    # Health check endpoint
+    healthCheckPath: /health
+    
+    # Build and deploy settings
+    buildCommand: ""  # Handled by Dockerfile
+    startCommand: ""  # Handled by Dockerfile
+    
+    # Scaling (Free tier)
+    plan: free
+    
+    # Region
+    region: singapore  # Choose: oregon, frankfurt, singapore, ohio
+
+# Optional: Add a PostgreSQL database on Render
+# Uncomment if you want Render-managed PostgreSQL instead of Supabase
+# databases:
+#   - name: shoes-ecommerce-db
+#     databaseName: shoesdb
+#     user: shoesadmin
+#     plan: free
+#     region: singapore

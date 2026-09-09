@@ -1,0 +1,746 @@
+﻿@model IEnumerable<ShoesEcommerce.ViewModels.Product.ProductVariantInfo>
+@{
+    ViewData["Title"] = "Phiên b?n S?n ph?m";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var product = ViewBag.Product as ShoesEcommerce.Models.Products.Product;
+}
+
+<div class="product-variants">
+    <!-- Page Header -->
+    <div class="page-header bg-gradient-info text-white rounded-3 mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title mb-2">
+                    <i class="fas fa-palette me-2"></i>
+                    Phiên b?n S?n ph?m
+                </h2>
+                <p class="page-subtitle mb-0 opacity-75">
+                    Qu?n lý t?t c? phiên b?n c?a s?n ph?m: <strong>@product?.Name</strong>
+                </p>
+            </div>
+            <div class="page-actions">
+                <div class="btn-group" role="group">
+                    <a asp-action="Details" asp-route-id="@product?.Id" class="btn btn-light btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Quay l?i
+                    </a>
+                    <a asp-action="CreateVariant" asp-route-productId="@product?.Id" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm phiên b?n
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle fa-2x me-3"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">@TempData["SuccessMessage"]</h6>
+                    @if (TempData["SuccessDetails"] != null)
+                    {
+                        <small class="mb-0">@TempData["SuccessDetails"]</small>
+                    }
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Success Toast Notification Area -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <!-- Toasts will be dynamically added here -->
+    </div>
+
+    <!-- Product Info Banner -->
+    @if (product != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="product-summary">
+                                <h5 class="mb-1">
+                                    <i class="fas fa-cube text-primary me-2"></i>
+                                    @product.Name
+                                </h5>
+                                <div class="d-flex gap-3 text-muted">
+                                    <span>
+                                        <i class="fas fa-tags me-1"></i>
+                                        <strong>Danh m?c:</strong> @product.Category?.Name
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-award me-1"></i>
+                                        <strong>Th??ng hi?u:</strong> @product.Brand?.Name
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-palette me-1"></i>
+                                        <strong>T?ng phiên b?n:</strong> @Model.Count()
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                                <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-edit me-1"></i>
+                                    S?a s?n ph?m
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100 stat-card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-palette fa-2x mb-3"></i>
+                    <h3 class="mb-1">@Model.Count()</h3>
+                    <p class="mb-0">T?ng phiên b?n</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100 stat-card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-boxes fa-2x mb-3"></i>
+                    <h3 class="mb-1">@Model.Sum(v => v.StockQuantity)</h3>
+                    <p class="mb-0">T?ng t?n kho</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100 stat-card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-dollar-sign fa-2x mb-3"></i>
+                    <h3 class="mb-1">@(Model.Any() ? Model.Min(v => v.Price).ToString("N0") : "0")</h3>
+                    <p class="mb-0">Giá th?p nh?t</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100 stat-card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-3"></i>
+                    <h3 class="mb-1">@(Model.Any() ? Model.Max(v => v.Price).ToString("N0") : "0")</h3>
+                    <p class="mb-0">Giá cao nh?t</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variants Management -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list me-2 text-info"></i>
+                            Danh sách Phiên b?n
+                        </h5>
+                        <div class="card-actions">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="fas fa-filter me-1"></i>
+                                    L?c
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="filterByStock('all')">T?t c?</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterByStock('in-stock')">Còn hàng</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterByStock('out-of-stock')">H?t hàng</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="filterByStock('low-stock')">S?p h?t</a></li>
+                                </ul>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="exportVariants()">
+                                    <i class="fas fa-download me-1"></i>
+                                    Xu?t
+                                </button>
+                                <a asp-action="CreateVariant" asp-route-productId="@product?.Id" class="btn btn-success btn-sm">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Thêm m?i
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model?.Any() == true)
+                    {
+                        <!-- Variants Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="variantsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 60px;">
+                                            <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll()">
+                                        </th>
+                                        <th style="width: 80px;">Hình ?nh</th>
+                                        <th>Màu s?c</th>
+                                        <th>Kích th??c</th>
+                                        <th>Giá bán</th>
+                                        <th>T?n kho</th>
+                                        <th>Tr?ng thái</th>
+                                        <th>Phân lo?i</th>
+                                        <th style="width: 140px;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var variant in Model.OrderBy(v => v.Color).ThenBy(v => v.Size))
+                                    {
+                                        var stockStatus = variant.StockQuantity > 10 ? "in-stock" : 
+                                                         variant.StockQuantity > 0 ? "low-stock" : "out-of-stock";
+                                        var avgPrice = Model.Average(v => v.Price);
+                                        var priceCategory = variant.Price > avgPrice ? "premium" : "standard";
+                                        
+                                        <tr class="variant-row" data-stock="@stockStatus" data-price="@priceCategory">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input variant-checkbox" value="@variant.Id">
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(variant.ImageUrl))
+                                                {
+                                                    <img src="@variant.ImageUrl" alt="@variant.Color @variant.Size" 
+                                                         class="variant-image rounded shadow-sm" 
+                                                         style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;"
+                                                         onclick="showImagePreview('@variant.ImageUrl', '@variant.Color @variant.Size')"
+                                                         onerror="this.src='/images/no-image.png';">
+                                                }
+                                                else
+                                                {
+                                                    <div class="variant-placeholder rounded d-flex align-items-center justify-content-center bg-light border" 
+                                                         style="width: 60px; height: 60px;">
+                                                        <i class="fas fa-image text-muted"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="color-indicator rounded-circle me-2" 
+                                                         style="width: 20px; height: 20px; background-color: @GetColorCode(variant.Color); border: 1px solid #dee2e6;"></div>
+                                                    <span class="fw-medium">@variant.Color</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary fs-6">@variant.Size</span>
+                                            </td>
+                                            <td>
+                                                <div class="price-display">
+                                                    <strong class="text-success fs-6">@variant.Price.ToString("N0") VN?</strong>
+                                                    @{
+                                                        var priceDiff = variant.Price - avgPrice;
+                                                    }
+                                                    @if (Math.Abs(priceDiff) > 1000)
+                                                    {
+                                                        <small class="d-block @(priceDiff > 0 ? "text-warning" : "text-info")">
+                                                            @(priceDiff > 0 ? "+" : "")@priceDiff.ToString("N0") vs TB
+                                                        </small>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="stock-display">
+                                                    @if (variant.StockQuantity > 10)
+                                                    {
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check me-1"></i>
+                                                            @variant.StockQuantity
+                                                        </span>
+                                                    }
+                                                    else if (variant.StockQuantity > 0)
+                                                    {
+                                                        <span class="badge bg-warning">
+                                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                                            @variant.StockQuantity
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-times me-1"></i>
+                                                            H?t hàng
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (variant.StockQuantity > 10)
+                                                {
+                                                    <span class="badge bg-success">S?n sàng</span>
+                                                }
+                                                else if (variant.StockQuantity > 0)
+                                                {
+                                                    <span class="badge bg-warning">S?p h?t</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">H?t hàng</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (variant.Price > avgPrice)
+                                                {
+                                                    <span class="badge bg-warning">
+                                                        <i class="fas fa-crown me-1"></i>
+                                                        Premium
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-info">
+                                                        <i class="fas fa-tag me-1"></i>
+                                                        Tiêu chu?n
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="EditVariant" asp-route-id="@variant.Id" 
+                                                       class="btn btn-outline-primary btn-sm" 
+                                                       title="Ch?nh s?a">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-info btn-sm" 
+                                                            onclick="viewVariantDetails(@variant.Id)" 
+                                                            title="Xem chi ti?t">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <a asp-action="DeleteVariant" asp-route-id="@variant.Id" 
+                                                       class="btn btn-outline-danger btn-sm" 
+                                                       title="Xóa"
+                                                       onclick="return confirm('B?n có ch?c ch?n mu?n xóa phiên b?n này?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div class="card-footer bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="bulk-actions">
+                                    <span class="text-muted">
+                                        <span id="selectedCount">0</span> phiên b?n ???c ch?n
+                                    </span>
+                                    <div class="btn-group ms-3" role="group">
+                                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="bulkUpdateStock()" disabled id="bulkStockBtn">
+                                            <i class="fas fa-boxes me-1"></i>
+                                            C?p nh?t t?n kho
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="bulkDelete()" disabled id="bulkDeleteBtn">
+                                            <i class="fas fa-trash me-1"></i>
+                                            Xóa nhi?u
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="pagination-info">
+                                    <span class="text-muted">T?ng: @Model.Count() phiên b?n</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Empty State -->
+                        <div class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="fas fa-palette fa-4x text-muted mb-3 opacity-50"></i>
+                                <h4 class="text-muted">Ch?a có phiên b?n nào</h4>
+                                <p class="text-muted mb-4">
+                                    S?n ph?m này ch?a có phiên b?n nào. Hãy thêm phiên b?n ??u tiên ?? b?t ??u bán hàng.
+                                </p>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <a asp-action="CreateVariant" asp-route-productId="@product?.Id" class="btn btn-success btn-lg">
+                                        <i class="fas fa-plus me-2"></i>
+                                        Thêm phiên b?n ??u tiên
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@product?.Id" class="btn btn-outline-secondary btn-lg">
+                                        <i class="fas fa-arrow-left me-2"></i>
+                                        Quay l?i s?n ph?m
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewTitle">Xem tr??c hình ?nh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" alt="" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Stock Update Modal -->
+<div class="modal fade" id="bulkStockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">C?p nh?t t?n kho hàng lo?t</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bulkStockForm">
+                    <div class="mb-3">
+                        <label for="stockAction" class="form-label">Hành ??ng:</label>
+                        <select class="form-select" id="stockAction" required>
+                            <option value="">Ch?n hành ??ng</option>
+                            <option value="set">??t s? l??ng c? th?</option>
+                            <option value="add">Thêm vào t?n kho hi?n t?i</option>
+                            <option value="subtract">Tr? kh?i t?n kho hi?n t?i</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stockQuantity" class="form-label">S? l??ng:</label>
+                        <input type="number" class="form-control" id="stockQuantity" min="0" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">H?y</button>
+                <button type="button" class="btn btn-primary" onclick="processBulkStock()">C?p nh?t</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetColorCode(string colorName)
+    {
+        if (string.IsNullOrEmpty(colorName)) return "#6c757d";
+        
+        var colors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "??", "#dc3545" }, { "red", "#dc3545" },
+            { "Xanh", "#0d6efd" }, { "blue", "#0d6efd" },
+            { "Vàng", "#ffc107" }, { "yellow", "#ffc107" },
+            { "Xanh lá", "#198754" }, { "green", "#198754" },
+            { "Cam", "#fd7e14" }, { "orange", "#fd7e14" },
+            { "Tím", "#6f42c1" }, { "purple", "#6f42c1" },
+            { "H?ng", "#e91e63" }, { "pink", "#e91e63" },
+            { "?en", "#212529" }, { "black", "#212529" },
+            { "Tr?ng", "#f8f9fa" }, { "white", "#f8f9fa" },
+            { "Xám", "#6c757d" }, { "gray", "#6c757d" }, { "grey", "#6c757d" },
+            { "Nâu", "#795548" }, { "brown", "#795548" }
+        };
+        
+        return colors.ContainsKey(colorName) ? colors[colorName] : "#6c757d";
+    }
+}
+
+@section Styles {
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%);
+        }
+        
+        .stat-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .variant-image {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .variant-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .variant-placeholder {
+            border: 2px dashed #dee2e6;
+        }
+        
+        .color-indicator {
+            flex-shrink: 0;
+        }
+        
+        .table th {
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            background-color: #f8f9fa;
+        }
+        
+        .variant-row {
+            transition: background-color 0.2s ease-in-out;
+        }
+        
+        .variant-row:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        
+        .btn-group .btn {
+            border: 1px solid #dee2e6;
+        }
+        
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .price-display {
+            min-width: 100px;
+        }
+        
+        .stock-display {
+            min-width: 90px;
+        }
+        
+        .bulk-actions .btn:disabled {
+            opacity: 0.5;
+        }
+        
+        .empty-state i {
+            opacity: 0.3;
+        }
+        
+        .product-summary h5 {
+            color: #495057;
+        }
+        
+        @@media (max-width: 768px) {
+            .page-header .page-actions {
+                margin-top: 1rem;
+            }
+            
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            
+            .btn-group .btn {
+                padding: 0.25rem 0.5rem;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Select All functionality
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.variant-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+            
+            updateBulkActionButtons();
+        }
+
+        // Update bulk action buttons based on selection
+        function updateBulkActionButtons() {
+            const checkedBoxes = document.querySelectorAll('.variant-checkbox:checked');
+            const bulkStockBtn = document.getElementById('bulkStockBtn');
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            selectedCount.textContent = checkedBoxes.length;
+            
+            if (checkedBoxes.length > 0) {
+                bulkStockBtn.disabled = false;
+                bulkDeleteBtn.disabled = false;
+            } else {
+                bulkStockBtn.disabled = true;
+                bulkDeleteBtn.disabled = true;
+            }
+        }
+
+        // Filter variants by stock status
+        function filterByStock(status) {
+            const rows = document.querySelectorAll('.variant-row');
+            
+            rows.forEach(row => {
+                if (status === 'all') {
+                    row.style.display = '';
+                } else {
+                    const stockStatus = row.getAttribute('data-stock');
+                    row.style.display = stockStatus === status ? '' : 'none';
+                }
+            });
+        }
+
+        // Show image preview
+        function showImagePreview(imageUrl, title) {
+            document.getElementById('previewImage').src = imageUrl;
+            document.getElementById('imagePreviewTitle').textContent = title;
+            
+            const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            modal.show();
+        }
+
+        // View variant details (placeholder)
+        function viewVariantDetails(variantId) {
+            // This could open a detailed modal or navigate to a details page
+            alert(`Xem chi ti?t phiên b?n ID: ${variantId}`);
+        }
+
+        // Bulk stock update
+        function bulkUpdateStock() {
+            const modal = new bootstrap.Modal(document.getElementById('bulkStockModal'));
+            modal.show();
+        }
+
+        // Process bulk stock update
+        function processBulkStock() {
+            const action = document.getElementById('stockAction').value;
+            const quantity = document.getElementById('stockQuantity').value;
+            const checkedBoxes = document.querySelectorAll('.variant-checkbox:checked');
+            
+            if (!action || !quantity) {
+                alert('Vui lòng điền đầy đủ thông tin');
+                return;
+            }
+            
+            if (checkedBoxes.length === 0) {
+                alert('Vui lòng chọn ít nhất một phiên bản');
+                return;
+            }
+            
+            // Here you would make an AJAX call to update stock
+            const variantIds = Array.from(checkedBoxes).map(cb => cb.value);
+            console.log('Updating stock for variants:', variantIds, 'Action:', action, 'Quantity:', quantity);
+            
+            // Close modal and show success message
+            bootstrap.Modal.getInstance(document.getElementById('bulkStockModal')).hide();
+            alert(`?ã c?p nh?t t?n kho cho ${variantIds.length} phiên b?n`);
+            
+            // You might want to reload the page or update the display
+            location.reload();
+        }
+
+        // Bulk delete
+        function bulkDelete() {
+            const checkedBoxes = document.querySelectorAll('.variant-checkbox:checked');
+            
+            if (checkedBoxes.length === 0) {
+                alert('Vui lòng ch?n ít nh?t m?t phiên b?n ?? xóa');
+                return;
+            }
+            
+            if (confirm(`B?n có ch?c ch?n mu?n xóa ${checkedBoxes.length} phiên b?n ???c ch?n?`)) {
+                // Here you would make an AJAX call to delete variants
+                const variantIds = Array.from(checkedBoxes).map(cb => cb.value);
+                console.log('Deleting variants:', variantIds);
+                
+                alert(`?ã xóa ${variantIds.length} phiên b?n`);
+                
+                // You might want to reload the page or update the display
+                location.reload();
+            }
+        }
+
+        // Export variants
+        function exportVariants() {
+            alert('Tính n?ng xu?t d? li?u s? ???c phát tri?n trong t??ng lai');
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add change event to all variant checkboxes
+            document.querySelectorAll('.variant-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateBulkActionButtons);
+            });
+            
+            // Show success toast if redirected from CreateVariant
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                setTimeout(() => {
+                    showToast('@TempData["SuccessMessage"]', 'success', '@(TempData["SuccessDetails"] ?? "")');
+                }, 500);
+                </text>
+            }
+            
+            // Auto-hide success messages after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert-success');
+                alerts.forEach(function(alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+
+        // Toast Notification System
+        function showToast(message, type = 'success', details = '') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+            
+            const toastTypes = {
+                success: { icon: 'fas fa-check-circle', class: 'bg-success' },
+                error: { icon: 'fas fa-exclamation-circle', class: 'bg-danger' },
+                warning: { icon: 'fas fa-exclamation-triangle', class: 'bg-warning' },
+                info: { icon: 'fas fa-info-circle', class: 'bg-info' }
+            };
+            
+            const toast = toastTypes[type] || toastTypes.success;
+            
+            const toastHTML = `
+                <div id="${toastId}" class="toast align-items-center text-white ${toast.class} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <div class="d-flex align-items-center">
+                                <i class="${toast.icon} me-2"></i>
+                                <div>
+                                    <strong>${message}</strong>
+                                    ${details ? `<div class="small mt-1">${details}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            
+            const toastElement = document.getElementById(toastId);
+            const toast_bootstrap = new bootstrap.Toast(toastElement);
+            toast_bootstrap.show();
+            
+            // Remove toast element after it's hidden
+            toastElement.addEventListener('hidden.bs.toast', function() {
+                this.remove();
+            });
+        }
+    </script>
+}

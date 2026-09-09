@@ -1,0 +1,675 @@
+﻿@model ShoesEcommerce.ViewModels.Product.CreateProductVariantViewModel
+
+@{
+    ViewData["Title"] = "Thêm Phiên bản";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a href="/Admin" class="breadcrumb-link">Dashboard</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/Admin/Product" class="breadcrumb-link">Sản phẩm</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/Admin/Product/Details/@Model.ProductId" class="breadcrumb-link">Chi tiết</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Thêm phiên bản</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Thêm phiên bản mới</h1>
+            @if (ViewBag.Product != null)
+            {
+                <p>@ViewBag.Product.Name</p>
+            }
+        </div>
+        <a href="/Admin/Product/Details/@Model.ProductId" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Quay lại
+        </a>
+    </div>
+
+    <!-- Alerts -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert-box error">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span>Vui lòng kiểm tra lại thông tin</span>
+        </div>
+    }
+
+    <div class="form-layout">
+        <!-- Main Form -->
+        <div class="form-main">
+            <form asp-controller="AdminProduct" asp-action="CreateVariant" method="post" enctype="multipart/form-data" id="createVariantForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ProductId" />
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>Thông tin phiên bản</h2>
+                    </div>
+                    <div class="section-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label asp-for="Color">Màu sắc <span class="required">*</span></label>
+                                <input asp-for="Color" class="form-input" list="colorList" placeholder="VD: Đỏ, Xanh, Đen..." required />
+                                <datalist id="colorList">
+                                    <option value="Đỏ"></option>
+                                    <option value="Xanh"></option>
+                                    <option value="Đen"></option>
+                                    <option value="Trắng"></option>
+                                    <option value="Vàng"></option>
+                                    <option value="Xanh lá"></option>
+                                    <option value="Tím"></option>
+                                    <option value="Hồng"></option>
+                                    <option value="Nâu"></option>
+                                    <option value="Xám"></option>
+                                    <option value="Cam"></option>
+                                </datalist>
+                                <span asp-validation-for="Color" class="field-error"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Size">Kích thước <span class="required">*</span></label>
+                                <input asp-for="Size" class="form-input" list="sizeList" placeholder="VD: 38, 39, M, L..." required />
+                                <datalist id="sizeList">
+                                    <option value="35"></option>
+                                    <option value="36"></option>
+                                    <option value="37"></option>
+                                    <option value="38"></option>
+                                    <option value="39"></option>
+                                    <option value="40"></option>
+                                    <option value="41"></option>
+                                    <option value="42"></option>
+                                    <option value="43"></option>
+                                    <option value="44"></option>
+                                    <option value="S"></option>
+                                    <option value="M"></option>
+                                    <option value="L"></option>
+                                    <option value="XL"></option>
+                                    <option value="XXL"></option>
+                                </datalist>
+                                <span asp-validation-for="Size" class="field-error"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Price">Giá bán (VNĐ) <span class="required">*</span></label>
+                            <div class="input-with-suffix">
+                                <input asp-for="Price" type="number" step="1" min="1" class="form-input" placeholder="250000" required />
+                                <span class="input-suffix">₫</span>
+                            </div>
+                            <span asp-validation-for="Price" class="field-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>Hình ảnh</h2>
+                        <span class="optional-label">Tùy chọn</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" asp-for="ImageFile" id="imageFile" accept="image/*" class="upload-input" />
+                            <div class="upload-content" id="uploadContent">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <p>Kéo thả hoặc <span class="upload-link">chọn file</span></p>
+                                <span class="upload-hint">JPG, PNG, WebP · Tối đa 5MB</span>
+                            </div>
+                            <div class="upload-preview" id="uploadPreview" style="display: none;">
+                                <img id="previewImg" src="#" alt="Preview" />
+                                <button type="button" class="remove-btn" onclick="clearUpload()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <span asp-validation-for="ImageFile" class="field-error"></span>
+                    </div>
+                </div>
+
+                <input type="hidden" asp-for="UseImageUrl" value="false" />
+                <input type="hidden" name="ImageUrl" value="" />
+                <input type="hidden" asp-for="InitialStockQuantity" value="0" />
+
+                <div class="form-actions">
+                    <a href="/Admin/Product/Details/@Model.ProductId" class="btn-secondary">Hủy</a>
+                    <button type="submit" class="btn-primary" id="submitBtn">Lưu phiên bản</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="form-sidebar">
+            <div class="sidebar-section preview-card">
+                <h3>Xem trước</h3>
+                <div class="variant-preview">
+                    <div class="preview-image" id="sidebarPreview">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </div>
+                    <div class="preview-info">
+                        <span class="preview-name" id="previewName">Màu - Size</span>
+                        <span class="preview-price" id="previewPrice">0₫</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section info-box">
+                <h4>Lưu ý</h4>
+                <ul>
+                    <li>Màu sắc và kích thước bắt buộc</li>
+                    <li>Giá phải lớn hơn 0</li>
+                    <li>Hình ảnh không bắt buộc</li>
+                    <li>Số lượng tồn kho được quản lý riêng tại mục <strong>Nhập kho</strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .page-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-link { color: #6b7280; text-decoration: none; }
+    .breadcrumb-link:hover { color: #111827; }
+    .breadcrumb-sep { color: #d1d5db; }
+    .breadcrumb-current { color: #111827; font-weight: 500; }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header-content h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.25rem;
+    }
+
+    .header-content p {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.875rem;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #374151;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .btn-back:hover { border-color: #d1d5db; }
+
+    /* Alerts */
+    .alert-box {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .alert-box.error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+
+    /* Form Layout */
+    .form-layout {
+        display: grid;
+        grid-template-columns: 1fr 260px;
+        gap: 1.5rem;
+    }
+
+    /* Form Sections */
+    .form-section {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .section-header h2 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+
+    .optional-label {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        background: #f3f4f6;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    .section-body { padding: 1.25rem; }
+
+    /* Form Elements */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .required { color: #dc2626; }
+
+    .form-input {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        color: #111827;
+        background: #fff;
+        transition: all 0.15s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #111827;
+        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+    }
+
+    .input-with-suffix { position: relative; }
+    .input-with-suffix .form-input { padding-right: 2.5rem; }
+    .input-suffix {
+        position: absolute;
+        right: 0.875rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .field-error {
+        display: block;
+        font-size: 0.8125rem;
+        color: #dc2626;
+        margin-top: 0.375rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    /* Upload Area */
+    .upload-area {
+        position: relative;
+        border: 2px dashed #e5e7eb;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.15s;
+        cursor: pointer;
+    }
+
+    .upload-area:hover {
+        border-color: #d1d5db;
+        background: #fafafa;
+    }
+
+    .upload-area.dragover {
+        border-color: #111827;
+        background: #f9fafb;
+    }
+
+    .upload-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .upload-content {
+        color: #6b7280;
+    }
+
+    .upload-content svg {
+        margin-bottom: 0.75rem;
+    }
+
+    .upload-content p {
+        margin: 0 0 0.25rem;
+        font-size: 0.9375rem;
+    }
+
+    .upload-link {
+        color: #111827;
+        font-weight: 500;
+    }
+
+    .upload-hint {
+        font-size: 0.8125rem;
+        color: #9ca3af;
+    }
+
+    .upload-preview {
+        position: relative;
+    }
+
+    .upload-preview img {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .remove-btn {
+        position: absolute;
+        top: -8px;
+        right: calc(50% - 108px);
+        width: 24px;
+        height: 24px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+    }
+
+    .remove-btn:hover {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+
+    /* Actions */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #111827;
+        border: 1px solid #111827;
+        color: #fff;
+    }
+
+    .btn-primary:hover { background: #1f2937; }
+
+    .btn-secondary {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+
+    /* Sidebar */
+    .sidebar-section {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .sidebar-section h3 {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 0.75rem;
+    }
+
+    .variant-preview {
+        text-align: center;
+    }
+
+    .preview-image {
+        width: 100%;
+        height: 120px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.75rem;
+        color: #d1d5db;
+        overflow: hidden;
+    }
+
+    .preview-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .preview-name {
+        display: block;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .preview-price {
+        display: block;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #059669;
+        margin-top: 0.25rem;
+    }
+
+    .info-box {
+        background: #fefce8;
+        border-color: #fef08a;
+    }
+
+    .info-box h4 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #854d0e;
+        margin: 0 0 0.5rem;
+    }
+
+    .info-box ul {
+        margin: 0;
+        padding-left: 1.25rem;
+        font-size: 0.8125rem;
+        color: #a16207;
+    }
+
+    .info-box li { margin-bottom: 0.25rem; }
+
+    @@media (max-width: 768px) {
+        .form-layout { grid-template-columns: 1fr; }
+        .form-sidebar { order: -1; }
+        .form-row { grid-template-columns: 1fr; }
+    }
+</style>
+}
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadInput = document.getElementById('imageFile');
+        const uploadContent = document.getElementById('uploadContent');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const previewImg = document.getElementById('previewImg');
+        const colorInput = document.getElementById('Color');
+        const sizeInput = document.getElementById('Size');
+        const priceInput = document.getElementById('Price');
+
+        // Drag and drop
+        ['dragenter', 'dragover'].forEach(event => {
+            uploadArea.addEventListener(event, e => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(event => {
+            uploadArea.addEventListener(event, e => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+        });
+
+        uploadArea.addEventListener('drop', e => {
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                uploadInput.files = files;
+                showPreview(files[0]);
+            }
+        });
+
+        uploadInput.addEventListener('change', function() {
+            if (this.files.length) {
+                showPreview(this.files[0]);
+            }
+        });
+
+        function showPreview(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Vui lòng chọn file hình ảnh');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File không được vượt quá 5MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                uploadContent.style.display = 'none';
+                uploadPreview.style.display = 'block';
+                updateSidebarPreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateSidebarPreview(imgSrc) {
+            const sidebarPreview = document.getElementById('sidebarPreview');
+            if (imgSrc) {
+                sidebarPreview.innerHTML = '<img src="' + imgSrc + '" alt="Preview" />';
+            } else {
+                sidebarPreview.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+            }
+        }
+
+        window.clearUpload = function() {
+            uploadInput.value = '';
+            uploadContent.style.display = 'block';
+            uploadPreview.style.display = 'none';
+            updateSidebarPreview(null);
+        };
+
+        // Live preview update
+        function updatePreview() {
+            const color = colorInput.value || 'Màu';
+            const size = sizeInput.value || 'Size';
+            const price = priceInput.value ? parseInt(priceInput.value).toLocaleString('vi-VN') : '0';
+            
+            document.getElementById('previewName').textContent = color + ' - ' + size;
+            document.getElementById('previewPrice').textContent = price + '₫';
+        }
+
+        colorInput.addEventListener('input', updatePreview);
+        sizeInput.addEventListener('input', updatePreview);
+        priceInput.addEventListener('input', updatePreview);
+
+        // Form submit
+        document.getElementById('createVariantForm').addEventListener('submit', function() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Đang lưu...';
+        });
+    });
+</script>
+}

@@ -1,0 +1,594 @@
+@model ShoesEcommerce.ViewModels.Promotion.DiscountListViewModel
+
+@{
+    ViewData["Title"] = "Qu?n lý khuy?n mãi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    /* Ultra Minimalist Design */
+    .discount-list {
+        background: #ffffff;
+        min-height: 100vh;
+        padding: 32px 48px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
+    /* Header */
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .list-title-section h1 {
+        font-size: 28px;
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+    }
+    
+    .list-subtitle {
+        font-size: 14px;
+        color: #999;
+    }
+    
+    /* Filter Bar */
+    .filter-bar {
+        background: #fafafa;
+        padding: 24px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .filter-form {
+        display: grid;
+        grid-template-columns: 1fr 200px 200px 150px;
+        gap: 16px;
+        align-items: end;
+    }
+    
+    .filter-input,
+    .filter-select {
+        padding: 10px 14px;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        font-size: 13px;
+        background: #fff;
+        color: #333;
+    }
+    
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: #000;
+    }
+    
+    /* Table */
+    .discount-table-container {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .discount-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .discount-table thead {
+        background: #fafafa;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .discount-table th {
+        padding: 16px 20px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .discount-table tbody tr {
+        border-bottom: 1px solid #f5f5f5;
+        transition: background 0.2s;
+    }
+    
+    .discount-table tbody tr:hover {
+        background: #fafafa;
+    }
+    
+    .discount-table td {
+        padding: 16px 20px;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-active {
+        background: #ecfdf5;
+        color: #065f46;
+    }
+    
+    .status-inactive {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+    
+    .status-expired {
+        background: #fef2f2;
+        color: #991b1b;
+    }
+    
+    .status-upcoming {
+        background: #eff6ff;
+        color: #1e40af;
+    }
+    
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+    
+    /* Discount Value Badge */
+    .discount-value {
+        font-weight: 600;
+        color: #000;
+    }
+    
+    /* Actions */
+    .table-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .action-btn {
+        padding: 6px 12px;
+        border: 1px solid #e5e5e5;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #666;
+        background: #fff;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .action-btn:hover {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .pagination-info {
+        font-size: 13px;
+        color: #666;
+    }
+    
+    .pagination-links {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .page-link {
+        padding: 8px 12px;
+        border: 1px solid #e5e5e5;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #666;
+        background: #fff;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    
+    .page-link:hover {
+        background: #fafafa;
+        border-color: #ccc;
+    }
+    
+    .page-link.active {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        opacity: 0.3;
+    }
+    
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    
+    .empty-text {
+        font-size: 14px;
+        color: #999;
+        margin-bottom: 24px;
+    }
+    
+    /* Button Styles */
+    .btn-clean {
+        padding: 10px 20px;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        color: #333;
+    }
+    
+    .btn-clean:hover {
+        background: #fafafa;
+        border-color: #ccc;
+    }
+    
+    .btn-primary-clean {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    .btn-primary-clean:hover {
+        background: #1a1a1a;
+    }
+    
+    .btn-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Alert Messages */
+    .alert-minimal {
+        padding: 16px 20px;
+        border-radius: 6px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+    
+    .alert-success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #d1fae5;
+    }
+    
+    .alert-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+    
+    /* Responsive */
+    @@media (max-width: 1024px) {
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+        
+        .discount-table {
+            font-size: 13px;
+        }
+        
+        .discount-table th,
+        .discount-table td {
+            padding: 12px 16px;
+        }
+    }
+    
+    @@media (max-width: 768px) {
+        .discount-list {
+            padding: 24px 16px;
+        }
+        
+        .list-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        
+        .pagination-container {
+            flex-direction: column;
+            gap: 16px;
+        }
+    }
+</style>
+
+<div class="discount-list">
+    <!-- Header -->
+    <div class="list-header">
+        <div class="list-title-section">
+            <h1>Qu?n lý khuy?n mãi</h1>
+            <p class="list-subtitle">T?o và qu?n lý các ch??ng trình khuy?n mãi</p>
+        </div>
+        <a href="/Admin/Discount/Create" class="btn-clean btn-primary-clean">
+            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            T?o khuy?n mãi
+        </a>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert-minimal alert-success">
+            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert-minimal alert-error">
+            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form method="get" asp-action="Index" class="filter-form">
+            <div>
+                <input type="text" 
+                       name="searchTerm" 
+                       value="@Model.SearchTerm" 
+                       class="filter-input" 
+                       placeholder="Tìm ki?m theo tên ho?c mã..." />
+            </div>
+            <div>
+                <select name="isActive" class="filter-select">
+                    <option value="">T?t c? tr?ng thái</option>
+                    <option value="true" selected="@(Model.IsActive == true)">Ho?t ??ng</option>
+                    <option value="false" selected="@(Model.IsActive == false)">Không ho?t ??ng</option>
+                </select>
+            </div>
+            <div>
+                <select name="type" class="filter-select">
+                    <option value="">T?t c? lo?i</option>
+                    <option value="0" selected="@(Model.TypeFilter == ShoesEcommerce.Models.Promotions.DiscountType.Percentage)">Ph?n tr?m</option>
+                    <option value="1" selected="@(Model.TypeFilter == ShoesEcommerce.Models.Promotions.DiscountType.FixedAmount)">S? ti?n</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn-clean btn-primary-clean" style="width: 100%;">
+                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    L?c
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    @if (Model.Discounts.Any())
+    {
+        <div class="discount-table-container">
+            <table class="discount-table">
+                <thead>
+                    <tr>
+                        <th>Tên khuy?n mãi</th>
+                        <th>Mã</th>
+                        <th>Lo?i</th>
+                        <th>Giá tr?</th>
+                        <th>Th?i gian</th>
+                        <th>Tr?ng thái</th>
+                        <th>S? d?ng</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var discount in Model.Discounts)
+                    {
+                        <tr>
+                            <td>
+                                <div style="font-weight: 500; color: #000;">@discount.Name</div>
+                                @if (discount.IsFeatured)
+                                {
+                                    <div style="font-size: 11px; color: #f59e0b; margin-top: 2px;">
+                                        ? N?i b?t
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <code style="background: #f5f5f5; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                    @discount.Code
+                                </code>
+                            </td>
+                            <td>
+                                @if (discount.Type == ShoesEcommerce.Models.Promotions.DiscountType.Percentage)
+                                {
+                                    <span style="color: #666;">Ph?n tr?m</span>
+                                }
+                                else
+                                {
+                                    <span style="color: #666;">S? ti?n</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="discount-value">@discount.DisplayValue</span>
+                            </td>
+                            <td>
+                                <div style="font-size: 13px;">
+                                    <div>@discount.StartDate.ToString("dd/MM/yyyy")</div>
+                                    <div style="color: #999;">? @discount.EndDate.ToString("dd/MM/yyyy")</div>
+                                </div>
+                            </td>
+                            <td>
+                                @{
+                                    var statusClass = "";
+                                    var statusText = "";
+                                    
+                                    if (discount.IsActive && DateTime.Now >= discount.StartDate && DateTime.Now <= discount.EndDate)
+                                    {
+                                        statusClass = "status-active";
+                                        statusText = "Ho?t ??ng";
+                                    }
+                                    else if (!discount.IsActive)
+                                    {
+                                        statusClass = "status-inactive";
+                                        statusText = "T?m d?ng";
+                                    }
+                                    else if (DateTime.Now < discount.StartDate)
+                                    {
+                                        statusClass = "status-upcoming";
+                                        statusText = "S?p di?n ra";
+                                    }
+                                    else
+                                    {
+                                        statusClass = "status-expired";
+                                        statusText = "H?t h?n";
+                                    }
+                                }
+                                <span class="status-badge @statusClass">
+                                    <span class="status-dot"></span>
+                                    @statusText
+                                </span>
+                            </td>
+                            <td>
+                                <div style="font-size: 13px;">
+                                    <div style="font-weight: 500; color: #000;">@discount.CurrentUsageCount</div>
+                                    @if (discount.MaxUsageCount.HasValue)
+                                    {
+                                        <div style="color: #999;">/ @discount.MaxUsageCount</div>
+                                    }
+                                    else
+                                    {
+                                        <div style="color: #999;">/ ?</div>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="/Admin/Discount/Details/@discount.Id" class="action-btn" title="Chi ti?t">
+                                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </a>
+                                    <a href="/Admin/Discount/Edit/@discount.Id" class="action-btn" title="Ch?nh s?a">
+                                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </a>
+                                    <a href="/Admin/Discount/Statistics/@discount.Id" class="action-btn" title="Th?ng kê">
+                                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Hi?n th? @((Model.CurrentPage - 1) * 10 + 1) - @(Math.Min(Model.CurrentPage * 10, Model.TotalItems)) trong t?ng s? @Model.TotalItems khuy?n mãi
+                    </div>
+                    <div class="pagination-links">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <a href="?page=@(Model.CurrentPage - 1)&searchTerm=@Model.SearchTerm&isActive=@Model.IsActive&type=@Model.TypeFilter" class="page-link">
+                                ? Tr??c
+                            </a>
+                        }
+                        
+                        @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                        {
+                            <a href="?page=@i&searchTerm=@Model.SearchTerm&isActive=@Model.IsActive&type=@Model.TypeFilter" 
+                               class="page-link @(i == Model.CurrentPage ? "active" : "")">
+                                @i
+                            </a>
+                        }
+                        
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <a href="?page=@(Model.CurrentPage + 1)&searchTerm=@Model.SearchTerm&isActive=@Model.IsActive&type=@Model.TypeFilter" class="page-link">
+                                Sau ?
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="discount-table-container">
+            <div class="empty-state">
+                <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                <div class="empty-title">Ch?a có khuy?n mãi nào</div>
+                <p class="empty-text">T?o ch??ng trình khuy?n mãi ??u tiên ?? thu hút khách hàng</p>
+                <a href="/Admin/Discount/Create" class="btn-clean btn-primary-clean">
+                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    T?o khuy?n mãi ??u tiên
+                </a>
+            </div>
+        </div>
+    }
+</div>

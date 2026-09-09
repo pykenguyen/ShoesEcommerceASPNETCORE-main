@@ -1,0 +1,210 @@
+@using Microsoft.Extensions.Options
+@using ShoesEcommerce.Services.Options
+@inject IOptions<SocialChatOptions> SocialChatOptions
+@inject IOptions<TawkToOptions> TawkToOptions
+
+@{
+    var social = SocialChatOptions.Value;
+    var tawkTo = TawkToOptions.Value;
+}
+
+<!-- Chat Widgets Container -->
+<div id="chat-widgets-container">
+
+    @* Tawk.to Chat Widget - Main support chat *@
+    @if (tawkTo.Enabled && !string.IsNullOrEmpty(tawkTo.PropertyId) && !string.IsNullOrEmpty(tawkTo.WidgetId))
+    {
+        var tawkEmbedUrl = $"https://embed.tawk.to/{tawkTo.PropertyId}/{tawkTo.WidgetId}";
+        <!--Start of Tawk.to Script-->
+        <script type="text/javascript">
+            var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+            (function(){
+                var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+                s1.async = true;
+                s1.src = '@Html.Raw(tawkEmbedUrl)';
+                s1.charset = 'UTF-8';
+                s1.setAttribute('crossorigin', '*');
+                s0.parentNode.insertBefore(s1, s0);
+            })();
+        </script>
+        <!--End of Tawk.to Script-->
+    }
+
+    @* Zalo OA Chat Widget *@
+    @if (social.Zalo.Enabled && !string.IsNullOrEmpty(social.Zalo.OaId))
+    {
+        <!-- Zalo SDK -->
+        <div class="zalo-chat-widget" 
+             data-oaid="@social.Zalo.OaId" 
+             data-welcome-message="@social.Zalo.WelcomeMessage"
+             data-autopopup="@social.Zalo.AutoPopupDelay"
+             data-width="350"
+             data-height="420">
+        </div>
+        <script src="https://sp.zalo.me/plugins/sdk.js"></script>
+    }
+
+    @* Facebook Messenger - Click-to-Messenger Button (2025 Standard) *@
+    @* Note: Customer Chat Plugin deprecated by Meta, using m.me links *@
+    @if (social.Facebook.Enabled && !string.IsNullOrEmpty(social.Facebook.PageId))
+    {
+        var messengerUrl = $"https://m.me/{social.Facebook.PageId}";
+        if (!string.IsNullOrEmpty(social.Facebook.DefaultRef))
+        {
+            messengerUrl += $"?ref={social.Facebook.DefaultRef}";
+        }
+        
+        <!-- Facebook Messenger Chat Button -->
+        <a href="@messengerUrl" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="fb-messenger-btn"
+           title="@social.Facebook.ButtonText"
+           aria-label="Chat voi chung toi qua Facebook Messenger">
+            <svg class="fb-messenger-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2.5C7.096 2.5 1.5 7.643 1.5 14.008C1.5 17.386 3.086 20.401 5.619 22.438V26.5L9.501 24.352C10.912 24.745 12.42 24.958 14 24.958C20.904 24.958 26.5 19.815 26.5 13.992C26.5 7.643 20.904 2.5 14 2.5Z" fill="white"/>
+                <path d="M15.5 17.5L12 13.5L5.5 17.5L12.5 10L16 14L22.5 10L15.5 17.5Z" fill="#0084FF"/>
+            </svg>
+            <span class="fb-messenger-text">@social.Facebook.ButtonText</span>
+        </a>
+    }
+
+</div>
+
+<!-- Debug info for troubleshooting (only visible in page source) -->
+<!-- TawkTo Enabled: @tawkTo.Enabled, PropertyId: @(string.IsNullOrEmpty(tawkTo.PropertyId) ? "EMPTY" : "SET"), WidgetId: @(string.IsNullOrEmpty(tawkTo.WidgetId) ? "EMPTY" : "SET") -->
+<!-- Facebook Enabled: @social.Facebook.Enabled, PageId: @(string.IsNullOrEmpty(social.Facebook.PageId) ? "EMPTY" : "SET") -->
+
+<!-- Chat Widget Styles -->
+<style>
+    /* Facebook Messenger Button - Fixed Position (above Tawk.to) */
+    .fb-messenger-btn {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #0084FF 0%, #0066CC 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        box-shadow: 0 4px 20px rgba(0, 132, 255, 0.4);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .fb-messenger-btn:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 30px rgba(0, 132, 255, 0.5);
+        color: white;
+        text-decoration: none;
+    }
+
+    .fb-messenger-btn:active {
+        transform: translateY(-1px);
+    }
+
+    .fb-messenger-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .fb-messenger-text {
+        white-space: nowrap;
+    }
+
+    /* Pulse animation */
+    .fb-messenger-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 50px;
+        background: rgba(255, 255, 255, 0.3);
+        animation: messengerPulse 2s infinite;
+        pointer-events: none;
+    }
+
+    @@keyframes messengerPulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+        50% {
+            transform: scale(1.05);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 0;
+        }
+    }
+
+    /* Zalo widget positioning - above FB button */
+    .zalo-chat-widget {
+        position: fixed !important;
+        bottom: 160px !important;
+        right: 20px !important;
+        z-index: 9997 !important;
+    }
+
+    /* When Tawk.to is enabled, FB button position adjusts automatically via bottom: 90px */
+    /* Tawk.to widget is at bottom: 20px by default */
+
+    /* Mobile responsive */
+    @@media (max-width: 768px) {
+        .fb-messenger-btn {
+            bottom: 80px;
+            right: 15px;
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+
+        .fb-messenger-icon {
+            width: 22px;
+            height: 22px;
+        }
+
+        .zalo-chat-widget {
+            bottom: 150px !important;
+            right: 15px !important;
+        }
+    }
+
+    /* Compact mode on small screens - icon only */
+    @@media (max-width: 480px) {
+        .fb-messenger-btn {
+            padding: 14px;
+            border-radius: 50%;
+        }
+
+        .fb-messenger-text {
+            display: none;
+        }
+
+        .fb-messenger-icon {
+            width: 26px;
+            height: 26px;
+        }
+    }
+
+    /* Hide chat widgets on print */
+    @@media print {
+        #chat-widgets-container,
+        .fb-messenger-btn,
+        .zalo-chat-widget,
+        iframe[title*="chat"],
+        iframe[src*="tawk.to"] {
+            display: none !important;
+        }
+    }
+</style>

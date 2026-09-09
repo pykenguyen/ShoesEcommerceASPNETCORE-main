@@ -1,0 +1,67 @@
+@using ShoesEcommerce.Services.Interfaces
+@inject ISubizChatService SubizChatService
+
+@* 
+    Subiz Live Chat Widget Partial View
+    This partial view handles the integration of Subiz live chat widget.
+    Include this partial at the end of the body tag in your layouts.
+    
+    Usage: @{ await Html.RenderPartialAsync("_SubizChat"); }
+*@
+
+@if (SubizChatService.IsEnabled)
+{
+    <!-- Subiz Live Chat Widget -->
+    <script id="subiz-chat-widget">
+        @Html.Raw(SubizChatService.GetInitScript())
+        
+        // Set user attributes if authenticated
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            var fullName = User.FindFirst("FullName")?.Value ?? "";
+            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+            var additionalAttributes = new Dictionary<string, string>
+            {
+                { "isLoggedIn", "true" }
+            };
+            
+            // Check if user is admin or staff
+            if (User.IsInRole("Admin"))
+            {
+                additionalAttributes["userType"] = "admin";
+            }
+            else if (User.IsInRole("Staff"))
+            {
+                additionalAttributes["userType"] = "staff";
+            }
+            else
+            {
+                additionalAttributes["userType"] = "customer";
+            }
+            
+            @Html.Raw(SubizChatService.GetSetUserAttributesScript(fullName, email, additionalAttributes))
+        }
+    </script>
+    
+    <!-- Subiz Custom Styling (Optional) -->
+    <style>
+        /* Custom styles for Subiz chat widget positioning */
+        /* These styles can be used to adjust the widget position if needed */
+        
+        /* Hide chat widget on print */
+        @@media print {
+            #subiz-chat-widget,
+            [id^="subiz"],
+            .subiz-widget,
+            iframe[src*="subiz"] {
+                display: none !important;
+            }
+        }
+        
+        /* Optional: Adjust z-index if needed */
+        [id^="subiz"],
+        .subiz-widget {
+            z-index: 9998 !important;
+        }
+    </style>
+}

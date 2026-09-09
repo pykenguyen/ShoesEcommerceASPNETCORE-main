@@ -1,0 +1,198 @@
+@model List<ShoesEcommerce.Models.Stocks.StockTransaction>
+
+@{
+    ViewData["Title"] = "L?ch s? ki?m kho";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var stock = ViewBag.Stock as ShoesEcommerce.Models.Stocks.Stock;
+}
+
+<div style="background: #f9fafb; min-height: 100vh; padding: 24px;">
+    <!-- Header -->
+    <div style="background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0; color: #1f2937; font-weight: 700; font-size: 24px;">
+                    <i class="fas fa-history" style="color: #8b5cf6; margin-right: 8px;"></i>
+                    L?ch s? ki?m kho
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">
+                    @stock.ProductVariant.Product.Name - @stock.ProductVariant.Color / @stock.ProductVariant.Size
+                </p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a href="/Admin/Stock/Check" style="background: #f3f4f6; color: #374151; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-arrow-left"></i> Quay l?i
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 24px;">
+        <!-- Timeline -->
+        <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb;">
+            <h5 style="font-size: 16px; font-weight: 700; margin-bottom: 24px; color: #1f2937;">
+                <i class="fas fa-clipboard-check" style="color: #10b981; margin-right: 8px;"></i>
+                L?ch s? ki?m tra
+            </h5>
+
+            @if (!Model.Any())
+            {
+                <div style="text-align: center; padding: 60px 20px; color: #9ca3af;">
+                    <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                    <p style="font-size: 14px; margin: 0;">Ch?a có l?ch s? ki?m kho</p>
+                </div>
+            }
+            else
+            {
+                <div style="position: relative; padding-left: 40px;">
+                    <!-- Timeline line -->
+                    <div style="position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: #e5e7eb;"></div>
+
+                    @foreach (var audit in Model)
+                    {
+                        var difference = audit.QuantityChange;
+                        var isOver = difference > 0;
+                        var isUnder = difference < 0;
+                        var isCorrect = difference == 0;
+                        
+                        <div style="position: relative; margin-bottom: 32px;">
+                            <!-- Timeline dot -->
+                            <div style="position: absolute; left: -35px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background: @(isCorrect ? "#10b981" : isOver ? "#3b82f6" : "#ef4444"); border: 4px solid white; box-shadow: 0 0 0 2px #e5e7eb;"></div>
+                            
+                            <!-- Audit card -->
+                            <div style="background: #f9fafb; border-radius: 8px; padding: 16px; border-left: 4px solid @(isCorrect ? "#10b981" : isOver ? "#3b82f6" : "#ef4444");">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                                    <div>
+                                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                                            <i class="far fa-clock"></i> @audit.TransactionDate.ToString("dd/MM/yyyy HH:mm")
+                                        </div>
+                                        <div style="font-size: 13px; color: #6b7280;">
+                                            <i class="fas fa-user"></i> Ki?m b?i: <strong>@audit.CreatedBy</strong>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        @if (isCorrect)
+                                        {
+                                            <span style="background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                                <i class="fas fa-check"></i> CHÍNH XÁC
+                                            </span>
+                                        }
+                                        else if (isOver)
+                                        {
+                                            <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                                <i class="fas fa-arrow-up"></i> TH?A
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span style="background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                                                <i class="fas fa-arrow-down"></i> THI?U
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px;">
+                                    <div style="background: white; padding: 12px; border-radius: 6px;">
+                                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">H? th?ng</div>
+                                        <div style="font-size: 16px; font-weight: 700; color: #1f2937;">@audit.AvailableQuantityBefore</div>
+                                    </div>
+                                    <div style="background: white; padding: 12px; border-radius: 6px;">
+                                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Th?c t?</div>
+                                        <div style="font-size: 16px; font-weight: 700; color: #1f2937;">@audit.AvailableQuantityAfter</div>
+                                    </div>
+                                    <div style="background: white; padding: 12px; border-radius: 6px;">
+                                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Chênh l?ch</div>
+                                        <div style="font-size: 16px; font-weight: 700; color: @(isCorrect ? "#10b981" : isOver ? "#3b82f6" : "#ef4444");">
+                                            @(difference >= 0 ? "+" : "")@difference
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(audit.Notes))
+                                {
+                                    <div style="background: white; padding: 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">
+                                            <i class="fas fa-sticky-note"></i> Ghi chú:
+                                        </div>
+                                        <div style="font-size: 13px; color: #1f2937;">@audit.Notes</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <!-- Current Stock -->
+            <div style="background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+                <h5 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1f2937;">
+                    <i class="fas fa-box" style="color: #3b82f6;"></i> T?n kho hi?n t?i
+                </h5>
+                <div style="text-align: center; padding: 16px; background: #f9fafb; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="font-size: 36px; font-weight: 700; color: #1f2937;">@stock.AvailableQuantity</div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">S? l??ng có s?n</div>
+                </div>
+                <div style="font-size: 13px; color: #6b7280;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                        <span>?ã ??t tr??c:</span>
+                        <strong style="color: #1f2937;">@stock.ReservedQuantity</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>T?ng c?ng:</span>
+                        <strong style="color: #1f2937;">@stock.TotalQuantity</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div style="background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+                <h5 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1f2937;">S?n ph?m</h5>
+                <img src="@stock.ProductVariant.ImageUrl" alt="@stock.ProductVariant.Product.Name" 
+                     style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
+                <h6 style="font-size: 14px; font-weight: 700; color: #1f2937; margin-bottom: 8px;">
+                    @stock.ProductVariant.Product.Name
+                </h6>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <span style="background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                        @stock.ProductVariant.Color
+                    </span>
+                    <span style="background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                        @stock.ProductVariant.Size
+                    </span>
+                </div>
+                <div style="font-size: 13px; color: #6b7280;">
+                    <strong>Giá:</strong> @stock.ProductVariant.Price.ToString("N0") ?
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb;">
+                <h5 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1f2937;">
+                    <i class="fas fa-chart-bar" style="color: #10b981;"></i> Th?ng kê
+                </h5>
+                <div style="font-size: 13px; color: #6b7280;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                        <span>T?ng l?n ki?m:</span>
+                        <strong style="color: #1f2937;">@Model.Count</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                        <span>Chính xác:</span>
+                        <strong style="color: #10b981;">@Model.Count(a => a.QuantityChange == 0)</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                        <span>Th?a:</span>
+                        <strong style="color: #3b82f6;">@Model.Count(a => a.QuantityChange > 0)</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                        <span>Thi?u:</span>
+                        <strong style="color: #ef4444;">@Model.Count(a => a.QuantityChange < 0)</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

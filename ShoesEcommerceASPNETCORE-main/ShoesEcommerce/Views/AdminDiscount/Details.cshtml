@@ -1,0 +1,602 @@
+@model ShoesEcommerce.Models.Promotions.Discount
+
+@{
+    ViewData["Title"] = "Chi ti?t khuy?n mãi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var statistics = ViewBag.Statistics as ShoesEcommerce.Services.Interfaces.DiscountStatisticsViewModel;
+    var products = ViewBag.Products as IEnumerable<ShoesEcommerce.ViewModels.Product.ProductInfo>;
+    var categories = ViewBag.Categories as IEnumerable<ShoesEcommerce.ViewModels.Product.CategoryInfo>;
+}
+
+<style>
+    /* Minimalist Design */
+    .discount-details {
+        background: #ffffff;
+        min-height: 100vh;
+        padding: 32px 48px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    /* Header */
+    .details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .header-info h1 {
+        font-size: 28px;
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 8px;
+    }
+    
+    .header-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: #999;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+    
+    /* Layout Grid */
+    .details-layout {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 32px;
+    }
+    
+    /* Card */
+    .card-minimal {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    
+    .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #000;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .card-icon {
+        width: 20px;
+        height: 20px;
+        color: #666;
+    }
+    
+    /* Info Row */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 14px;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .info-value {
+        color: #000;
+        font-weight: 500;
+        text-align: right;
+    }
+    
+    /* Badge */
+    .badge-minimal {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .badge-success {
+        background: #ecfdf5;
+        color: #065f46;
+    }
+    
+    .badge-warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .badge-info {
+        background: #eff6ff;
+        color: #1e40af;
+    }
+    
+    .badge-gray {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-card {
+        background: #fafafa;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: #000;
+    }
+    
+    /* Product/Category List */
+    .item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .item-card {
+        padding: 12px;
+        background: #fafafa;
+        border-radius: 6px;
+        border: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .item-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .item-meta {
+        font-size: 12px;
+        color: #999;
+    }
+    
+    /* Empty State */
+    .empty-minimal {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+        font-size: 13px;
+    }
+    
+    /* Button */
+    .btn-minimal {
+        padding: 10px 20px;
+        border: 1px solid #e5e5e5;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        color: #333;
+    }
+    
+    .btn-minimal:hover {
+        background: #fafafa;
+        border-color: #ccc;
+    }
+    
+    .btn-black {
+        background: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    .btn-black:hover {
+        background: #1a1a1a;
+    }
+    
+    .btn-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Responsive */
+    @@media (max-width: 1024px) {
+        .details-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @@media (max-width: 768px) {
+        .discount-details {
+            padding: 24px 16px;
+        }
+        
+        .details-header {
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .header-actions {
+            width: 100%;
+            flex-direction: column;
+        }
+        
+        .btn-minimal {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="discount-details">
+    <!-- Header -->
+    <div class="details-header">
+        <div class="header-info">
+            <h1>@Model.Name</h1>
+            <div class="header-meta">
+                <span>Mã: <strong>@Model.Code</strong></span>
+                <span>•</span>
+                <span>T?o: @Model.CreatedAt.ToString("dd/MM/yyyy")</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="/Admin/Discount/Edit/@Model.Id" class="btn-minimal btn-black">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Ch?nh s?a
+            </a>
+            <a href="/Admin/Discount/Index" class="btn-minimal">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Quay l?i
+            </a>
+        </div>
+    </div>
+
+    <!-- Layout -->
+    <div class="details-layout">
+        <!-- Main Content -->
+        <div>
+            <!-- Discount Info -->
+            <div class="card-minimal">
+                <h2 class="card-title">
+                    <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Thông tin khuy?n mãi
+                </h2>
+
+                <div class="info-row">
+                    <span class="info-label">Lo?i gi?m giá</span>
+                    <span class="info-value">
+                        @(Model.Type == ShoesEcommerce.Models.Promotions.DiscountType.Percentage ? "Ph?n tr?m" : "S? ti?n c? ??nh")
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Giá tr?</span>
+                    <span class="info-value" style="font-size: 18px; color: #000;">
+                        @if (Model.Type == ShoesEcommerce.Models.Promotions.DiscountType.Percentage)
+                        {
+                            <text>@Model.PercentageValue%</text>
+                        }
+                        else
+                        {
+                            <text>@Model.FixedValue?.ToString("N0") ?</text>
+                        }
+                    </span>
+                </div>
+
+                @if (Model.MinimumOrderValue.HasValue)
+                {
+                    <div class="info-row">
+                        <span class="info-label">??n hàng t?i thi?u</span>
+                        <span class="info-value">@Model.MinimumOrderValue.Value.ToString("N0") ?</span>
+                    </div>
+                }
+
+                @if (Model.MaximumDiscountAmount.HasValue)
+                {
+                    <div class="info-row">
+                        <span class="info-label">Gi?m t?i ?a</span>
+                        <span class="info-value">@Model.MaximumDiscountAmount.Value.ToString("N0") ?</span>
+                    </div>
+                }
+
+                <div class="info-row">
+                    <span class="info-label">Ph?m vi</span>
+                    <span class="info-value">
+                        @switch (Model.Scope)
+                        {
+                            case ShoesEcommerce.Models.Promotions.DiscountScope.AllProducts:
+                                <text>T?t c? s?n ph?m</text>
+                                break;
+                            case ShoesEcommerce.Models.Promotions.DiscountScope.SpecificProducts:
+                                <text>S?n ph?m c? th?</text>
+                                break;
+                            case ShoesEcommerce.Models.Promotions.DiscountScope.SpecificCategories:
+                                <text>Danh m?c c? th?</text>
+                                break;
+                        }
+                    </span>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="info-row">
+                        <span class="info-label">Mô t?</span>
+                        <span class="info-value" style="text-align: left; max-width: 60%;">@Model.Description</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Products/Categories -->
+            @if (Model.Scope == ShoesEcommerce.Models.Promotions.DiscountScope.SpecificProducts && products != null && products.Any())
+            {
+                <div class="card-minimal">
+                    <h2 class="card-title">
+                        <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                        S?n ph?m áp d?ng (@products.Count())
+                    </h2>
+                    <div class="item-list">
+                        @foreach (var product in products.Take(10))
+                        {
+                            <div class="item-card">
+                                <div>
+                                    <div class="item-name">@product.Name</div>
+                                    <div class="item-meta">@product.CategoryName - @product.VariantCount bi?n th?</div>
+                                </div>
+                                <div class="item-meta">@product.MinPrice.ToString("N0") ?</div>
+                            </div>
+                        }
+                        @if (products.Count() > 10)
+                        {
+                            <div style="text-align: center; color: #999; font-size: 13px; padding-top: 8px;">
+                                + @(products.Count() - 10) s?n ph?m khác
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.Scope == ShoesEcommerce.Models.Promotions.DiscountScope.SpecificCategories && categories != null && categories.Any())
+            {
+                <div class="card-minimal">
+                    <h2 class="card-title">
+                        <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        Danh m?c áp d?ng (@categories.Count())
+                    </h2>
+                    <div class="item-list">
+                        @foreach (var category in categories)
+                        {
+                            <div class="item-card">
+                                <div class="item-name">@category.Name</div>
+                                <div class="item-meta">@category.ProductCount s?n ph?m</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Statistics -->
+            @if (statistics != null)
+            {
+                <div class="card-minimal">
+                    <h2 class="card-title">
+                        <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Th?ng kê s? d?ng
+                    </h2>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">L??t s? d?ng</div>
+                            <div class="stat-value">@statistics.TotalUsageCount</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Khách hàng</div>
+                            <div class="stat-value">@statistics.UniqueCustomerCount</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">T?ng gi?m giá</div>
+                            <div class="stat-value" style="font-size: 18px;">@statistics.TotalDiscountAmount.ToString("N0") ?</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Trung bình</div>
+                            <div class="stat-value" style="font-size: 18px;">@statistics.AverageDiscountAmount.ToString("N0") ?</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 16px;">
+                        <a href="/Admin/Discount/Statistics/@Model.Id" class="btn-minimal">
+                            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Xem th?ng kê chi ti?t
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <!-- Status -->
+            <div class="card-minimal">
+                <h2 class="card-title">
+                    <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Tr?ng thái
+                </h2>
+
+                <div style="text-align: center; padding: 20px 0;">
+                    @{
+                        var now = DateTime.Now;
+                        var isActive = Model.IsActive && now >= Model.StartDate && now <= Model.EndDate;
+                    }
+                    
+                    @if (isActive)
+                    {
+                        <span class="badge-minimal badge-success" style="font-size: 14px; padding: 8px 16px;">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span>
+                            ?ang ho?t ??ng
+                        </span>
+                    }
+                    else if (!Model.IsActive)
+                    {
+                        <span class="badge-minimal badge-gray" style="font-size: 14px; padding: 8px 16px;">
+                            T?m d?ng
+                        </span>
+                    }
+                    else if (now < Model.StartDate)
+                    {
+                        <span class="badge-minimal badge-info" style="font-size: 14px; padding: 8px 16px;">
+                            S?p di?n ra
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge-minimal badge-warning" style="font-size: 14px; padding: 8px 16px;">
+                            ?ã h?t h?n
+                        </span>
+                    }
+                </div>
+
+                @if (Model.IsFeatured)
+                {
+                    <div style="text-align: center; padding-top: 16px; border-top: 1px solid #f5f5f5;">
+                        <span style="color: #f59e0b; font-size: 13px;">
+                            ? Khuy?n mãi n?i b?t
+                        </span>
+                    </div>
+                }
+            </div>
+
+            <!-- Time Period -->
+            <div class="card-minimal">
+                <h2 class="card-title">
+                    <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Th?i gian
+                </h2>
+
+                <div class="info-row">
+                    <span class="info-label">B?t ??u</span>
+                    <span class="info-value">@Model.StartDate.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">K?t thúc</span>
+                    <span class="info-value">@Model.EndDate.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Th?i gian</span>
+                    <span class="info-value">@((Model.EndDate - Model.StartDate).Days) ngày</span>
+                </div>
+            </div>
+
+            <!-- Usage Limits -->
+            <div class="card-minimal">
+                <h2 class="card-title">
+                    <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                    Gi?i h?n
+                </h2>
+
+                <div class="info-row">
+                    <span class="info-label">?ã s? d?ng</span>
+                    <span class="info-value">
+                        @Model.CurrentUsageCount
+                        @if (Model.MaxUsageCount.HasValue)
+                        {
+                            <text> / @Model.MaxUsageCount</text>
+                        }
+                        else
+                        {
+                            <text> / ?</text>
+                        }
+                    </span>
+                </div>
+
+                @if (Model.MaxUsagePerCustomer.HasValue)
+                {
+                    <div class="info-row">
+                        <span class="info-label">M?i khách hàng</span>
+                        <span class="info-value">@Model.MaxUsagePerCustomer l?n</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="info-row">
+                        <span class="info-label">M?i khách hàng</span>
+                        <span class="info-value">Không gi?i h?n</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Actions -->
+            <div class="card-minimal">
+                <form method="post" asp-action="Delete" asp-route-id="@Model.Id" onsubmit="return confirm('B?n có ch?c ch?n mu?n xóa khuy?n mãi này?')">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-minimal" style="width: 100%; color: #dc2626; border-color: #dc2626;">
+                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Xóa khuy?n mãi
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

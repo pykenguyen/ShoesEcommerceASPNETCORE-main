@@ -1,0 +1,463 @@
+@model ShoesEcommerce.ViewModels.Promotion.EditDiscountViewModel
+
+@{
+    ViewData["Title"] = "Ch?nh s?a khuy?n mãi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .discount-wizard * { margin: 0; padding: 0; box-sizing: border-box; }
+    .discount-wizard { background: #ffffff; min-height: 100vh; padding: 32px 48px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; color: #1a1a1a; }
+    .wizard-header { margin-bottom: 40px; padding-bottom: 24px; border-bottom: 1px solid #f0f0f0; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .page-title-wizard { font-size: 28px; font-weight: 600; color: #000; letter-spacing: -0.02em; }
+    .page-subtitle-wizard { font-size: 14px; color: #999; font-weight: 400; margin-top: 8px; }
+    
+    .wizard-steps { display: flex; justify-content: center; align-items: center; margin: 32px 0 40px 0; position: relative; }
+    .step { display: flex; flex-direction: column; align-items: center; position: relative; flex: 1; max-width: 200px; }
+    .step-number { width: 48px; height: 48px; border-radius: 50%; background: #f5f5f5; border: 2px solid #e5e5e5; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; color: #999; margin-bottom: 12px; transition: all 0.3s; z-index: 2; position: relative; }
+    .step.active .step-number { background: #000; border-color: #000; color: #fff; }
+    .step.completed .step-number { background: #000; border-color: #000; color: #fff; }
+    .step-number svg { width: 24px; height: 24px; }
+    .step-label { font-size: 13px; font-weight: 500; color: #999; text-align: center; }
+    .step.active .step-label { color: #000; font-weight: 600; }
+    .step-description { font-size: 11px; color: #ccc; margin-top: 4px; text-align: center; }
+    .step.active .step-description { color: #666; }
+    .step::before { content: ''; position: absolute; top: 24px; left: -50%; width: 100%; height: 2px; background: #e5e5e5; z-index: 1; }
+    .step:first-child::before { display: none; }
+    .step.completed::before { background: #000; }
+    
+    .wizard-form { max-width: 800px; margin: 0 auto; }
+    .step-content { display: none; }
+    .step-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-section { background: #fafafa; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #f0f0f0; }
+    .section-title { font-size: 16px; font-weight: 600; color: #000; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .section-icon { width: 20px; height: 20px; color: #666; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-grid-full { grid-column: 1 / -1; }
+    .form-group { margin-bottom: 0; }
+    .form-label { display: block; font-size: 13px; font-weight: 500; color: #333; margin-bottom: 8px; }
+    .form-label-required::after { content: ' *'; color: #dc2626; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 12px 16px; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 14px; color: #1a1a1a; background: #fff; transition: all 0.2s; font-family: inherit; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #000; box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .input-group { display: flex; gap: 8px; }
+    .input-addon { padding: 12px 16px; background: #f8f8f8; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 14px; color: #666; white-space: nowrap; }
+    .form-check { display: flex; align-items: flex-start; gap: 12px; padding: 16px; background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+    .form-check:hover { border-color: #ccc; background: #fafafa; }
+    .form-check-input { width: 20px; height: 20px; cursor: pointer; accent-color: #000; margin-top: 2px; }
+    .form-check-label { flex: 1; cursor: pointer; }
+    .check-label-title { font-size: 14px; font-weight: 500; color: #000; }
+    .check-label-desc { font-size: 12px; color: #999; margin-top: 4px; }
+    .helper-text { font-size: 12px; color: #999; margin-top: 6px; display: block; }
+    .field-validation-error { display: block; font-size: 12px; color: #dc2626; margin-top: 6px; }
+    .input-validation-error { border-color: #dc2626 !important; }
+    .validation-summary-errors { background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 16px; margin-bottom: 24px; }
+    .validation-summary-errors ul { list-style: none; margin: 0; padding: 0; }
+    .validation-summary-errors li { color: #dc2626; font-size: 13px; }
+    .info-box { background: #fff3cd; border-left: 3px solid #ffc107; padding: 16px; border-radius: 4px; margin-bottom: 20px; }
+    .info-title { font-size: 13px; font-weight: 600; color: #856404; margin-bottom: 8px; }
+    .info-text { font-size: 13px; color: #856404; }
+    .usage-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0f0f0; border-radius: 6px; font-size: 12px; color: #666; margin-top: 8px; }
+    .conditional-field { display: none; }
+    .conditional-field.show { display: block; }
+    .wizard-navigation { display: flex; justify-content: space-between; gap: 12px; padding-top: 32px; border-top: 1px solid #f0f0f0; margin-top: 32px; }
+    .btn-wizard { padding: 14px 32px; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #333; text-decoration: none; }
+    .btn-wizard:hover { background: #fafafa; transform: translateY(-1px); }
+    .btn-primary { background: #000; color: #fff; border-color: #000; }
+    .btn-primary:hover { background: #1a1a1a; }
+    .btn-icon { width: 16px; height: 16px; }
+    
+    @@media (max-width: 768px) {
+        .discount-wizard { padding: 24px 16px; }
+        .wizard-steps { flex-direction: column; gap: 24px; }
+        .step::before { display: none; }
+        .form-grid { grid-template-columns: 1fr; }
+        .wizard-navigation { flex-direction: column; }
+        .btn-wizard { width: 100%; justify-content: center; }
+    }
+</style>
+
+<div class="discount-wizard">
+    <div class="wizard-header">
+        <div class="header-top">
+            <div>
+                <h1 class="page-title-wizard">Ch?nh s?a khuy?n mãi</h1>
+                <p class="page-subtitle-wizard">C?p nh?t thông tin ch??ng trình khuy?n mãi</p>
+            </div>
+            <a href="/Admin/Discount/Details/@Model.Id" class="btn-wizard">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Quay l?i
+            </a>
+        </div>
+    </div>
+
+    <div class="wizard-steps">
+        <div class="step active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-label">Thông tin c? b?n</div>
+            <div class="step-description">Tên, mã & giá tr?</div>
+        </div>
+        <div class="step" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-label">C?u hình nâng cao</div>
+            <div class="step-description">Th?i gian & ph?m vi</div>
+        </div>
+    </div>
+
+    @Html.ValidationSummary(false, "", new { @class = "validation-summary-errors" })
+
+    @if (Model.CurrentUsageCount > 0)
+    {
+        <div class="info-box">
+            <div class="info-title">?? L?u ý quan tr?ng</div>
+            <div class="info-text">Khuy?n mãi này ?ã ???c s? d?ng @Model.CurrentUsageCount l?n. Thay ??i giá tr? có th? ?nh h??ng ??n tr?i nghi?m khách hàng.</div>
+        </div>
+    }
+
+    <form asp-action="Edit" method="post" class="wizard-form" id="discountForm">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.Id)
+        @Html.HiddenFor(m => m.CurrentUsageCount)
+
+        <div class="step-content active" data-step="1">
+            <div class="form-section">
+                <h3 class="section-title">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Thông tin c? b?n
+                </h3>
+
+                <div class="form-grid">
+                    <div class="form-group form-grid-full">
+                        <label asp-for="Name" class="form-label form-label-required">Tên khuy?n mãi</label>
+                        <input asp-for="Name" class="form-input" />
+                        <span asp-validation-for="Name" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Code" class="form-label form-label-required">Mã khuy?n mãi</label>
+                        <input asp-for="Code" class="form-input" style="text-transform: uppercase;" />
+                        <span asp-validation-for="Code" class="field-validation-error"></span>
+                        @if (Model.CurrentUsageCount > 0)
+                        {
+                            <div class="usage-badge">
+                                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                                ?ã s? d?ng @Model.CurrentUsageCount l?n
+                            </div>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tr?ng thái</label>
+                        <div style="display: flex; gap: 12px;">
+                            <div class="form-check" style="flex: 1;">
+                                <input asp-for="IsActive" type="checkbox" class="form-check-input" id="isActive" />
+                                <label for="isActive" class="form-check-label">
+                                    <div class="check-label-title">Kích ho?t</div>
+                                    <div class="check-label-desc">Có th? s? d?ng</div>
+                                </label>
+                            </div>
+                            <div class="form-check" style="flex: 1;">
+                                <input asp-for="IsFeatured" type="checkbox" class="form-check-input" id="isFeatured" />
+                                <label for="isFeatured" class="form-check-label">
+                                    <div class="check-label-title">N?i b?t</div>
+                                    <div class="check-label-desc">?u tiên hi?n th?</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-grid-full">
+                        <label asp-for="Description" class="form-label">Mô t?</label>
+                        <textarea asp-for="Description" class="form-textarea" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="field-validation-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Giá tr? gi?m giá
+                </h3>
+
+                <div class="form-grid">
+                    <div class="form-group form-grid-full">
+                        <label asp-for="Type" class="form-label form-label-required">Lo?i gi?m giá</label>
+                        <select asp-for="Type" class="form-select" id="discountType">
+                            <option value="0">Ph?n tr?m (%)</option>
+                            <option value="1">S? ti?n c? ??nh (VND)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group conditional-field show" id="percentageGroup">
+                        <label asp-for="PercentageValue" class="form-label form-label-required">Ph?n tr?m gi?m</label>
+                        <div class="input-group">
+                            <input asp-for="PercentageValue" type="number" class="form-input" min="0.01" max="100" step="0.01" />
+                            <span class="input-addon">%</span>
+                        </div>
+                        <span asp-validation-for="PercentageValue" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group conditional-field" id="fixedGroup">
+                        <label asp-for="FixedValue" class="form-label form-label-required">S? ti?n gi?m</label>
+                        <div class="input-group">
+                            <input asp-for="FixedValue" type="number" class="form-input" min="1000" step="1000" />
+                            <span class="input-addon">VND</span>
+                        </div>
+                        <span asp-validation-for="FixedValue" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="MinimumOrderValue" class="form-label">Giá tr? ??n hàng t?i thi?u</label>
+                        <div class="input-group">
+                            <input asp-for="MinimumOrderValue" type="number" class="form-input" min="0" step="1000" />
+                            <span class="input-addon">VND</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group conditional-field" id="maxDiscountGroup">
+                        <label asp-for="MaximumDiscountAmount" class="form-label">S? ti?n gi?m t?i ?a</label>
+                        <div class="input-group">
+                            <input asp-for="MaximumDiscountAmount" type="number" class="form-input" min="1000" step="1000" />
+                            <span class="input-addon">VND</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-content" data-step="2">
+            <div class="form-section">
+                <h3 class="section-title">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Th?i gian áp d?ng
+                </h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label asp-for="StartDate" class="form-label form-label-required">Ngày b?t ??u</label>
+                        <input asp-for="StartDate" type="datetime-local" class="form-input" />
+                        <span asp-validation-for="StartDate" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="EndDate" class="form-label form-label-required">Ngày k?t thúc</label>
+                        <input asp-for="EndDate" type="datetime-local" class="form-input" />
+                        <span asp-validation-for="EndDate" class="field-validation-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Gi?i h?n s? d?ng
+                </h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label asp-for="MaxUsageCount" class="form-label">T?ng s? l?n s? d?ng</label>
+                        <input asp-for="MaxUsageCount" type="number" class="form-input" placeholder="Không gi?i h?n" min="1" />
+                        <span asp-validation-for="MaxUsageCount" class="field-validation-error"></span>
+                        <small class="helper-text">Hi?n t?i: @Model.CurrentUsageCount / @(Model.MaxUsageCount?.ToString() ?? "?")</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="MaxUsagePerCustomer" class="form-label">S? l?n/khách hàng</label>
+                        <input asp-for="MaxUsagePerCustomer" type="number" class="form-input" placeholder="Không gi?i h?n" min="1" />
+                        <span asp-validation-for="MaxUsagePerCustomer" class="field-validation-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">
+                    <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    Ph?m vi áp d?ng
+                </h3>
+
+                <div class="form-grid">
+                    <div class="form-group form-grid-full">
+                        <label asp-for="Scope" class="form-label form-label-required">Áp d?ng cho</label>
+                        <select asp-for="Scope" class="form-select" id="discountScope">
+                            <option value="0">T?t c? s?n ph?m</option>
+                            <option value="1">S?n ph?m c? th?</option>
+                            <option value="2">Danh m?c c? th?</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-grid-full conditional-field" id="productsGroup">
+                        <label class="form-label">Ch?n s?n ph?m</label>
+                        <select asp-for="SelectedProductIds" asp-items="ViewBag.Products" class="form-select" multiple size="8"></select>
+                        <small class="helper-text">Gi? Ctrl (Windows) ho?c Cmd (Mac) ?? ch?n nhi?u</small>
+                    </div>
+
+                    <div class="form-group form-grid-full conditional-field" id="categoriesGroup">
+                        <label class="form-label">Ch?n danh m?c</label>
+                        <select asp-for="SelectedCategoryIds" asp-items="ViewBag.Categories" class="form-select" multiple size="8"></select>
+                        <small class="helper-text">Gi? Ctrl (Windows) ho?c Cmd (Mac) ?? ch?n nhi?u</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-navigation">
+            <button type="button" class="btn-wizard" id="prevBtn" style="display: none;">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Quay l?i
+            </button>
+            <div style="flex: 1;"></div>
+            <a href="/Admin/Discount/Details/@Model.Id" class="btn-wizard">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                H?y b?
+            </a>
+            <button type="button" class="btn-wizard btn-primary" id="nextBtn">
+                Ti?p theo
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+            <button type="submit" class="btn-wizard btn-primary" id="submitBtn" style="display: none;">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                C?p nh?t khuy?n mãi
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let currentStep = 1;
+        const totalSteps = 2;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateWizardUI();
+            toggleDiscountType();
+            toggleScope();
+            
+            document.getElementById('nextBtn').addEventListener('click', function() {
+                if (validateStep(currentStep)) {
+                    currentStep++;
+                    updateWizardUI();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            
+            document.getElementById('prevBtn').addEventListener('click', function() {
+                currentStep--;
+                updateWizardUI();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            document.getElementById('discountType').addEventListener('change', toggleDiscountType);
+            document.getElementById('discountScope').addEventListener('change', toggleScope);
+            
+            const codeInput = document.querySelector('input[name="Code"]');
+            if (codeInput) {
+                codeInput.addEventListener('input', function(e) {
+                    e.target.value = e.target.value.toUpperCase();
+                });
+            }
+        });
+
+        function updateWizardUI() {
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelector(`.step-content[data-step="${currentStep}"]`).classList.add('active');
+            
+            document.querySelectorAll('.step').forEach((step, index) => {
+                const stepNum = index + 1;
+                step.classList.remove('active', 'completed');
+                
+                if (stepNum === currentStep) {
+                    step.classList.add('active');
+                } else if (stepNum < currentStep) {
+                    step.classList.add('completed');
+                    const stepNumber = step.querySelector('.step-number');
+                    stepNumber.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>';
+                } else {
+                    const stepNumber = step.querySelector('.step-number');
+                    stepNumber.textContent = stepNum;
+                }
+            });
+            
+            document.getElementById('prevBtn').style.display = currentStep === 1 ? 'none' : 'inline-flex';
+            document.getElementById('nextBtn').style.display = currentStep === totalSteps ? 'none' : 'inline-flex';
+            document.getElementById('submitBtn').style.display = currentStep === totalSteps ? 'inline-flex' : 'none';
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                const name = document.querySelector('input[name="Name"]').value.trim();
+                const code = document.querySelector('input[name="Code"]').value.trim();
+                
+                if (!name || !code) {
+                    alert('Vui lòng ?i?n ??y ?? thông tin b?t bu?c ? B??c 1');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function toggleDiscountType() {
+            const type = document.getElementById('discountType').value;
+            const percentageGroup = document.getElementById('percentageGroup');
+            const fixedGroup = document.getElementById('fixedGroup');
+            const maxDiscountGroup = document.getElementById('maxDiscountGroup');
+            
+            if (type === '0') {
+                percentageGroup.classList.add('show');
+                fixedGroup.classList.remove('show');
+                maxDiscountGroup.classList.add('show');
+            } else {
+                percentageGroup.classList.remove('show');
+                fixedGroup.classList.add('show');
+                maxDiscountGroup.classList.remove('show');
+            }
+        }
+
+        function toggleScope() {
+            const scope = document.getElementById('discountScope').value;
+            const productsGroup = document.getElementById('productsGroup');
+            const categoriesGroup = document.getElementById('categoriesGroup');
+            
+            productsGroup.classList.remove('show');
+            categoriesGroup.classList.remove('show');
+            
+            if (scope === '1') {
+                productsGroup.classList.add('show');
+            } else if (scope === '2') {
+                categoriesGroup.classList.add('show');
+            }
+        }
+    </script>
+}

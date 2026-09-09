@@ -1,0 +1,792 @@
+﻿@model ShoesEcommerce.ViewModels.Account.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+    ViewData["MetaDescription"] = "Đăng ký thành viên SPORTS để nhận ưu đãi độc quyền, theo dõi đơn hàng và mua giày thể thao chính hãng.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+@Html.AntiForgeryToken()
+
+<div class="register-page">
+    <div class="register-container">
+        <!-- Left Side - Branding -->
+        <div class="register-brand">
+            <div class="brand-content">
+                <div class="brand-logo">
+                    <span class="logo-text">sports</span>
+                </div>
+                <p class="tagline">Tham gia cộng đồng thể thao</p>
+                
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Miễn phí vận chuyển toàn quốc</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Đổi trả trong 30 ngày</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Ưu đãi độc quyền cho thành viên</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Tích điểm đổi quà hấp dẫn</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Form -->
+        <div class="register-form-wrapper">
+            <div class="form-header">
+                <h1>Tạo tài khoản</h1>
+                <p>Đăng ký để trải nghiệm mua sắm tuyệt vời</p>
+            </div>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>@TempData["ErrorMessage"]</span>
+                </div>
+            }
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Vui lòng kiểm tra lại:</strong>
+                        <ul>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors).Take(3))
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+
+            <form method="post" asp-controller="Account" asp-action="Register" id="registerForm" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+                <!-- Name Row -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="FirstName">Họ</label>
+                        <input asp-for="FirstName" class="form-input" placeholder="Nguyễn" autocomplete="family-name" />
+                        <span asp-validation-for="FirstName" class="error-text"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LastName">Tên</label>
+                        <input asp-for="LastName" class="form-input" placeholder="Văn A" autocomplete="given-name" />
+                        <span asp-validation-for="LastName" class="error-text"></span>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label asp-for="Email">Email</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input asp-for="Email" class="form-input" placeholder="example@@email.com" type="email" autocomplete="email" />
+                    </div>
+                    <span asp-validation-for="Email" class="error-text"></span>
+                    <span id="emailStatus" class="status-text"></span>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label asp-for="PhoneNumber">Số điện thoại</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-phone"></i>
+                        <input asp-for="PhoneNumber" class="form-input" placeholder="0901234567" type="tel" autocomplete="tel" />
+                    </div>
+                    <span asp-validation-for="PhoneNumber" class="error-text"></span>
+                    <span id="phoneStatus" class="status-text"></span>
+                </div>
+
+                <!-- Date of Birth -->
+                <div class="form-group">
+                    <label asp-for="DateOfBirth">Ngày sinh</label>
+                    <div class="date-input-group">
+                        <select id="birthDay" class="form-input date-select">
+                            <option value="">Ngày</option>
+                            @for (int d = 1; d <= 31; d++)
+                            {
+                                <option value="@d">@d</option>
+                            }
+                        </select>
+                        <select id="birthMonth" class="form-input date-select">
+                            <option value="">Tháng</option>
+                            @for (int m = 1; m <= 12; m++)
+                            {
+                                <option value="@m">Tháng @m</option>
+                            }
+                        </select>
+                        <select id="birthYear" class="form-input date-select">
+                            <option value="">Năm</option>
+                            @for (int y = DateTime.Now.Year - 13; y >= 1920; y--)
+                            {
+                                if (y == 1990)
+                                {
+                                    <option value="@y" selected>@y</option>
+                                }
+                                else
+                                {
+                                    <option value="@y">@y</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <input type="hidden" asp-for="DateOfBirth" id="dateOfBirthHidden" />
+                    <span asp-validation-for="DateOfBirth" class="error-text"></span>
+                    <span id="dateStatus" class="status-text"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label asp-for="Password">Mật khẩu</label>
+                    <div class="input-with-icon password-input">
+                        <i class="fas fa-lock"></i>
+                        <input asp-for="Password" class="form-input" placeholder="Ít nhất 6 ký tự" type="password" id="passwordInput" autocomplete="new-password" />
+                        <button type="button" class="toggle-password" onclick="togglePassword('passwordInput', this)">
+                            <i class="fas fa-eye eye-open"></i>
+                            <i class="fas fa-eye-slash eye-closed" style="display:none"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="passwordStrength"></div>
+                    <span asp-validation-for="Password" class="error-text"></span>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword">Xác nhận mật khẩu</label>
+                    <div class="input-with-icon password-input">
+                        <i class="fas fa-lock"></i>
+                        <input asp-for="ConfirmPassword" class="form-input" placeholder="Nhập lại mật khẩu" type="password" id="confirmPasswordInput" autocomplete="new-password" />
+                        <button type="button" class="toggle-password" onclick="togglePassword('confirmPasswordInput', this)">
+                            <i class="fas fa-eye eye-open"></i>
+                            <i class="fas fa-eye-slash eye-closed" style="display:none"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="error-text"></span>
+                    <span id="confirmStatus" class="status-text"></span>
+                </div>
+
+                <!-- Terms -->
+                <div class="form-group terms-group">
+                    <label class="checkbox-label">
+                        <input asp-for="AcceptTerms" type="checkbox" class="checkbox-input" />
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-text">
+                            Tôi đồng ý với <a href="/dieu-khoan" class="link">Điều khoản dịch vụ</a> và <a href="/bao-mat" class="link">Chính sách bảo mật</a>
+                        </span>
+                    </label>
+                    <span asp-validation-for="AcceptTerms" class="error-text"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-text">Đăng ký</span>
+                    <span class="btn-loading" style="display:none">
+                        <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
+                    </span>
+                </button>
+
+                <!-- Login Link -->
+                <div class="login-link">
+                    Đã có tài khoản? <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl">Đăng nhập ngay</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --sports-black: #1a1a1a;
+        --sports-accent: #e63946;
+        --sports-white: #ffffff;
+        --sports-gray-100: #f8f9fa;
+        --sports-gray-200: #e9ecef;
+        --sports-gray-500: #6c757d;
+        --sports-success: #28a745;
+        --sports-error: #dc3545;
+        --sports-warning: #ffc107;
+    }
+
+    .register-page {
+        min-height: 100vh;
+        background: var(--sports-gray-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .register-container {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        max-width: 1000px;
+        width: 100%;
+        background: var(--sports-white);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    /* Brand Side */
+    .register-brand {
+        background: var(--sports-black);
+        color: var(--sports-white);
+        padding: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .brand-content { text-align: center; }
+
+    .brand-logo .logo-text {
+        font-family: 'Arial Black', Arial, sans-serif;
+        font-size: 48px;
+        font-weight: 900;
+        color: var(--sports-white);
+        text-transform: lowercase;
+    }
+
+    .tagline {
+        font-size: 1.1rem;
+        margin: 1rem 0 2.5rem;
+        color: rgba(255,255,255,0.8);
+    }
+
+    .features { text-align: left; }
+
+    .feature {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        color: rgba(255,255,255,0.9);
+    }
+
+    .feature i { color: var(--sports-accent); }
+
+    /* Form Side */
+    .register-form-wrapper { padding: 2.5rem; }
+    
+    .form-header { margin-bottom: 1.5rem; }
+
+    .form-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--sports-black);
+    }
+
+    .form-header p { color: var(--sports-gray-500); margin: 0; }
+
+    /* Alert */
+    .alert {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-error {
+        background: #fff5f5;
+        color: var(--sports-error);
+        border: 1px solid #fed7d7;
+    }
+
+    .alert ul { margin: 0.5rem 0 0 1rem; padding: 0; }
+
+    /* Form */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .form-group { margin-bottom: 1.25rem; }
+
+    .form-group > label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--sports-black);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--sports-gray-200);
+        border-radius: 10px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        background: var(--sports-white);
+        color: var(--sports-black);
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--sports-black);
+        box-shadow: 0 0 0 3px rgba(26,26,26,0.1);
+    }
+
+    .form-input.error { border-color: var(--sports-error); }
+    .form-input.success { border-color: var(--sports-success); }
+
+    .input-with-icon { position: relative; }
+
+    .input-with-icon > i:first-of-type {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--sports-gray-500);
+        z-index: 1;
+    }
+
+    .input-with-icon .form-input { padding-left: 2.75rem; }
+    .password-input .form-input { padding-right: 3rem; }
+
+    .toggle-password {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--sports-gray-500);
+        padding: 0.5rem;
+        z-index: 2;
+    }
+
+    .toggle-password:hover { color: var(--sports-black); }
+
+    /* Date Input */
+    .date-input-group {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr 1.2fr;
+        gap: 0.75rem;
+    }
+
+    .date-select {
+        padding: 0.75rem;
+        cursor: pointer;
+    }
+
+    /* Status Text */
+    .error-text {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--sports-error);
+        margin-top: 0.25rem;
+    }
+
+    .status-text {
+        display: block;
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+
+    .status-text.error { color: var(--sports-error); }
+    .status-text.success { color: var(--sports-success); }
+
+    /* Password Strength */
+    .password-strength { margin-top: 0.5rem; }
+
+    .strength-bar {
+        height: 4px;
+        background: var(--sports-gray-200);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 0.25rem;
+    }
+
+    .strength-fill {
+        height: 100%;
+        transition: width 0.3s, background 0.3s;
+    }
+
+    .strength-text { font-size: 0.75rem; }
+
+    /* Terms Checkbox */
+    .terms-group { margin-top: 1.5rem; }
+
+    .checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        cursor: pointer;
+    }
+
+    .checkbox-input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .checkbox-custom {
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        border: 2px solid var(--sports-gray-200);
+        border-radius: 5px;
+        position: relative;
+        transition: all 0.2s;
+        background: var(--sports-white);
+    }
+
+    .checkbox-label:hover .checkbox-custom {
+        border-color: var(--sports-black);
+    }
+
+    .checkbox-input:checked + .checkbox-custom {
+        background: var(--sports-black);
+        border-color: var(--sports-black);
+    }
+
+    .checkbox-input:checked + .checkbox-custom::after {
+        content: '';
+        position: absolute;
+        left: 6px;
+        top: 2px;
+        width: 6px;
+        height: 10px;
+        border: solid var(--sports-white);
+        border-width: 0 2.5px 2.5px 0;
+        transform: rotate(45deg);
+    }
+
+    .checkbox-text {
+        font-size: 0.875rem;
+        color: var(--sports-gray-500);
+        line-height: 1.5;
+    }
+
+    .link {
+        color: var(--sports-accent);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .link:hover { text-decoration: underline; }
+
+    /* Submit Button */
+    .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: var(--sports-black);
+        color: var(--sports-white);
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn-submit:hover {
+        background: var(--sports-accent);
+        transform: translateY(-2px);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Login Link */
+    .login-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--sports-gray-500);
+        font-size: 0.9rem;
+    }
+
+    .login-link a {
+        color: var(--sports-accent);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .login-link a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @@media (max-width: 900px) {
+        .register-container {
+            grid-template-columns: 1fr;
+            max-width: 500px;
+        }
+        .register-brand { display: none; }
+        .register-form-wrapper { padding: 2rem; }
+    }
+
+    @@media (max-width: 480px) {
+        .register-page { padding: 1rem; }
+        .register-form-wrapper { padding: 1.5rem; }
+        .form-row { grid-template-columns: 1fr; }
+        .date-input-group { grid-template-columns: 1fr; }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date
+    document.getElementById('birthDay').value = 1;
+    document.getElementById('birthMonth').value = 1;
+    document.getElementById('birthYear').value = 1990;
+    updateHiddenDate();
+
+    ['birthDay', 'birthMonth', 'birthYear'].forEach(function(id) {
+        document.getElementById(id).addEventListener('change', function() {
+            updateHiddenDate();
+            validateAge();
+        });
+    });
+
+    function updateHiddenDate() {
+        var day = document.getElementById('birthDay').value;
+        var month = document.getElementById('birthMonth').value;
+        var year = document.getElementById('birthYear').value;
+        
+        if (day && month && year) {
+            var dateStr = year + '-' + month.toString().padStart(2, '0') + '-' + day.toString().padStart(2, '0');
+            document.getElementById('dateOfBirthHidden').value = dateStr;
+        }
+    }
+
+    function validateAge() {
+        var day = parseInt(document.getElementById('birthDay').value);
+        var month = parseInt(document.getElementById('birthMonth').value);
+        var year = parseInt(document.getElementById('birthYear').value);
+        var statusEl = document.getElementById('dateStatus');
+
+        if (!day || !month || !year) {
+            statusEl.textContent = '';
+            return true;
+        }
+
+        var birthDate = new Date(year, month - 1, day);
+        var today = new Date();
+        var age = today.getFullYear() - birthDate.getFullYear();
+        var monthDiff = today.getMonth() - birthDate.getMonth();
+
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        if (age < 13) {
+            statusEl.textContent = 'Bạn phải trên 13 tuổi để đăng ký';
+            statusEl.className = 'status-text error';
+            return false;
+        } else {
+            statusEl.textContent = age + ' tuổi ✓';
+            statusEl.className = 'status-text success';
+            return true;
+        }
+    }
+
+    window.togglePassword = function(inputId, btn) {
+        var input = document.getElementById(inputId);
+        var eyeOpen = btn.querySelector('.eye-open');
+        var eyeClosed = btn.querySelector('.eye-closed');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeOpen.style.display = 'none';
+            eyeClosed.style.display = 'inline';
+        } else {
+            input.type = 'password';
+            eyeOpen.style.display = 'inline';
+            eyeClosed.style.display = 'none';
+        }
+    };
+
+    // Password strength
+    document.getElementById('passwordInput').addEventListener('input', function() {
+        var password = this.value;
+        var strengthDiv = document.getElementById('passwordStrength');
+        
+        if (!password) {
+            strengthDiv.innerHTML = '';
+            return;
+        }
+
+        var strength = 0;
+        if (password.length >= 6) strength++;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        var percent = (strength / 5) * 100;
+        var color, text;
+        
+        if (strength < 2) { color = '#dc3545'; text = 'Yếu'; }
+        else if (strength < 4) { color = '#ffc107'; text = 'Trung bình'; }
+        else { color = '#28a745'; text = 'Mạnh'; }
+
+        strengthDiv.innerHTML = '<div class="strength-bar"><div class="strength-fill" style="width:' + percent + '%;background:' + color + '"></div></div><span class="strength-text" style="color:' + color + '">' + text + '</span>';
+    });
+
+    // Confirm password
+    document.getElementById('confirmPasswordInput').addEventListener('input', function() {
+        var password = document.getElementById('passwordInput').value;
+        var confirm = this.value;
+        var statusEl = document.getElementById('confirmStatus');
+
+        if (!confirm) {
+            statusEl.textContent = '';
+            return;
+        }
+
+        if (password === confirm) {
+            statusEl.textContent = 'Mật khẩu khớp ✓';
+            statusEl.className = 'status-text success';
+        } else {
+            statusEl.textContent = 'Mật khẩu không khớp';
+            statusEl.className = 'status-text error';
+        }
+    });
+
+    // Email check
+    var emailTimeout;
+    document.getElementById('Email').addEventListener('input', function() {
+        clearTimeout(emailTimeout);
+        var email = this.value;
+        var statusEl = document.getElementById('emailStatus');
+        var input = this;
+
+        if (!email || email.indexOf('@@') === -1) {
+            statusEl.textContent = '';
+            input.classList.remove('success', 'error');
+            return;
+        }
+
+        emailTimeout = setTimeout(function() {
+            fetch('/Account/CheckEmailExists', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: 'email=' + encodeURIComponent(email)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.exists) {
+                    statusEl.textContent = 'Email đã được sử dụng';
+                    statusEl.className = 'status-text error';
+                    input.classList.add('error');
+                } else {
+                    statusEl.textContent = 'Email hợp lệ ✓';
+                    statusEl.className = 'status-text success';
+                    input.classList.add('success');
+                }
+            })
+            .catch(function() { statusEl.textContent = ''; });
+        }, 500);
+    });
+
+    // Phone check
+    var phoneTimeout;
+    document.getElementById('PhoneNumber').addEventListener('input', function() {
+        clearTimeout(phoneTimeout);
+        var phone = this.value;
+        var statusEl = document.getElementById('phoneStatus');
+        var input = this;
+
+        if (!phone || phone.length < 10) {
+            statusEl.textContent = '';
+            input.classList.remove('success', 'error');
+            return;
+        }
+
+        var pattern = /^(0[3|5|7|8|9])[0-9]{8}$/;
+        if (!pattern.test(phone)) {
+            statusEl.textContent = 'Số điện thoại không hợp lệ';
+            statusEl.className = 'status-text error';
+            input.classList.add('error');
+            return;
+        }
+
+        phoneTimeout = setTimeout(function() {
+            fetch('/Account/CheckPhoneExists', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: 'phoneNumber=' + encodeURIComponent(phone)
+            )
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.exists) {
+                    statusEl.textContent = 'Số điện thoại đã được sử dụng';
+                    statusEl.className = 'status-text error';
+                    input.classList.add('error');
+                } else {
+                    statusEl.textContent = 'Số điện thoại hợp lệ ✓';
+                    statusEl.className = 'status-text success';
+                    input.classList.add('success');
+                }
+            })
+            .catch(function() { statusEl.textContent = ''; });
+        }, 500);
+    });
+
+    // Form submit
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        var btn = document.getElementById('submitBtn');
+        var btnText = btn.querySelector('.btn-text');
+        var btnLoading = btn.querySelector('.btn-loading');
+
+        if (!validateAge()) {
+            e.preventDefault();
+            return false;
+        }
+
+        updateHiddenDate();
+
+        var day = document.getElementById('birthDay').value;
+        var month = document.getElementById('birthMonth').value;
+        var year = document.getElementById('birthYear').value;
+
+        if (!day || !month || !year) {
+            e.preventDefault();
+            document.getElementById('dateStatus').textContent = 'Vui lòng chọn đầy đủ ngày sinh';
+            document.getElementById('dateStatus').className = 'status-text error';
+            return false;
+        }
+
+        btn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'flex';
+
+        setTimeout(function() {
+            btn.disabled = false;
+            btnText.style.display = 'block';
+            btnLoading.style.display = 'none';
+        }, 10000);
+    });
+});
+</script>

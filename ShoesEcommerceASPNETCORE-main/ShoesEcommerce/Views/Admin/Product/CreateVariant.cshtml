@@ -1,0 +1,909 @@
+﻿@model ShoesEcommerce.ViewModels.Product.CreateProductVariantViewModel
+
+@{
+    ViewData["Title"] = "Thêm Phiên bản mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="product-variant-create">
+    <!-- Page Header -->
+    <div class="page-header bg-gradient-success text-white rounded-3 mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title mb-2">
+                    <i class="fas fa-palette me-2"></i>
+                    Thêm Phiên bản mới
+                </h2>
+                <p class="page-subtitle mb-0 opacity-75">Tạo phiên bản sản phẩm với giá và tồn kho riêng</p>
+            </div>
+            <div class="page-actions">
+                <a href="@Url.Action("Details", new { id = Model.ProductId })" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Quay lại sản phẩm
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast Notification Area -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        <!-- Toasts will be dynamically added here -->
+    </div>
+
+    <!-- Product Info -->
+    @if (ViewBag.Product != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-cube fa-2x me-3"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Đang tạo phiên bản cho:</h6>
+                    <strong>@ViewBag.Product.Name</strong>
+                    <small class="d-block text-muted">ID: #@Model.ProductId</small>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Validation Summary -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <h6 class="alert-heading mb-2">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Có lỗi trong form:
+            </h6>
+            <div class="validation-errors">
+                @foreach (var modelError in ViewData.ModelState)
+                {
+                    if (modelError.Value.Errors.Count > 0)
+                    {
+                        <div class="mb-2">
+                            <strong>@modelError.Key:</strong>
+                            <ul class="mb-0 ms-3">
+                                @foreach (var error in modelError.Value.Errors)
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                }
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Form Section -->
+        <div class="col-lg-8 col-md-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Thông tin phiên bản
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-controller="Product" asp-action="CreateVariant" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="ProductId" />
+                        
+                        <div class="row">
+                            <!-- Color Selection -->
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="Color" class="form-label fw-semibold required">
+                                    <i class="fas fa-palette me-1"></i>Màu sắc
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="Color" class="form-control form-control-lg" 
+                                           placeholder="VD: Đỏ, Xanh, Đen..." list="colorSuggestions" required>
+                                    <button type="button" class="btn btn-outline-secondary" id="colorPicker">
+                                        <i class="fas fa-eye-dropper"></i>
+                                    </button>
+                                </div>
+                                <datalist id="colorSuggestions">
+                                    <option value="Đỏ"></option>
+                                    <option value="Xanh"></option>
+                                    <option value="Đen"></option>
+                                    <option value="Trắng"></option>
+                                    <option value="Vàng"></option>
+                                    <option value="Xanh lá"></option>
+                                    <option value="Tím"></option>
+                                    <option value="Hồng"></option>
+                                    <option value="Nâu"></option>
+                                    <option value="Xám"></option>
+                                    <option value="Cam"></option>
+                                </datalist>
+                                <span asp-validation-for="Color" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Chọn từ gợi ý hoặc nhập màu tùy chỉnh
+                                </div>
+                            </div>
+
+                            <!-- Size Selection -->
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="Size" class="form-label fw-semibold required">
+                                    <i class="fas fa-ruler-combined me-1"></i>Kích thước
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="Size" class="form-control form-control-lg" 
+                                           placeholder="VD: 38, 39, M, L..." list="sizeSuggestions" required>
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" 
+                                            data-bs-toggle="dropdown">
+                                        <i class="fas fa-list"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><h6 class="dropdown-header">Giày dép</h6></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="35">35</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="36">36</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="37">37</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="38">38</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="39">39</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="40">40</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="41">41</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="42">42</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="43">43</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="44">44</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Quần áo</h6></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="XS">XS</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="S">S</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="M">M</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="L">L</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="XL">XL</a></li>
+                                        <li><a class="dropdown-item size-option" href="#" data-size="XXL">XXL</a></li>
+                                    </ul>
+                                </div>
+                                <span asp-validation-for="Size" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Chọn từ menu hoặc nhập kích thước tùy chỉnh
+                                </div>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="Price" class="form-label fw-semibold required">
+                                    <i class="fas fa-dollar-sign me-1"></i>Giá bán (VNĐ)
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="Price" type="number" step="1" min="1" 
+                                           class="form-control form-control-lg" 
+                                           placeholder="250000" required>
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Giá cụ thể cho phiên bản này (tối thiểu 1 VNĐ)
+                                </div>
+                            </div>
+
+                            <!-- Stock Quantity -->
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="InitialStockQuantity" class="form-label fw-semibold required">
+                                    <i class="fas fa-boxes me-1"></i>Số lượng tồn kho ban đầu
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="InitialStockQuantity" type="number" min="0" 
+                                           class="form-control form-control-lg" 
+                                           placeholder="50" required>
+                                    <span class="input-group-text">cái</span>
+                                </div>
+                                <span asp-validation-for="InitialStockQuantity" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Số lượng ban đầu khi tạo phiên bản (tối thiểu 0)
+                                </div>
+                            </div>
+
+                            <!-- Image Upload -->
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-image me-1"></i>Hình ảnh phiên bản (Tùy chọn)
+                                </label>
+                                
+                                <!-- File Upload Section -->
+                                <div id="fileUploadSection" class="image-upload-section">
+                                    <div class="upload-area" id="uploadArea">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                            <h6>Kéo thả hình ảnh vào đây</h6>
+                                            <p class="text-muted mb-3">hoặc</p>
+                                            <button type="button" class="btn btn-primary" onclick="document.getElementById('imageFile').click()">
+                                                <i class="fas fa-folder-open me-2"></i>Chọn file
+                                            </button>
+                                            <input type="file" asp-for="ImageFile" id="imageFile" accept="image/*" class="d-none" onchange="handleFileSelect(this)">
+                                        </div>
+                                    </div>
+                                    <div class="upload-info mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Định dạng: JPG, PNG, GIF, WebP. Kích thước tối đa: 5MB
+                                        </small>
+                                    </div>
+                                    <span asp-validation-for="ImageFile" class="text-danger small"></span>
+                                </div>
+
+                                <!-- Image Preview -->
+                                <div id="imagePreview" class="image-preview mt-3" style="display: none;">
+                                    <div class="preview-header d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0">Xem trước hình ảnh</h6>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearImagePreview()">
+                                            <i class="fas fa-times me-1"></i>Xóa
+                                        </button>
+                                    </div>
+                                    <div class="preview-container">
+                                        <img id="previewImg" src="#" alt="Preview" class="img-fluid rounded">
+                                    </div>
+                                    <div class="preview-details mt-2">
+                                        <small id="imageDetails" class="text-muted"></small>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden fields -->
+                                <input type="hidden" asp-for="UseImageUrl" value="false">
+                                <input type="hidden" name="ImageUrl" value="">
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap gap-3 justify-content-between">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-success btn-lg px-4" id="submitButton">
+                                            <i class="fas fa-save me-2"></i>
+                                            Lưu phiên bản
+                                        </button>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="reset" class="btn btn-outline-secondary btn-lg" onclick="resetFormAndPreview()">
+                                            <i class="fas fa-undo me-2"></i>
+                                            Đặt lại
+                                        </button>
+                                        <a href="@Url.Action("Details", new { id = Model.ProductId })" class="btn btn-light btn-lg">
+                                            <i class="fas fa-times me-2"></i>
+                                            Hủy
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview & Guidelines -->
+        <div class="col-lg-4 col-md-12 mb-4">
+            <!-- Variant Preview -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-eye me-2"></i>
+                        Xem trước phiên bản
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="variant-preview">
+                        <div class="preview-image mb-3">
+                            <div id="variantPreviewImage" class="placeholder-image-container" 
+                                 style="width: 150px; height: 150px; max-height: 150px; object-fit: cover; margin: 0 auto; 
+                                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                                        border: 2px dashed #dee2e6; border-radius: 0.375rem; 
+                                        display: flex; align-items: center; justify-content: center; 
+                                        flex-direction: column; color: #6c757d;">
+                                <i class="fas fa-image fa-2x mb-2"></i>
+                                <small>Chưa có ảnh</small>
+                            </div>
+                        </div>
+                        <div class="preview-info">
+                            <h6 id="variantPreviewName">Tên phiên bản</h6>
+                            <div class="preview-badges mb-2">
+                                <span id="colorBadge" class="badge bg-secondary me-1">Màu sắc</span>
+                                <span id="sizeBadge" class="badge bg-secondary">Kích thước</span>
+                            </div>
+                            <div class="preview-price">
+                                <strong id="priceBadge" class="text-success">0 VNĐ</strong>
+                            </div>
+                            <div class="preview-stock">
+                                <small id="stockBadge" class="text-muted">Tồn kho: 0</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guidelines -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Hướng dẫn & Mẹo
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="guidelines">
+                        <div class="guideline-item mb-3">
+                            <h6><i class="fas fa-check-circle text-success me-1"></i> Bắt buộc</h6>
+                            <ul class="small mb-0">
+                                <li>Màu sắc và kích thước không được trống</li>
+                                <li>Giá phải lớn hơn 0</li>
+                                <li>Số lượng tồn kho ≥ 0</li>
+                            </ul>
+                        </div>
+
+                        <div class="guideline-item">
+                            <h6><i class="fas fa-image text-info me-1"></i> Hình ảnh (Tùy chọn)</h6>
+                            <ul class="small mb-0">
+                                <li>Định dạng: JPG, PNG, GIF, WebP</li>
+                                <li>Kích thước khuyến nghị: 800x800px</li>
+                                <li>Dung lượng tối đa: 5MB</li>
+                                <li>Có thể bỏ trống nếu không có ảnh</li>
+                            </ul>
+                        </div>
+
+                        <div class="guideline-item">
+                            <h6><i class="fas fa-keyboard text-primary me-1"></i> Phím tắt</h6>
+                            <ul class="small mb-0">
+                                <li><kbd>Ctrl + S</kbd> - Lưu phiên bản</li>
+                                <li><kbd>Ctrl + R</kbd> - Đặt lại form</li>
+                                <li><kbd>Esc</kbd> - Hủy và quay lại</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .variant-preview {
+            padding: 1rem;
+            border: 2px dashed #dee2e6;
+            border-radius: 0.5rem;
+            background: #f8f9fa;
+        }
+        
+        .variant-preview.active {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        .preview-image img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 0.375rem;
+        }
+        
+        .guideline-item {
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 0.375rem;
+        }
+        
+        .dropdown-menu {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .size-option:hover {
+            background: #28a745;
+            color: white;
+        }
+        
+        .image-upload-section {
+            border: 2px dashed #007bff;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+        
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .upload-content {
+            pointer-events: none;
+        }
+        
+        .upload-option-toggle .btn-check:checked + .btn {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        
+        .image-preview {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            background: white;
+        }
+        
+        .preview-container {
+            text-align: center;
+            max-height: 200px;
+            overflow: hidden;
+        }
+        
+        .preview-container img {
+            max-height: 200px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .image-url-section .input-group {
+            border-radius: 0.5rem;
+        }
+        
+        .price-range-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #28a745;
+        }
+        
+        @@media (max-width: 768px) {
+            .page-header .page-actions {
+                margin-top: 1rem;
+            }
+            
+            .d-flex.gap-3.justify-content-between {
+                flex-direction: column;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        // Check if form is valid
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // Form submission with loading state
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form.needs-validation');
+            const submitButton = document.getElementById('submitButton');
+            
+            if (form && submitButton) {
+                // Add form submit event listener
+                form.addEventListener('submit', function(e) {
+                    // Clear previous validation classes
+                    form.classList.remove('was-validated');
+                    
+                    // Before validation, ensure ImageUrl is not required
+                    const imageUrlInput = document.querySelector('input[name="ImageUrl"]');
+                    if (imageUrlInput) {
+                        imageUrlInput.removeAttribute('required');
+                    }
+                    
+                    // Check form validity
+                    const isValid = form.checkValidity();
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Add validation classes
+                        form.classList.add('was-validated');
+                        
+                        // Find and focus first invalid field
+                        const firstInvalid = form.querySelector(':invalid');
+                        if (firstInvalid) {
+                            firstInvalid.focus();
+                        }
+                        
+                        return false;
+                    } else {
+                        // Show loading state
+                        submitButton.disabled = true;
+                        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+                        
+                        // Allow form submission to proceed
+                        return true;
+                    }
+                });
+            }
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+S to save
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    if (form && !submitButton.disabled) {
+                        form.requestSubmit();
+                    }
+                }
+                
+                // Ctrl+R to reset
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    resetFormAndPreview();
+                }
+                
+                // Escape to cancel (navigate back)
+                if (e.key === 'Escape') {
+                    const cancelLink = document.querySelector('a.btn-light[href*="Details"]');
+                    if (cancelLink && confirm('Bạn có muốn hủy và quay lại trang sản phẩm?')) {
+                        window.location.href = cancelLink.href;
+                    }
+                }
+            });
+        });
+
+        // Size option selection
+        document.addEventListener('DOMContentLoaded', function() {
+            // Size option click handlers
+            document.querySelectorAll('.size-option').forEach(function(option) {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sizeValue = this.dataset.size;
+                    document.getElementById('Size').value = sizeValue;
+                    updatePreview();
+                });
+            });
+
+            // Image upload area setup
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, preventDefaults, false);
+                    document.body.addEventListener(eventName, preventDefaults, false);
+                });
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, highlight, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, unhighlight, false);
+                });
+
+                uploadArea.addEventListener('drop', handleDrop, false);
+                uploadArea.addEventListener('click', function() {
+                    document.getElementById('imageFile').click();
+                });
+            }
+
+            // Live preview updates - setup event listeners for real-time updates
+            ['Color', 'Size', 'Price', 'InitialStockQuantity'].forEach(function(id) {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Update preview on both input and change events
+                    element.addEventListener('input', updatePreview);
+                    element.addEventListener('change', updatePreview);
+                    element.addEventListener('keyup', updatePreview);
+                }
+            });
+
+            // Price input handling
+            const priceField = document.getElementById('Price');
+            if (priceField) {
+                priceField.addEventListener('input', function() {
+                    // Remove any invalid characters but keep numbers
+                    let value = this.value.replace(/[^\d]/g, '');
+                    
+                    // Ensure minimum value of 1
+                    if (value && parseInt(value) < 1) {
+                        value = '1';
+                    }
+                    
+                    this.value = value;
+                    updatePreview();
+                });
+                
+                priceField.addEventListener('blur', function() {
+                    // Ensure minimum value on blur
+                    if (!this.value || parseInt(this.value) < 1) {
+                        this.value = '1';
+                        updatePreview();
+                    }
+                });
+            }
+
+            // Initial preview update
+            setTimeout(updatePreview, 100);
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function highlight() {
+                uploadArea.classList.add('dragover');
+            }
+
+            function unhighlight() {
+                uploadArea.classList.remove('dragover');
+            }
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    const file = files[0];
+                    document.getElementById('imageFile').files = files;
+                    validateAndPreviewFile(file);
+                }
+            }
+        });
+
+        // Toggle image option - file/url
+        function toggleImageOption(option) {
+            const fileSection = document.getElementById('fileUploadSection');
+            const urlSection = document.getElementById('urlInputSection');
+            const useImageUrlField = document.getElementById('useImageUrlField');
+            
+            if (option === 'file') {
+                fileSection.style.display = 'block';
+                urlSection.style.display = 'none';
+                useImageUrlField.value = 'false';
+            } else {
+                fileSection.style.display = 'none';
+                urlSection.style.display = 'block';
+                useImageUrlField.value = 'true';
+            }
+            
+            clearImagePreview();
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            
+            if (file) {
+                return validateAndPreviewFile(file);
+            } else {
+                clearImagePreview();
+                return false;
+            }
+        }
+
+        function validateAndPreviewFile(file) {
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type.toLowerCase())) {
+                alert('Chỉ chấp nhận file hình ảnh (JPG, PNG, GIF, WebP)');
+                clearImagePreview();
+                return false;
+            }
+
+            // Validate file size (5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('Kích thước file không được vượt quá 5MB');
+                clearImagePreview();
+                return false;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                showImagePreview(e.target.result, file);
+            };
+            reader.onerror = function(e) {
+                alert('Không thể đọc file. Vui lòng thử lại.');
+                clearImagePreview();
+            };
+            reader.readAsDataURL(file);
+            
+            return true;
+        }
+
+        function showImagePreview(src, file = null) {
+            const preview = document.getElementById('imagePreview');
+            const img = document.getElementById('previewImg');
+            const details = document.getElementById('imageDetails');
+            
+            if (preview && img && details) {
+                img.src = src;
+                preview.style.display = 'block';
+                
+                if (file) {
+                    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                    details.textContent = `${file.name} - ${sizeInMB}MB`;
+                } else {
+                    details.textContent = 'Image Preview';
+                }
+                
+                // Update the variant preview immediately after setting the image
+                setTimeout(updatePreview, 50);
+            }
+        }
+
+        function clearImagePreview() {
+            const preview = document.getElementById('imagePreview');
+            const fileInput = document.getElementById('imageFile');
+            
+            if (preview) preview.style.display = 'none';
+            if (fileInput) fileInput.value = '';
+            
+            updatePreview();
+        }
+
+        // Reset form and preview function
+        function resetFormAndPreview() {
+            // Clear image preview
+            clearImagePreview();
+            
+            // Reset form validation classes
+            const form = document.querySelector('form.needs-validation');
+            if (form) {
+                form.classList.remove('was-validated');
+                
+                // Remove validation error classes from all form controls
+                form.querySelectorAll('.form-control, .form-select').forEach(function(element) {
+                    element.classList.remove('is-invalid', 'is-valid');
+                });
+                
+                // Clear any validation error messages
+                form.querySelectorAll('.invalid-feedback, .text-danger').forEach(function(element) {
+                    element.style.display = 'none';
+                });
+            }
+            
+            // Update preview after reset
+            setTimeout(function() {
+                updatePreview();
+            }, 100);
+            
+            // Show success message
+            showToast('Form đã được đặt lại', 'info', 'Tất cả dữ liệu đã được xóa');
+        }
+
+        // Preview update function
+        function updatePreview() {
+            const colorElement = document.getElementById('Color');
+            const sizeElement = document.getElementById('Size');
+            const priceElement = document.getElementById('Price');
+            const stockElement = document.getElementById('InitialStockQuantity');
+            
+            const color = colorElement ? colorElement.value || 'Màu sắc' : 'Màu sắc';
+            const size = sizeElement ? sizeElement.value || 'Kích thước' : 'Kích thước';
+            const price = priceElement ? priceElement.value || '0' : '0';
+            const stock = stockElement ? stockElement.value || '0' : '0';
+
+            // Update preview elements
+            const nameElement = document.getElementById('variantPreviewName');
+            const colorBadge = document.getElementById('colorBadge');
+            const sizeBadge = document.getElementById('sizeBadge');
+            const priceBadge = document.getElementById('priceBadge');
+            const stockBadge = document.getElementById('stockBadge');
+
+            if (nameElement) nameElement.textContent = `${color} - ${size}`;
+            if (colorBadge) colorBadge.textContent = color;
+            if (sizeBadge) sizeBadge.textContent = size;
+            if (priceBadge) {
+                const formattedPrice = price ? parseInt(price).toLocaleString('vi-VN') : '0';
+                priceBadge.textContent = `${formattedPrice} VNĐ`;
+            }
+            if (stockBadge) stockBadge.textContent = `Tồn kho: ${stock}`;
+
+            // Update preview image
+            const previewContainer = document.getElementById('variantPreviewImage');
+            const variantPreview = document.querySelector('.variant-preview');
+            
+            if (previewContainer && variantPreview) {
+                const currentPreview = document.getElementById('previewImg');
+                
+                if (currentPreview && currentPreview.src && 
+                    !currentPreview.src.includes('placeholder') && 
+                    !currentPreview.src.includes('via.placeholder') && 
+                    currentPreview.style.display !== 'none' &&
+                    currentPreview.src !== '#' &&
+                    document.getElementById('imagePreview').style.display !== 'none') {
+                    
+                    // Show actual image in preview
+                    previewContainer.innerHTML = `<img src="${currentPreview.src}" alt="Preview" class="img-fluid rounded" style="max-height: 150px; width: 150px; object-fit: cover;">`;
+                    variantPreview.classList.add('active');
+                } else {
+                    // Show placeholder
+                    previewContainer.innerHTML = `
+                        <div style="width: 150px; height: 150px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                                    border: 2px dashed #dee2e6; border-radius: 0.375rem; 
+                                    display: flex; align-items: center; justify-content: center; 
+                                    flex-direction: column; color: #6c757d;">
+                            <i class="fas fa-image fa-2x mb-2"></i>
+                            <small>Chưa có ảnh</small>
+                        </div>`;
+                    variantPreview.classList.remove('active');
+                }
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success', details = '') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+            
+            const toastTypes = {
+                success: { icon: 'fas fa-check-circle', class: 'bg-success' },
+                error: { icon: 'fas fa-exclamation-circle', class: 'bg-danger' },
+                warning: { icon: 'fas fa-exclamation-triangle', class: 'bg-warning' },
+                info: { icon: 'fas fa-info-circle', class: 'bg-info' }
+            };
+            
+            const toast = toastTypes[type] || toastTypes.success;
+            
+            const toastHTML = `
+                <div id="${toastId}" class="toast align-items-center text-white ${toast.class} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <div class="d-flex align-items-center">
+                                <i class="${toast.icon} me-2"></i>
+                                <div>
+                                    <strong>${message}</strong>
+                                    ${details ? `<div class="small mt-1">${details}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            
+            const toastElement = document.getElementById(toastId);
+            const toast_bootstrap = new bootstrap.Toast(toastElement);
+            toast_bootstrap.show();
+            
+            // Remove toast element after it's hidden
+            toastElement.addEventListener('hidden.bs.toast', function() {
+                this.remove();
+            });
+        }
+    </script>
+}

@@ -1,0 +1,563 @@
+﻿@model ShoesEcommerce.Models.Products.Product
+@{
+    ViewData["Title"] = "Chi tiết Sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var variants = ViewBag.Variants as IEnumerable<ShoesEcommerce.ViewModels.Product.ProductVariantInfo>;
+    var totalStock = variants?.Sum(v => v.StockQuantity) ?? 0;
+    var variantCount = variants?.Count() ?? 0;
+    var minPrice = variants?.Any() == true ? variants.Min(v => v.Price) : 0;
+    var maxPrice = variants?.Any() == true ? variants.Max(v => v.Price) : 0;
+}
+
+<div class="page-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a href="/Admin" class="breadcrumb-link">Dashboard</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/Admin/Product" class="breadcrumb-link">Sản phẩm</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">@Model.Name</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1>@Model.Name</h1>
+            <div class="header-meta">
+                <span class="meta-item">ID: #@Model.Id</span>
+                <span class="meta-sep">·</span>
+                <span class="meta-item">@Model.Category?.Name</span>
+                <span class="meta-sep">·</span>
+                <span class="meta-item">@Model.Brand?.Name</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="/Admin/Product/Edit/@Model.Id" class="btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Chỉnh sửa
+            </a>
+            <a href="/Admin/Product" class="btn-back">Quay lại</a>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert-box success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <span class="stat-value">@variantCount</span>
+            <span class="stat-label">Phiên bản</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-value">@totalStock</span>
+            <span class="stat-label">Tồn kho</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-value">@minPrice.ToString("N0")₫</span>
+            <span class="stat-label">Giá thấp nhất</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-value">@maxPrice.ToString("N0")₫</span>
+            <span class="stat-label">Giá cao nhất</span>
+        </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="content-section">
+        <div class="section-header">
+            <h2>Thông tin sản phẩm</h2>
+        </div>
+        <div class="section-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Danh mục</span>
+                    <span class="info-value">@Model.Category?.Name</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Thương hiệu</span>
+                    <span class="info-value">@Model.Brand?.Name</span>
+                </div>
+                <div class="info-item full">
+                    <span class="info-label">Mô tả</span>
+                    <span class="info-value">@(string.IsNullOrEmpty(Model.Description) ? "Chưa có mô tả" : Model.Description)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variants -->
+    <div class="content-section">
+        <div class="section-header">
+            <h2>Phiên bản (@variantCount)</h2>
+            <a href="/Admin/Product/CreateVariant?productId=@Model.Id" class="btn-primary-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Thêm phiên bản
+            </a>
+        </div>
+        <div class="section-body no-padding">
+            @if (variants?.Any() == true)
+            {
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Hình ảnh</th>
+                            <th>Màu sắc</th>
+                            <th>Kích thước</th>
+                            <th>Giá</th>
+                            <th>Tồn kho</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var variant in variants.OrderBy(v => v.Color).ThenBy(v => v.Size))
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(variant.ImageUrl))
+                                    {
+                                        <img src="@variant.ImageUrl" alt="" class="variant-thumb" onerror="this.src='/images/no-image.png';">
+                                    }
+                                    else
+                                    {
+                                        <div class="variant-thumb placeholder">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                <polyline points="21 15 16 10 5 21"></polyline>
+                                            </svg>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="color-badge">
+                                        <span class="color-dot" style="background-color: @GetColorCode(variant.Color)"></span>
+                                        @variant.Color
+                                    </span>
+                                </td>
+                                <td>@variant.Size</td>
+                                <td class="text-medium">@variant.Price.ToString("N0")₫</td>
+                                <td>
+                                    @if (variant.StockQuantity > 0)
+                                    {
+                                        <span class="stock-badge">@variant.StockQuantity</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="stock-badge out">Hết</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (variant.StockQuantity > 10)
+                                    {
+                                        <span class="status-badge success">Còn hàng</span>
+                                    }
+                                    else if (variant.StockQuantity > 0)
+                                    {
+                                        <span class="status-badge warning">Sắp hết</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge danger">Hết hàng</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="row-actions">
+                                        <a href="/Admin/Product/EditVariant/@variant.Id" class="action-btn" title="Chỉnh sửa">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                            </svg>
+                                        </a>
+                                        <a href="/Admin/Product/DeleteVariant/@variant.Id" class="action-btn danger" title="Xóa" onclick="return confirm('Xóa phiên bản này?')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state-inline">
+                    <p>Chưa có phiên bản nào</p>
+                    <a href="/Admin/Product/CreateVariant?productId=@Model.Id" class="btn-primary-sm">Thêm phiên bản đầu tiên</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetColorCode(string colorName)
+    {
+        if (string.IsNullOrEmpty(colorName)) return "#6b7280";
+        var colors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "đỏ", "#dc2626" }, { "red", "#dc2626" },
+            { "xanh", "#2563eb" }, { "blue", "#2563eb" },
+            { "vàng", "#eab308" }, { "yellow", "#eab308" },
+            { "xanh lá", "#16a34a" }, { "green", "#16a34a" },
+            { "cam", "#ea580c" }, { "orange", "#ea580c" },
+            { "tím", "#9333ea" }, { "purple", "#9333ea" },
+            { "hồng", "#db2777" }, { "pink", "#db2777" },
+            { "đen", "#171717" }, { "black", "#171717" },
+            { "trắng", "#e5e7eb" }, { "white", "#e5e7eb" },
+            { "xám", "#6b7280" }, { "gray", "#6b7280" },
+            { "nâu", "#78350f" }, { "brown", "#78350f" }
+        };
+        return colors.ContainsKey(colorName) ? colors[colorName] : "#6b7280";
+    }
+}
+
+@section Styles {
+<style>
+    .page-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .breadcrumb-link { color: #6b7280; text-decoration: none; }
+    .breadcrumb-link:hover { color: #111827; }
+    .breadcrumb-sep { color: #d1d5db; }
+    .breadcrumb-current { color: #111827; font-weight: 500; }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header-content h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.375rem;
+    }
+
+    .header-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .meta-sep { color: #d1d5db; }
+
+    .header-actions { display: flex; gap: 0.5rem; }
+
+    .btn-secondary, .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.875rem;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #374151;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .btn-secondary:hover, .btn-back:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+
+    /* Alerts */
+    .alert-box {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .alert-box.success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+    }
+
+    /* Stats */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-value {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .stat-label {
+        display: block;
+        font-size: 0.8125rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    /* Content Section */
+    .content-section {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .section-header h2 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+
+    .section-body { padding: 1.25rem; }
+    .section-body.no-padding { padding: 0; }
+
+    .btn-primary-sm {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        background: #111827;
+        border: none;
+        border-radius: 6px;
+        color: #fff;
+        font-size: 0.8125rem;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .btn-primary-sm:hover { background: #1f2937; color: #fff; }
+
+    /* Info Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .info-item.full { grid-column: 1 / -1; }
+
+    .info-label {
+        display: block;
+        font-size: 0.8125rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 0.9375rem;
+        color: #111827;
+    }
+
+    /* Table */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .data-table td {
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+        color: #374151;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover { background: #fafafa; }
+
+    .text-medium { font-weight: 500; color: #111827; }
+
+    .variant-thumb {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        object-fit: cover;
+        border: 1px solid #e5e7eb;
+    }
+
+    .variant-thumb.placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        color: #9ca3af;
+    }
+
+    .color-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .color-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .stock-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        background: #f0fdf4;
+        color: #166534;
+        border-radius: 4px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .stock-badge.out {
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-badge.success { background: #f0fdf4; color: #166534; }
+    .status-badge.warning { background: #fefce8; color: #854d0e; }
+    .status-badge.danger { background: #fef2f2; color: #991b1b; }
+
+    .row-actions { display: flex; gap: 0.25rem; }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        border: 1px solid #e5e7eb;
+        border-radius: 5px;
+        color: #6b7280;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        border-color: #d1d5db;
+        color: #111827;
+    }
+
+    .action-btn.danger:hover {
+        border-color: #fecaca;
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .empty-state-inline {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .empty-state-inline p {
+        color: #6b7280;
+        margin: 0 0 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
+        .info-grid { grid-template-columns: 1fr; }
+        .header-actions { flex-direction: column; }
+    }
+</style>
+}
+
+@section Scripts {
+    <script>
+        function exportProduct() {
+            // Export functionality can be implemented here
+            alert('Tính năng xuất dữ liệu sẽ được phát triển trong tương lai');
+        }
+
+        // Auto-hide success messages after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert-success');
+            alerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+}

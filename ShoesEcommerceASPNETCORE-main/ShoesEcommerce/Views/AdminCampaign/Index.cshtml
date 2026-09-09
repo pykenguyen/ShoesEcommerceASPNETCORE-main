@@ -1,0 +1,340 @@
+@{
+    ViewData["Title"] = "Qu?n lý Campaign";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .campaign-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    .campaign-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .campaign-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .campaign-card:hover {
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        transform: translateY(-4px);
+    }
+
+    .card-header {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+        color: white;
+    }
+
+    .card-header.flash-sale {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    }
+
+    .card-header.welcome {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+
+    .card-header.cart {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .card-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-description {
+        color: #6b7280;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .btn-primary {
+        background: #1a1a1a;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #333;
+        color: white;
+    }
+
+    .btn-danger {
+        background: #dc2626;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+    }
+
+    .btn-success {
+        background: #059669;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #047857;
+    }
+
+    .btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-warning:hover {
+        background: #d97706;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+    }
+
+    @@media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .page-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="campaign-container">
+    <!-- Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">?? Qu?n lý Email Campaign</h1>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            T?o Campaign M?i
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">0</div>
+            <div class="stat-label">Campaign ?ã g?i</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">0</div>
+            <div class="stat-label">Email ?ã g?i</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">0%</div>
+            <div class="stat-label">T? l? m?</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">0%</div>
+            <div class="stat-label">T? l? click</div>
+        </div>
+    </div>
+
+    <!-- Campaign Types -->
+    <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #1a1a1a;">
+        Chi?n d?ch nhanh
+    </h2>
+
+    <div class="campaign-grid">
+        <!-- Flash Sale Campaign -->
+        <div class="campaign-card">
+            <div class="card-header flash-sale">
+                <div class="card-icon">?</div>
+                <h3 class="card-title">Flash Sale</h3>
+            </div>
+            <div class="card-body">
+                <p class="card-description">
+                    G?i thông báo Flash Sale ??n t?t c? subscribers v?i các s?n ph?m ?ang gi?m giá cao nh?t.
+                </p>
+                <form asp-action="QuickFlashSale" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">
+                        <i class="fas fa-bolt"></i>
+                        G?i Flash Sale
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Welcome Campaign -->
+        <div class="campaign-card">
+            <div class="card-header welcome">
+                <div class="card-icon">??</div>
+                <h3 class="card-title">Chào m?ng thành viên m?i</h3>
+            </div>
+            <div class="card-body">
+                <p class="card-description">
+                    Email chào m?ng t? ??ng ???c g?i khi có thành viên m?i ??ng ký. Kèm mã gi?m giá WELCOME10.
+                </p>
+                <span class="btn btn-success" style="width: 100%; opacity: 0.7; cursor: default;">
+                    <i class="fas fa-check"></i>
+                    ?ã kích ho?t
+                </span>
+            </div>
+        </div>
+
+        <!-- Abandoned Cart -->
+        <div class="campaign-card">
+            <div class="card-header cart">
+                <div class="card-icon">??</div>
+                <h3 class="card-title">Gi? hàng b? b? r?i</h3>
+            </div>
+            <div class="card-body">
+                <p class="card-description">
+                    Nh?c nh? khách hàng v? s?n ph?m còn trong gi? hàng sau 24h không thanh toán.
+                </p>
+                <span class="btn btn-warning" style="width: 100%; opacity: 0.7; cursor: default;">
+                    <i class="fas fa-clock"></i>
+                    ?ang phát tri?n
+                </span>
+            </div>
+        </div>
+
+        <!-- Custom Campaign -->
+        <div class="campaign-card">
+            <div class="card-header">
+                <div class="card-icon">?</div>
+                <h3 class="card-title">Campaign tùy ch?nh</h3>
+            </div>
+            <div class="card-body">
+                <p class="card-description">
+                    T?o campaign qu?ng cáo v?i n?i dung và s?n ph?m tùy ch?nh theo ý b?n.
+                </p>
+                <a href="@Url.Action("Create")" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-edit"></i>
+                    T?o Campaign
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mailchimp Setup Guide -->
+    <div style="margin-top: 3rem; background: #f8f9fa; border-radius: 16px; padding: 2rem; border: 1px solid #e5e7eb;">
+        <h3 style="margin: 0 0 1rem; color: #1a1a1a;">
+            <i class="fas fa-cog"></i> H??ng d?n c?u hình Mailchimp
+        </h3>
+        <ol style="color: #6b7280; line-height: 1.8; margin: 0; padding-left: 1.5rem;">
+            <li>??ng nh?p <a href="https://mailchimp.com" target="_blank" style="color: #0066b3;">Mailchimp</a> ? Profile ? Extras ? <strong>API keys</strong></li>
+            <li>Click <strong>Create A Key</strong> và copy API Key (format: xxxxx-usXX)</li>
+            <li>Vào <strong>Audience</strong> ? Settings ? <strong>Audience name and defaults</strong> ?? l?y Audience ID</li>
+            <li>C?p nh?t <code>appsettings.json</code>:
+                <pre style="background: #1a1a1a; color: #22c55e; padding: 1rem; border-radius: 8px; margin-top: 0.5rem; overflow-x: auto;">"EmailSettings": {
+  "Provider": "Mailchimp",
+  "MailchimpApiKey": "your-api-key-here",
+  "MailchimpServerPrefix": "us21",
+  "MailchimpAudienceId": "your-audience-id",
+  "SenderEmail": "your-email@domain.com"
+}</pre>
+            </li>
+        </ol>
+    </div>
+</div>

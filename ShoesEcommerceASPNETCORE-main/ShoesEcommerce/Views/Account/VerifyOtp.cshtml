@@ -1,0 +1,589 @@
+﻿@model ShoesEcommerce.ViewModels.Account.VerifyOtpViewModel
+@{
+    ViewData["Title"] = "Xác thực OTP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="otp-page">
+    <div class="otp-container">
+        <!-- Left Side - Branding -->
+        <div class="otp-brand">
+            <div class="brand-content">
+                <div class="brand-logo">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h1>Nhập mã OTP</h1>
+                <p class="tagline">Xác thực để hoàn tất quá trình</p>
+                
+                <div class="phone-display">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/>
+                    </svg>
+                    <span>@Model.PhoneNumber</span>
+                </div>
+
+                <div class="features">
+                    <div class="feature">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <span>Mã có hiệu lực trong 5 phút</span>
+                    </div>
+                    <div class="feature">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <span>Bảo mật tuyệt đối</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Form -->
+        <div class="otp-form-wrapper">
+            <div class="form-header">
+                <h2>Nhập mã xác thực</h2>
+                <p>Mã 6 chữ số đã được gửi đến số điện thoại của bạn</p>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <span>@TempData["SuccessMessage"]</span>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-error">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                    <span>@TempData["ErrorMessage"]</span>
+                </div>
+            }
+
+            <!-- Countdown Timer -->
+            <div class="countdown-container">
+                <div class="countdown-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <div class="countdown-info">
+                    <span class="countdown-label">Thời gian còn lại</span>
+                    <span id="countdown" class="countdown-value">@(Model.RemainingSeconds / 60):@((Model.RemainingSeconds % 60).ToString("D2"))</span>
+                </div>
+            </div>
+
+            <form asp-action="VerifyOtp" method="post" id="otpForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="PhoneNumber" />
+                <input type="hidden" asp-for="Purpose" />
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- OTP Input -->
+                <div class="form-group">
+                    <label asp-for="OtpCode">Mã xác thực (6 số)</label>
+                    <div class="otp-input-wrapper">
+                        <input type="text" id="otpInput" asp-for="OtpCode" 
+                               class="otp-input" 
+                               maxlength="6" 
+                               placeholder="000000"
+                               autocomplete="one-time-code"
+                               inputmode="numeric"
+                               pattern="\d{6}" />
+                    </div>
+                    <span asp-validation-for="OtpCode" class="error-text"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit" id="verifyBtn">
+                    <span class="btn-text">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Xác thực
+                    </span>
+                    <span class="btn-loading" style="display:none">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                        Đang xác thực...
+                    </span>
+                </button>
+            </form>
+
+            <!-- Resend OTP -->
+            <div class="resend-section">
+                <p>Không nhận được mã?</p>
+                <form asp-action="ResendOtp" method="post" class="resend-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="purpose" value="@Model.Purpose" />
+                    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                    <button type="submit" class="btn-resend" id="resendBtn" @(Model.CanResend ? "" : "disabled")>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        <span id="resendText">Gửi lại mã OTP</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Change Phone -->
+            <div class="change-phone">
+                <a href="@Url.Action("SendOtp", new { purpose = Model.Purpose, returnUrl = Model.ReturnUrl })">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Thay đổi số điện thoại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    :root {
+        --color-black: #000000;
+        --color-white: #ffffff;
+        --color-gray-100: #f5f5f5;
+        --color-gray-200: #e5e5e5;
+        --color-gray-300: #d1d1d1;
+        --color-gray-400: #a3a3a3;
+        --color-gray-500: #737373;
+        --color-gray-600: #525252;
+        --color-gray-700: #404040;
+        --color-gray-800: #262626;
+        --color-error: #dc2626;
+        --color-success: #16a34a;
+    }
+
+    .otp-page {
+        min-height: calc(100vh - 200px);
+        background: var(--color-gray-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .otp-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        max-width: 900px;
+        width: 100%;
+        background: var(--color-white);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Brand Side */
+    .otp-brand {
+        background: var(--color-black);
+        color: var(--color-white);
+        padding: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .brand-content {
+        text-align: center;
+    }
+
+    .brand-logo {
+        width: 80px;
+        height: 80px;
+        background: var(--color-white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+
+    .brand-logo svg {
+        color: var(--color-black);
+    }
+
+    .brand-content h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .tagline {
+        font-size: 0.9rem;
+        opacity: 0.7;
+        margin-bottom: 1.5rem;
+    }
+
+    .phone-display {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+
+    .features {
+        text-align: left;
+        margin-top: 1.5rem;
+    }
+
+    .feature {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0;
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .feature svg {
+        flex-shrink: 0;
+        opacity: 0.7;
+    }
+
+    /* Form Side */
+    .otp-form-wrapper {
+        padding: 3rem;
+    }
+
+    .form-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem;
+        color: var(--color-gray-800);
+        letter-spacing: -0.02em;
+    }
+
+    .form-header p {
+        color: var(--color-gray-500);
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* Alert */
+    .alert {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        align-items: center;
+    }
+
+    .alert-error {
+        background: #fef2f2;
+        color: var(--color-error);
+        border: 1px solid #fecaca;
+    }
+
+    .alert-success {
+        background: #f0fdf4;
+        color: var(--color-success);
+        border: 1px solid #bbf7d0;
+    }
+
+    .alert svg {
+        flex-shrink: 0;
+    }
+
+    /* Countdown */
+    .countdown-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--color-gray-100);
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .countdown-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--color-white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-gray-600);
+    }
+
+    .countdown-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .countdown-label {
+        font-size: 0.8rem;
+        color: var(--color-gray-500);
+    }
+
+    .countdown-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-gray-800);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .countdown-value.expired {
+        color: var(--color-error);
+    }
+
+    /* Form */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group > label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-gray-700);
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .otp-input-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+
+    .otp-input {
+        width: 100%;
+        max-width: 280px;
+        padding: 1rem;
+        border: 2px solid var(--color-gray-300);
+        border-radius: 12px;
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: 0.75rem;
+        transition: all 0.2s;
+        background: var(--color-white);
+        color: var(--color-gray-800);
+    }
+
+    .otp-input:focus {
+        outline: none;
+        border-color: var(--color-black);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .otp-input::placeholder {
+        color: var(--color-gray-300);
+        letter-spacing: 0.5rem;
+    }
+
+    .error-text {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--color-error);
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+        width: 100%;
+        padding: 0.875rem 1.5rem;
+        background: var(--color-black);
+        color: var(--color-white);
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-submit:hover {
+        background: var(--color-gray-800);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-text, .btn-loading {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .otp-container {
+            grid-template-columns: 1fr;
+            max-width: 450px;
+        }
+
+        .otp-brand {
+            display: none;
+        }
+
+        .otp-form-wrapper {
+            padding: 2rem;
+        }
+
+        .otp-input {
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+        }
+    }
+</style>
+}
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInput = document.getElementById('otpInput');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const resendBtn = document.getElementById('resendBtn');
+    const resendText = document.getElementById('resendText');
+    const countdownEl = document.getElementById('countdown');
+    const form = document.getElementById('otpForm');
+    
+    let remainingSeconds = @Model.RemainingSeconds;
+    let resendWaitSeconds = @(Model.CanResend ? 0 : 60);
+    
+    // OTP input formatting
+    otpInput.addEventListener('input', function(e) {
+        // Only allow digits
+        this.value = this.value.replace(/\D/g, '');
+        
+        // Auto submit when 6 digits entered
+        if (this.value.length === 6) {
+            verifyBtn.focus();
+        }
+    });
+    
+    // Auto focus on OTP input
+    otpInput.focus();
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        if (otpInput.value.length !== 6) {
+            e.preventDefault();
+            return;
+        }
+        
+        verifyBtn.disabled = true;
+        verifyBtn.querySelector('.btn-text').style.display = 'none';
+        verifyBtn.querySelector('.btn-loading').style.display = 'flex';
+    });
+    
+    // Countdown timer
+    function updateCountdown() {
+        if (remainingSeconds <= 0) {
+            countdownEl.textContent = 'Hết hạn';
+            countdownEl.classList.add('expired');
+            verifyBtn.disabled = true;
+            return;
+        }
+        
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        remainingSeconds--;
+    }
+    
+    const countdownInterval = setInterval(function() {
+        updateCountdown();
+        if (remainingSeconds <= 0) {
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
+    
+    // Resend countdown
+    function updateResendButton() {
+        if (resendWaitSeconds <= 0) {
+            resendBtn.disabled = false;
+            resendText.textContent = 'Gửi lại mã OTP';
+            return;
+        }
+        
+        resendBtn.disabled = true;
+        resendText.textContent = 'Gửi lại sau ' + resendWaitSeconds + 's';
+        resendWaitSeconds--;
+    }
+    
+    if (resendWaitSeconds > 0) {
+        updateResendButton();
+        const resendInterval = setInterval(function() {
+            updateResendButton();
+            if (resendWaitSeconds <= 0) {
+                clearInterval(resendInterval);
+            }
+        }, 1000);
+    }
+    
+    // Poll OTP status
+    function checkOtpStatus() {
+        fetch('@Url.Action("CheckOtpStatus")')
+            .then(response => response.json())
+            .then(data => {
+                if (data.expired) {
+                    countdownEl.textContent = 'Hết hạn';
+                    countdownEl.classList.add('expired');
+                    verifyBtn.disabled = true;
+                }
+                
+                if (data.canResend) {
+                    resendBtn.disabled = false;
+                    resendText.textContent = 'Gửi lại mã OTP';
+                }
+            })
+            .catch(err => console.log('Status check failed:', err));
+    }
+    
+    // Check status every 30 seconds
+    setInterval(checkOtpStatus, 30000);
+});
+</script>
+}

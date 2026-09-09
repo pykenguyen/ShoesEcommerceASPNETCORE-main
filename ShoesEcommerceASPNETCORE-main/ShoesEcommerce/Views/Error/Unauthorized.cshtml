@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Yêu c?u xác th?c";
+}
+
+<div class="container text-center" style="padding: 60px 15px;">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="error-template">
+                <h1 style="font-size: 120px; font-weight: bold; color: #17a2b8;">
+                    401
+                </h1>
+                <h2 style="margin-bottom: 30px;">
+                    Yêu c?u xác th?c
+                </h2>
+                <div class="error-details" style="margin-bottom: 30px; font-size: 18px; color: #6c757d;">
+                    B?n c?n ??ng nh?p ?? truy c?p trang này.
+                </div>
+                <div class="error-actions">
+                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path" class="btn btn-primary btn-lg" style="margin-right: 10px;">
+                        <i class="fas fa-sign-in-alt"></i> ??ng nh?p
+                    </a>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-plus"></i> ??ng ký
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewData["RequestId"]?.ToString()))
+{
+    <div class="text-center" style="margin-top: 30px;">
+        <small class="text-muted">ID yêu c?u: @ViewData["RequestId"]</small>
+    </div>
+}

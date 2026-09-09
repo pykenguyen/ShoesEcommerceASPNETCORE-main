@@ -1,0 +1,645 @@
+﻿@model ShoesEcommerce.Models.ViewModels.OrderViewModel
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    /* Ultra-minimalist Admin Order Details */
+    .details-wrapper {
+        background: #f9fafb;
+        min-height: 100vh;
+        padding: 24px;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .order-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .order-date {
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    .status-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-confirmed {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-paid {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-unpaid {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .minimalist-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .minimalist-table thead th {
+        padding: 12px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .minimalist-table tbody td {
+        padding: 16px 12px;
+        font-size: 14px;
+        color: #1f2937;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .minimalist-table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .info-value {
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    /* 💳 Payment Verification Section */
+    .payment-verify-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        border: 2px solid #e5e7eb;
+        margin-bottom: 24px;
+    }
+
+    .payment-verify-card.paid {
+        border-color: #10b981;
+        background: linear-gradient(135deg, #d1fae5 0%, #ffffff 100%);
+    }
+
+    .payment-verify-card.unpaid {
+        border-color: #ef4444;
+        background: linear-gradient(135deg, #fee2e2 0%, #ffffff 100%);
+    }
+
+    .payment-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .payment-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .payment-icon.paid {
+        background: #10b981;
+        color: white;
+    }
+
+    .payment-icon.unpaid {
+        background: #ef4444;
+        color: white;
+    }
+
+    .payment-info h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .payment-info.paid h3 {
+        color: #065f46;
+    }
+
+    .payment-info.unpaid h3 {
+        color: #991b1b;
+    }
+
+    .payment-info p {
+        font-size: 13px;
+        margin: 4px 0 0 0;
+        color: #6b7280;
+    }
+
+    .payment-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .payment-detail-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .payment-detail-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        background: rgba(0,0,0,0.05);
+    }
+
+    .payment-detail-content {
+        flex: 1;
+    }
+
+    .payment-detail-label {
+        font-size: 11px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .payment-detail-value {
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #059669;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+    }
+
+    .btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-warning:hover {
+        background: #d97706;
+    }
+
+    .alert {
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #86efac;
+    }
+
+    .alert-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+    }
+
+    @@media (max-width: 968px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="details-wrapper">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-row">
+            <div>
+                <h2 class="order-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Đơn hàng #@Model.OrderNumber
+                </h2>
+                <div class="order-date">
+                    <i class="far fa-calendar"></i>
+                    Đặt hàng lúc: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                </div>
+            </div>
+            <div class="status-group">
+                @{
+                    var statusClass = Model.Status.ToLower() switch
+                    {
+                        "pending" => "badge-pending",
+                        "confirmed" => "badge-confirmed",
+                        "completed" => "badge-completed",
+                        _ => "badge-pending"
+                    };
+
+                    var statusText = Model.Status.ToLower() switch
+                    {
+                        "pending" => "Chờ phê duyệt",
+                        "confirmed" => "Đã xác nhận",
+                        "completed" => "Hoàn thành",
+                        _ => Model.Status
+                    };
+
+                    var paymentStatusClass = Model.PaymentStatus == "Paid" ? "badge-paid" : "badge-unpaid";
+                    var paymentStatusText = Model.PaymentStatus == "Paid" ? "Đã thanh toán" : "Chưa thanh toán";
+                }
+                <span class="status-badge @statusClass">
+                    <i class="fas fa-circle" style="font-size: 8px;"></i>
+                    @statusText
+                </span>
+                <span class="status-badge @paymentStatusClass">
+                    <i class="fas fa-circle" style="font-size: 8px;"></i>
+                    @paymentStatusText
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 💳 Payment Verification Section -->
+    <div class="payment-verify-card @(Model.PaymentStatus == "Paid" ? "paid" : "unpaid")">
+        <div class="payment-header">
+            <div class="payment-icon @(Model.PaymentStatus == "Paid" ? "paid" : "unpaid")">
+                <i class="fas @(Model.PaymentStatus == "Paid" ? "fa-check-circle" : "fa-exclamation-circle")"></i>
+            </div>
+            <div class="payment-info @(Model.PaymentStatus == "Paid" ? "paid" : "unpaid")">
+                <h3>
+                    @if (Model.PaymentStatus == "Paid")
+                    {
+                        <text>✅ Khách hàng đã thanh toán</text>
+                    }
+                    else
+                    {
+                        <text>⚠️ Chưa thanh toán từ khách hàng</text>
+                    }
+                </h3>
+                <p>
+                    @if (Model.PaymentStatus == "Paid")
+                    {
+                        <text>Đơn hàng này đã được khách hàng thanh toán thành công</text>
+                    }
+                    else
+                    {
+                        <text>Vui lòng xác nhận thanh toán trước khi giao hàng</text>
+                    }
+                </p>
+            </div>
+        </div>
+
+        <div class="payment-details">
+            <div class="payment-detail-item">
+                <div class="payment-detail-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="payment-detail-content">
+                    <div class="payment-detail-label">Phương thức</div>
+                    <div class="payment-detail-value">@(Model.Payment?.Method ?? "Chưa chọn")</div>
+                </div>
+            </div>
+
+            <div class="payment-detail-item">
+                <div class="payment-detail-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="payment-detail-content">
+                    <div class="payment-detail-label">Trạng thái</div>
+                    <div class="payment-detail-value" style="color: @(Model.PaymentStatus == "Paid" ? "#10b981" : "#ef4444");">
+                        @(Model.PaymentStatus == "Paid" ? "Đã thanh toán" : "Chưa thanh toán")
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Payment?.TransactionId))
+            {
+                <div class="payment-detail-item" style="grid-column: 1 / -1;">
+                    <div class="payment-detail-icon" style="background: #e0e7ff; color: #4f46e5;">
+                        <i class="fab fa-paypal"></i>
+                    </div>
+                    <div class="payment-detail-content">
+                        <div class="payment-detail-label">Mã giao dịch (Transaction ID)</div>
+                        <div class="payment-detail-value">
+                            <code style="background: #f3f4f6; padding: 6px 12px; border-radius: 6px; font-family: 'SF Mono', Monaco, monospace; font-size: 14px; color: #1f2937;">@Model.Payment.TransactionId</code>
+                            <button type="button" onclick="copyTransactionId('@Model.Payment.TransactionId')" 
+                                    style="margin-left: 8px; padding: 4px 8px; background: #e5e7eb; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;"
+                                    title="Sao chép">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Payment?.PaidAt.HasValue == true)
+            {
+                <div class="payment-detail-item">
+                    <div class="payment-detail-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="payment-detail-content">
+                        <div class="payment-detail-label">Thanh toán lúc</div>
+                        <div class="payment-detail-value">@Model.Payment.PaidAt.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                </div>
+            }
+
+            <div class="payment-detail-item">
+                <div class="payment-detail-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="payment-detail-content">
+                    <div class="payment-detail-label">Tổng tiền</div>
+                    <div class="payment-detail-value" style="color: #dc2626; font-size: 16px;">
+                        @Model.TotalAmount.ToString("N0") đ
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="main-grid">
+        <!-- Left: Products -->
+        <div class="section-card">
+            <h3 class="section-title">
+                <i class="fas fa-boxes"></i>
+                Sản phẩm đã đặt
+            </h3>
+            <table class="minimalist-table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Màu</th>
+                        <th>Kích thước</th>
+                        <th>SL</th>
+                        <th>Đơn giá</th>
+                        <th>Tổng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderDetails)
+                    {
+                        <tr>
+                            <td>@item.ProductVariant.Name</td>
+                            <td>@item.ProductVariant.Color</td>
+                            <td>@item.ProductVariant.Size</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.UnitPrice.ToString("N0") đ</td>
+                            <td><strong>@item.SubTotal.ToString("N0") đ</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Right: Customer Info -->
+        <div>
+            <div class="section-card" style="margin-bottom: 16px;">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i>
+                    Thông tin khách hàng
+                </h3>
+                <div class="info-row">
+                    <span class="info-label">Tên khách hàng</span>
+                    <span class="info-value">@Model.CustomerName</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                {
+                    <div class="info-row">
+                        <span class="info-label">Số điện thoại</span>
+                        <span class="info-value">@Model.CustomerPhone</span>
+                    </div>
+                }
+            </div>
+
+            <div class="section-card">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Địa chỉ giao hàng
+                </h3>
+                <div class="info-row">
+                    <span class="info-label">Người nhận</span>
+                    <span class="info-value">@Model.ShippingAddress.FullName</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">SĐT</span>
+                    <span class="info-value">@Model.ShippingAddress.PhoneNumber</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Địa chỉ</span>
+                    <span class="info-value">@Model.ShippingAddress.Address</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Quận/Huyện</span>
+                    <span class="info-value">@Model.ShippingAddress.District</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Thành phố</span>
+                    <span class="info-value">@Model.ShippingAddress.City</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="section-card">
+        <div class="action-buttons">
+            @if (Model.Status == "Pending")
+            {
+                <form asp-action="ConfirmOrder" method="post" style="margin: 0;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn-action btn-success">
+                        <i class="fas fa-check"></i>
+                        Xác nhận đơn hàng
+                    </button>
+                </form>
+            }
+            @if (Model.Status == "Confirmed")
+            {
+                <form asp-action="CompleteOrder" method="post" style="margin: 0;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn-action btn-primary" 
+                            @(Model.PaymentStatus != "Paid" ? "onclick=\"return confirm('⚠️ Khách hàng chưa thanh toán! Bạn có chắc muốn hoàn thành đơn hàng?')\"" : "")>
+                        <i class="fas fa-truck"></i>
+                        Đã giao hàng & Hoàn thành
+                    </button>
+                </form>
+            }
+            @if (Model.PaymentStatus != "Paid")
+            {
+                <button onclick="alert('Vui lòng xác nhận thanh toán với khách hàng trước khi xử lý đơn hàng')" class="btn-action btn-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Nhắc khách thanh toán
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            @TempData["Error"]
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+function copyTransactionId(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check" style="color: #10b981;"></i>';
+        setTimeout(function() {
+            btn.innerHTML = originalHtml;
+        }, 2000);
+    });
+}
+</script>
+}

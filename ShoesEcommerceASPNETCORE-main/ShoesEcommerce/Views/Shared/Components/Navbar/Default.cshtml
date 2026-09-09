@@ -1,0 +1,31 @@
+﻿@model ShoesEcommerce.ViewComponents.NavbarViewModel
+
+<div class="mega-menu-inner">
+    <div class="mega-menu-col">
+        <h6 class="mega-menu-title">DANH MỤC</h6>
+        <ul class="mega-menu-list">
+            <li><a href="/san-pham">Tất cả sản phẩm</a></li>
+            @foreach (var category in Model.Categories)
+            {
+                <li><a href="/san-pham?categoryId=@category.Id">@category.Name</a></li>
+            }
+        </ul>
+    </div>
+    <div class="mega-menu-col">
+        <h6 class="mega-menu-title">THƯƠNG HIỆU</h6>
+        <ul class="mega-menu-list">
+            @foreach (var brand in Model.Brands)
+            {
+                <li><a href="/san-pham?brandId=@brand.Id">@brand.Name</a></li>
+            }
+        </ul>
+    </div>
+    <div class="mega-menu-col mega-menu-promo">
+        <div class="promo-box">
+            <span class="promo-tag">HOT</span>
+            <h5>Khuyến mãi đặc biệt</h5>
+            <p>Giảm đến 50% các sản phẩm hot</p>
+            <a href="/khuyen-mai" class="promo-link">Xem ngay →</a>
+        </div>
+    </div>
+</div>

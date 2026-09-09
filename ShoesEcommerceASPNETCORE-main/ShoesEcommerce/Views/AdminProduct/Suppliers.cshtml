@@ -1,0 +1,135 @@
+﻿@model IEnumerable<ShoesEcommerce.ViewModels.Product.SupplierInfo>
+
+@{
+    ViewData["Title"] = "Quản lý Nhà cung cấp";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div style="background: #f8f9fa; min-height: 100vh; padding: 20px;">
+    <!-- Page Header -->
+    <div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0; color: #2d3748; font-weight: 600; font-size: 20px;">
+                    <i class="fas fa-truck" style="color: #718096; margin-right: 8px; font-size: 16px;"></i>
+                    Quản lý Nhà cung cấp
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #718096; font-size: 14px;">
+                    Quản lý thông tin các nhà cung cấp sản phẩm
+                </p>
+            </div>
+            <div>
+                <a href="@Url.Action("CreateSupplier")" class="btn btn-sm"
+                   style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                    <i class="fas fa-plus" style="margin-right: 4px;"></i> Thêm nhà cung cấp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suppliers Table -->
+    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <div style="background: #f7fafc; padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h5 style="margin: 0; color: #2d3748; font-size: 15px; font-weight: 600;">Danh sách nhà cung cấp (@Model.Count())</h5>
+                <small style="color: #718096; font-size: 12px;">Cập nhật lần cuối: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small>
+            </div>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div style="overflow-x: auto;">
+                <table class="table mb-0" style="font-size: 14px;">
+                    <thead style="background: #f7fafc;">
+                        <tr>
+                            <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">ID</th>
+                            <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Tên nhà cung cấp</th>
+                            <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Thông tin liên hệ</th>
+                            <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Số phiếu nhập</th>
+                            <th style="padding: 12px 16px; font-weight: 600; border: none; color: #4a5568; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var supplier in Model)
+                        {
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 16px; vertical-align: middle; border: none;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #4a5568; font-weight: bold; font-size: 10px;">
+                                            @supplier.Id
+                                        </div>
+                                        <span style="font-weight: 600; color: #2d3748; font-size: 13px;">NCC@(supplier.Id.ToString("000"))</span>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; vertical-align: middle; border: none;">
+                                    <div style="font-weight: 600; color: #2d3748; font-size: 14px;">@supplier.Name</div>
+                                </td>
+                                <td style="padding: 16px; vertical-align: middle; border: none;">
+                                    <div style="color: #4a5568; font-size: 13px;">@supplier.ContactInfo</div>
+                                </td>
+                                <td style="padding: 16px; vertical-align: middle; border: none;">
+                                    <div style="text-align: center;">
+                                        <span style="font-size: 16px; font-weight: 600; color: #2d3748;">@supplier.StockEntryCount</span>
+                                        <div style="font-size: 10px; color: #718096;">phiếu</div>
+                                    </div>
+                                </td>
+                                <td style="padding: 16px; vertical-align: middle; border: none; text-align: center;">
+                                    <div style="display: flex; gap: 6px; justify-content: center;">
+                                        <a href="@Url.Action("EditSupplier", new { id = supplier.Id })"
+                                           class="btn btn-sm"
+                                           style="background: #4299e1; color: white; border: none; font-size: 11px; padding: 4px 8px; border-radius: 4px; text-decoration: none;">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="@Url.Action("DeleteSupplier", new { id = supplier.Id })" style="display: inline;"
+                                              onsubmit="return confirmDelete('@supplier.Name');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm"
+                                                    style="background: #f56565; color: white; border: none; font-size: 11px; padding: 4px 8px; border-radius: 4px;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div style="text-align: center; padding: 48px 20px;">
+                <i class="fas fa-truck" style="font-size: 32px; color: #cbd5e0; margin-bottom: 16px;"></i>
+                <p style="color: #718096; font-size: 14px; margin: 0 0 16px 0;">Chưa có nhà cung cấp nào</p>
+                <a href="@Url.Action("CreateSupplier")" class="btn"
+                   style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                    <i class="fas fa-plus" style="margin-right: 4px;"></i> Thêm nhà cung cấp đầu tiên
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            alert('@TempData["SuccessMessage"]');
+        });
+    </script>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            alert('@TempData["ErrorMessage"]');
+        });
+    </script>
+}
+
+<script>
+    function confirmDelete(supplierName) {
+        return confirm('Bạn có chắc chắn muốn xóa nhà cung cấp "' + supplierName + '"?');
+    }
+</script>

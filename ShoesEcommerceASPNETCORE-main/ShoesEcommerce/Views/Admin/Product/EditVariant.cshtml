@@ -1,0 +1,154 @@
+@model ShoesEcommerce.ViewModels.Product.EditProductVariantViewModel
+
+@{
+    ViewData["Title"] = "Ch?nh s?a Phiên b?n";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="page-header">
+        <h3 class="page-title">
+            <span class="page-title-icon bg-gradient-primary text-white me-2">
+                <i class="mdi mdi-package-variant"></i>
+            </span>
+            Ch?nh s?a Phiên b?n
+        </h3>
+        <nav aria-label="breadcrumb">
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/Admin/Product">S?n ph?m</a></li>
+                <li class="breadcrumb-item"><a href="/Admin/Product/Variants/@Model.ProductId">Phiên b?n</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Ch?nh s?a</li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Thông tin phiên b?n</h4>
+                    <p class="card-description">C?p nh?t thông tin phiên b?n s?n ph?m</p>
+
+                    @if (ViewBag.Product != null)
+                    {
+                        <div class="alert alert-info">
+                            <strong>S?n ph?m:</strong> @ViewBag.Product.Name
+                        </div>
+                    }
+
+                    <form class="forms-sample" method="post" asp-action="EditVariant">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ProductId" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group row">
+                            <label asp-for="Color" class="col-sm-3 col-form-label">Màu s?c</label>
+                            <div class="col-sm-9">
+                                <input asp-for="Color" class="form-control" placeholder="Nh?p màu s?c" />
+                                <span asp-validation-for="Color" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label asp-for="Size" class="col-sm-3 col-form-label">Kích th??c</label>
+                            <div class="col-sm-9">
+                                <input asp-for="Size" class="form-control" placeholder="Nh?p kích th??c" />
+                                <span asp-validation-for="Size" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label asp-for="Price" class="col-sm-3 col-form-label">Giá</label>
+                            <div class="col-sm-9">
+                                <input asp-for="Price" type="number" step="0.01" min="0" class="form-control" placeholder="Nh?p giá" />
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label asp-for="ImageUrl" class="col-sm-3 col-form-label">URL Hình ?nh</label>
+                            <div class="col-sm-9">
+                                <input asp-for="ImageUrl" class="form-control" placeholder="Nh?p URL hình ?nh" />
+                                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                                <small class="form-text text-muted">?? tr?ng n?u không có hình ?nh riêng</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-sm-12">
+                                <button type="submit" class="btn btn-gradient-primary me-2">
+                                    <i class="mdi mdi-content-save"></i>
+                                    C?p nh?t
+                                </button>
+                                <a href="@Url.Action("Variants", new { id = Model.ProductId })" class="btn btn-light">
+                                    <i class="mdi mdi-arrow-left"></i>
+                                    Quay l?i
+                                </a>
+                                <a href="@Url.Action("DeleteVariant", new { id = Model.Id })" class="btn btn-gradient-danger">
+                                    <i class="mdi mdi-delete"></i>
+                                    Xóa
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">H??ng d?n</h4>
+                    <div class="template-demo">
+                        <div class="alert alert-info">
+                            <h6><i class="mdi mdi-information"></i> L?u ý</h6>
+                            <ul class="mb-0">
+                                <li>Màu s?c và kích th??c là b?t bu?c</li>
+                                <li>Giá ph?i l?n h?n 0</li>
+                                <li>S? l??ng t?n kho không ???c âm</li>
+                                <li>URL hình ?nh có th? ?? tr?ng</li>
+                            </ul>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <div class="alert alert-success">
+                                <h6><i class="mdi mdi-image"></i> Hình ?nh hi?n t?i</h6>
+                                <img src="@Model.ImageUrl" alt="Hình ?nh phiên b?n" class="img-fluid" style="max-height: 150px;" onerror="this.style.display='none';" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Preview image when URL is changed
+        $('#ImageUrl').on('input', function() {
+            var url = $(this).val();
+            var previewContainer = $('.alert-success');
+            
+            if (url) {
+                if (previewContainer.length === 0) {
+                    // Create preview container if it doesn't exist
+                    $('.alert-info').after(`
+                        <div class="alert alert-success">
+                            <h6><i class="mdi mdi-image"></i> Xem tr??c</h6>
+                            <img src="${url}" alt="Xem tr??c hình ?nh" class="img-fluid" style="max-height: 150px;" onerror="this.style.display='none';" />
+                        </div>
+                    `);
+                } else {
+                    // Update existing preview
+                    previewContainer.find('img').attr('src', url).show();
+                }
+            } else {
+                previewContainer.remove();
+            }
+        });
+    </script>
+}

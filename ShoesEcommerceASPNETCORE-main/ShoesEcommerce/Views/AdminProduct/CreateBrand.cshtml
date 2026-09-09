@@ -1,0 +1,310 @@
+﻿@model ShoesEcommerce.ViewModels.Product.CreateBrandViewModel
+@{
+    ViewData["Title"] = "Thêm Thương hiệu mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="create-brand">
+    <!-- Page Header -->
+    <div class="page-header bg-gradient-success text-white rounded-3 mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title mb-2">
+                    <i class="fas fa-award me-2"></i>
+                    Thêm Thương hiệu mới
+                </h2>
+                <p class="page-subtitle mb-0 opacity-75">Tạo thương hiệu để phân loại sản phẩm theo nhà sản xuất</p>
+            </div>
+            <div class="page-actions">
+                <a asp-action="Brands" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm quick-link-card bg-info text-white">
+                <div class="card-body text-center py-3">
+                    <i class="fas fa-tags fa-lg mb-2"></i>
+                    <h6 class="card-title mb-2">Cần thêm danh mục?</h6>
+                    <a asp-action="CreateCategory" class="btn btn-light btn-sm">
+                        Thêm danh mục
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm quick-link-card bg-primary text-white">
+                <div class="card-body text-center py-3">
+                    <i class="fas fa-cube fa-lg mb-2"></i>
+                    <h6 class="card-title mb-2">Sau khi tạo thương hiệu</h6>
+                    <a asp-action="Create" class="btn btn-light btn-sm">
+                        Thêm sản phẩm
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm quick-link-card bg-warning text-white">
+                <div class="card-body text-center py-3">
+                    <i class="fas fa-list fa-lg mb-2"></i>
+                    <h6 class="card-title mb-2">Xem tất cả thương hiệu</h6>
+                    <a asp-action="Brands" class="btn btn-light btn-sm">
+                        Danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Form -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-edit me-2 text-success"></i>
+                Thông tin thương hiệu
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="CreateBrand" method="post" class="needs-validation" novalidate>
+                <div class="row">
+                    <!-- Brand Name -->
+                    <div class="col-lg-8 col-md-12 mb-4">
+                        <label asp-for="Name" class="form-label fw-semibold required">
+                            <i class="fas fa-award me-1"></i>Tên thương hiệu
+                        </label>
+                        <input asp-for="Name" class="form-control form-control-lg"
+                               placeholder="VD: Nike, Adidas, Converse..." maxlength="100" required>
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Tên thương hiệu nên chính xác và dễ nhận biết
+                        </div>
+                    </div>
+
+                    <!-- Brand Preview -->
+                    <div class="col-lg-4 col-md-12 mb-4">
+                        <label class="form-label fw-semibold">Xem trước</label>
+                        <div class="brand-preview-card">
+                            <div class="brand-preview-content">
+                                <div class="brand-icon">
+                                    <i class="fas fa-award"></i>
+                                </div>
+                                <div class="brand-name" id="brandNamePreview">Tên thương hiệu</div>
+                                <small class="text-muted">Thương hiệu mới</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-lightbulb me-2"></i>Mẹo
+                    </h6>
+                    <ul class="mb-0">
+                        <li>Tên thương hiệu nên ngắn gọn và dễ nhớ</li>
+                        <li>Tránh sử dụng ký tự đặc biệt không cần thiết</li>
+                        <li>Kiểm tra kỹ chính tả trước khi lưu</li>
+                        <li>Sau khi tạo thương hiệu, bạn có thể thêm sản phẩm cho thương hiệu này</li>
+                    </ul>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-3 justify-content-between">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success btn-lg px-4">
+                                    <i class="fas fa-save me-2"></i>
+                                    Lưu thương hiệu
+                                </button>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="reset" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-undo me-2"></i>
+                                    Đặt lại
+                                </button>
+                                <a asp-action="Brands" class="btn btn-light btn-lg">
+                                    <i class="fas fa-times me-2"></i>
+                                    Hủy
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .quick-link-card {
+            transition: transform 0.2s ease-in-out;
+        }
+
+            .quick-link-card:hover {
+                transform: translateY(-3px);
+            }
+
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+
+        .brand-preview-card {
+            border: 2px dashed #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+            .brand-preview-card.active {
+                border-color: #28a745;
+                background: rgba(40, 167, 69, 0.05);
+            }
+
+        .brand-icon {
+            font-size: 2rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-text {
+            font-size: 0.875em;
+        }
+
+        @@media (max-width: 768px) {
+            .page-header .page-actions {
+                margin-top: 1rem;
+            }
+
+            .quick-link-card {
+                margin-bottom: 1rem;
+            }
+
+            .d-flex.gap-3.justify-content-between {
+                flex-direction: column;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // Brand name preview
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.querySelector('input[name="Name"]');
+            const previewName = document.getElementById('brandNamePreview');
+            const previewCard = document.querySelector('.brand-preview-card');
+
+            nameInput.addEventListener('input', function() {
+                const value = this.value.trim();
+                if (value) {
+                    previewName.textContent = value;
+                    previewCard.classList.add('active');
+                } else {
+                    previewName.textContent = 'Tên thương hiệu';
+                    previewCard.classList.remove('active');
+                }
+            });
+
+            // Add validation styling
+            nameInput.addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    this.classList.add('is-valid');
+                    this.classList.remove('is-invalid');
+                } else {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                }
+            });
+
+            // Remove validation on input
+            nameInput.addEventListener('input', function() {
+                this.classList.remove('is-invalid', 'is-valid');
+            });
+        });
+
+        // Auto-uppercase first letter
+        document.querySelector('input[name="Name"]').addEventListener('input', function() {
+            let value = this.value;
+            if (value.length > 0) {
+                this.value = value.charAt(0).toUpperCase() + value.slice(1);
+            }
+        });
+
+        // Success message handling
+        @if (TempData["SuccessMessage"] != null)
+        {
+                <text>
+                setTimeout(function() {
+                    window.location.href = '@Url.Action("Brands")';
+                }, 2000);
+                </text>
+        }
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

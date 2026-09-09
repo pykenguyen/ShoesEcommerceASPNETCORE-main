@@ -1,0 +1,301 @@
+﻿@{
+    ViewData["Title"] = "Liên hệ SPORTS";
+    ViewData["MetaDescription"] = "Liên hệ với SPORTS - Hotline: 0939 345 555. Hỗ trợ 24/7.";
+}
+
+<div class="contact-page">
+    <!-- Hero Section -->
+    <section class="contact-hero">
+        <div class="container">
+            <h1 class="contact-title">LIÊN HỆ <span class="text-accent">VỚI CHÚNG TÔI</span></h1>
+            <p class="contact-subtitle">Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7</p>
+        </div>
+    </section>
+
+    <!-- Contact Info -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <h3>Hotline</h3>
+                        <p><a href="tel:0939345555">0939 345 555</a></p>
+                        <span>Hỗ trợ 24/7</span>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Email</h3>
+                        <p><a href="mailto:contact@sports.vn">contact@sports.vn</a></p>
+                        <span>Phản hồi trong 24h</span>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3>Địa chỉ</h3>
+                        <p>123 Đường ABC, Quận XYZ</p>
+                        <span>TP. Hồ Chí Minh</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form -->
+    <section class="contact-form-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="contact-form-card">
+                        <h2 class="text-center mb-4">GỬI TIN NHẮN CHO CHÚNG TÔI</h2>
+                        <form id="contactForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Họ và tên *</label>
+                                    <input type="text" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Số điện thoại</label>
+                                    <input type="tel" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Chủ đề</label>
+                                    <select class="form-select">
+                                        <option value="">-- Chọn chủ đề --</option>
+                                        <option value="product">Hỏi về sản phẩm</option>
+                                        <option value="order">Hỏi về đơn hàng</option>
+                                        <option value="return">Đổi trả sản phẩm</option>
+                                        <option value="other">Khác</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Nội dung tin nhắn *</label>
+                                    <textarea class="form-control" rows="5" required></textarea>
+                                </div>
+                                <div class="col-12 text-center">
+                                    <button type="submit" class="btn-submit">
+                                        <i class="fas fa-paper-plane me-2"></i>GỬI TIN NHẮN
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Section -->
+    <section class="contact-social">
+        <div class="container text-center">
+            <h2>KẾT NỐI VỚI CHÚNG TÔI</h2>
+            <div class="social-links">
+                <a href="#" class="social-btn facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-btn instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-btn youtube"><i class="fab fa-youtube"></i></a>
+                <a href="#" class="social-btn tiktok"><i class="fab fa-tiktok"></i></a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+    .contact-page {
+        --accent-red: #c41e3a;
+        --primary-black: #1a1a1a;
+    }
+
+    .contact-hero {
+        padding: 80px 0;
+        background: linear-gradient(135deg, var(--primary-black) 0%, #2d2d2d 100%);
+        color: white;
+        text-align: center;
+    }
+
+    .contact-title {
+        font-size: 48px;
+        font-weight: 900;
+        margin-bottom: 15px;
+    }
+
+    .text-accent {
+        color: var(--accent-red);
+    }
+
+    .contact-subtitle {
+        font-size: 18px;
+        opacity: 0.8;
+    }
+
+    .contact-section {
+        padding: 80px 0;
+    }
+
+    .contact-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 12px;
+        text-align: center;
+        height: 100%;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+    }
+
+    .contact-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .contact-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--accent-red);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    .contact-icon i {
+        font-size: 32px;
+        color: white;
+    }
+
+    .contact-card h3 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .contact-card p {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+
+    .contact-card p a {
+        color: var(--primary-black);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .contact-card p a:hover {
+        color: var(--accent-red);
+    }
+
+    .contact-card span {
+        color: #888;
+        font-size: 14px;
+    }
+
+    .contact-form-section {
+        padding: 80px 0;
+        background: #f5f5f5;
+    }
+
+    .contact-form-card {
+        background: white;
+        padding: 50px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    .contact-form-card h2 {
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .form-control, .form-select {
+        padding: 12px 16px;
+        border: 2px solid #e5e5e5;
+        border-radius: 8px;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-black);
+        box-shadow: none;
+    }
+
+    .btn-submit {
+        background: var(--primary-black);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background: var(--accent-red);
+    }
+
+    .contact-social {
+        padding: 80px 0;
+    }
+
+    .contact-social h2 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 30px;
+    }
+
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .social-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .social-btn.facebook { background: #1877f2; }
+    .social-btn.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .social-btn.youtube { background: #ff0000; }
+    .social-btn.tiktok { background: #000000; }
+
+    .social-btn:hover {
+        transform: translateY(-5px);
+        color: white;
+    }
+
+    @@media (max-width: 768px) {
+        .contact-title {
+            font-size: 32px;
+        }
+
+        .contact-form-card {
+            padding: 30px 20px;
+        }
+    }
+</style>

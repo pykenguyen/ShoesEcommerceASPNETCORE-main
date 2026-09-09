@@ -1,0 +1,1195 @@
+﻿@model ShoesEcommerce.ViewModels.Product.ProductVariantListViewModel
+@using ShoesEcommerce.Helpers
+@{
+    ViewData["Title"] = "Cửa hàng";
+    ViewData["MetaDescription"] = "Khám phá bộ sưu tập giày dép đa dạng với nhiều thương hiệu và mẫu mã. Mua ngay với giá tốt nhất!";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+}
+
+@Html.AntiForgeryToken()
+
+<div class="shop-container">
+    <!-- Sidebar Filter -->
+    <aside class="shop-sidebar" id="filterSidebar">
+        <div class="sidebar-header">
+            <h3>Bộ lọc</h3>
+            <a href="/san-pham" class="clear-filters">Xóa tất cả</a>
+        </div>
+        
+        <form method="get" asp-action="Index" asp-controller="Product" id="filterForm">
+            <!-- Search -->
+            <div class="filter-block">
+                <label class="filter-label">Tìm kiếm</label>
+                <div class="search-input">
+                    <input type="text" name="searchString" value="@Model.SearchTerm" placeholder="Nhập tên sản phẩm...">
+                    <button type="submit">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="filter-block">
+                <label class="filter-label">Danh mục</label>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="categoryId" value="" @(Model.CategoryId == null ? "checked" : "") onchange="this.form.submit()">
+                        <span>Tất cả</span>
+                    </label>
+                    @if (ViewBag.Categories != null)
+                    {
+                        foreach (var category in ViewBag.Categories)
+                        {
+                            <label class="filter-option">
+                                <input type="radio" name="categoryId" value="@category.Id" @(Model.CategoryId == category.Id ? "checked" : "") onchange="this.form.submit()">
+                                <span>@category.Name</span>
+                            </label>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Brands -->
+            <div class="filter-block">
+                <label class="filter-label">Thương hiệu</label>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="brandId" value="" @(Model.BrandId == null ? "checked" : "") onchange="this.form.submit()">
+                        <span>Tất cả</span>
+                    </label>
+                    @if (ViewBag.Brands != null)
+                    {
+                        foreach (var brand in ViewBag.Brands)
+                        {
+                            <label class="filter-option">
+                                <input type="radio" name="brandId" value="@brand.Id" @(Model.BrandId == brand.Id ? "checked" : "") onchange="this.form.submit()">
+                                <span>@brand.Name</span>
+                            </label>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Price Range -->
+            <div class="filter-block">
+                <label class="filter-label">Mức giá</label>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="priceRange" value="" checked onchange="this.form.submit()">
+                        <span>Tất cả</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="radio" name="priceRange" value="0-500000" onchange="this.form.submit()">
+                        <span>Dưới 500K</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="radio" name="priceRange" value="500000-1000000" onchange="this.form.submit()">
+                        <span>500K - 1M</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="radio" name="priceRange" value="1000000-2000000" onchange="this.form.submit()">
+                        <span>1M - 2M</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="radio" name="priceRange" value="2000000-" onchange="this.form.submit()">
+                        <span>Trên 2M</span>
+                    </label>
+                </div>
+            </div>
+        </form>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="shop-main">
+        <!-- Mobile Filter Toggle -->
+        <button type="button" class="mobile-filter-btn" onclick="toggleSidebar()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+                <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+                <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/>
+                <line x1="17" y1="16" x2="23" y2="16"/>
+            </svg>
+            Bộ lọc
+        </button>
+
+        <!-- Header -->
+        <div class="shop-header">
+            <div class="shop-title">
+                <h1>Tất cả sản phẩm</h1>
+                <span class="product-count">@Model.TotalItems sản phẩm</span>
+            </div>
+            <div class="shop-sort">
+                <select id="sortSelect">
+                    <option value="">Sắp xếp</option>
+                    <option value="price-asc">Giá: Thấp đến cao</option>
+                    <option value="price-desc">Giá: Cao đến thấp</option>
+                    <option value="name-asc">Tên: A-Z</option>
+                    <option value="newest">Mới nhất</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        @if (Model.ProductVariants != null && Model.ProductVariants.Any())
+        {
+            <div class="products-grid">
+                @foreach (var variant in Model.ProductVariants)
+                {
+                    var productSlug = variant.ProductName.ToSlugWithId(variant.ProductId);
+                    var displayPrice = variant.HasActiveDiscount ? variant.DiscountedPrice : variant.Price;
+                    
+                    <article class="product-card" data-product-id="@variant.ProductId">
+                        <!-- Image -->
+                        <div class="product-image-wrapper">
+                            <a href="/san-pham/@productSlug" class="product-image">
+                                <img src="@(string.IsNullOrEmpty(variant.ImageUrl) ? "/images/no-image.svg" : variant.ImageUrl)" 
+                                     alt="@variant.ProductName - @variant.Color" 
+                                     loading="lazy"
+                                     onerror="this.src='/images/no-image.svg'" />
+                            </a>
+                            
+                            @if (variant.HasActiveDiscount)
+                            {
+                                <span class="badge-discount">-@variant.DiscountPercentage%</span>
+                            }
+                            
+                            @if (!variant.IsInStock)
+                            {
+                                <div class="overlay-soldout">
+                                    <span>Hết hàng</span>
+                                </div>
+                            }
+
+                            <!-- Favorite Button (Top Right) -->
+                            <button type="button" 
+                                    class="btn-favorite" 
+                                    data-product-id="@variant.ProductId"
+                                    title="Yêu thích">
+                                <svg class="heart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                </svg>
+                            </button>
+
+                            <!-- Quick View Button (Bottom) -->
+                            <a href="/san-pham/@productSlug" class="btn-quickview" title="Xem nhanh">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Xem chi tiết
+                            </a>
+                        </div>
+
+                        <!-- Info -->
+                        <div class="product-info">
+                            <span class="product-brand">@variant.BrandName</span>
+                            
+                            <a href="/san-pham/@productSlug" class="product-name" title="@variant.ProductName">
+                                @variant.ProductName
+                            </a>
+                            
+                            <div class="product-variant-info">
+                                <span class="color-tag">@variant.Color</span>
+                                <span class="size-tag">EU @variant.Size</span>
+                            </div>
+
+                            <div class="product-price">
+                                @if (variant.HasActiveDiscount)
+                                {
+                                    <span class="price-original">@variant.Price.ToString("N0")₫</span>
+                                }
+                                <span class="price-sale">@displayPrice.ToString("N0")₫</span>
+                            </div>
+
+                            <!-- Add to Cart Button -->
+                            @if (variant.IsInStock)
+                            {
+                                <button type="button" 
+                                        class="btn-add-cart" 
+                                        data-variant-id="@variant.Id"
+                                        data-require-login="@(!isAuthenticated ? "true" : "false")">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                                    </svg>
+                                    <span>Thêm vào giỏ</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn-soldout" disabled>
+                                    <span>Hết hàng</span>
+                                </button>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="pagination-nav">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <a href="/san-pham?page=@(Model.CurrentPage - 1)@(string.IsNullOrEmpty(Model.SearchTerm) ? "" : "&searchString=" + Model.SearchTerm)@(Model.CategoryId.HasValue ? "&categoryId=" + Model.CategoryId : "")@(Model.BrandId.HasValue ? "&brandId=" + Model.BrandId : "")" 
+                           class="page-link prev">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m15 18-6-6 6-6"/>
+                            </svg>
+                        </a>
+                    }
+                    
+                    <div class="page-numbers">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            if (i == 1 || i == Model.TotalPages || (i >= Model.CurrentPage - 2 && i <= Model.CurrentPage + 2))
+                            {
+                                <a href="/san-pham?page=@i@(string.IsNullOrEmpty(Model.SearchTerm) ? "" : "&searchString=" + Model.SearchTerm)@(Model.CategoryId.HasValue ? "&categoryId=" + Model.CategoryId : "")@(Model.BrandId.HasValue ? "&brandId=" + Model.BrandId : "")"
+                                   class="page-link @(i == Model.CurrentPage ? "active" : "")">
+                                    @i
+                                </a>
+                            }
+                            else if (i == Model.CurrentPage - 3 || i == Model.CurrentPage + 3)
+                            {
+                                <span class="page-dots">...</span>
+                            }
+                        }
+                    </div>
+                    
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <a href="/san-pham?page=@(Model.CurrentPage + 1)@(string.IsNullOrEmpty(Model.SearchTerm) ? "" : "&searchString=" + Model.SearchTerm)@(Model.CategoryId.HasValue ? "&categoryId=" + Model.CategoryId : "")@(Model.BrandId.HasValue ? "&brandId=" + Model.BrandId : "")" 
+                           class="page-link next">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m9 18 6-6-6-6"/>
+                            </svg>
+                        </a>
+                    }
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                </div>
+                <h3>Không tìm thấy sản phẩm</h3>
+                <p>Hãy thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc</p>
+                <a href="/san-pham" class="btn-primary">Xem tất cả sản phẩm</a>
+            </div>
+        }
+    </main>
+</div>
+
+<!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Login Required Modal -->
+<div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+        <button type="button" class="modal-close" onclick="closeLoginModal()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+        <div class="modal-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <h3>Đăng nhập để tiếp tục</h3>
+        <p id="loginModalMessage">Bạn cần đăng nhập để thực hiện thao tác này</p>
+        <div class="modal-actions">
+            <a href="/Account/Login?returnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="btn-login">
+                Đăng nhập
+            </a>
+            <a href="/Account/Register" class="btn-register">
+                Đăng ký tài khoản
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ========== Layout ========== */
+    .shop-container {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 2rem;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    /* ========== Sidebar ========== */
+    .shop-sidebar {
+        background: #fff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        height: fit-content;
+        position: sticky;
+        top: 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .sidebar-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .clear-filters {
+        font-size: 0.8rem;
+        color: #666;
+        text-decoration: none;
+    }
+
+    .clear-filters:hover {
+        color: #000;
+        text-decoration: underline;
+    }
+
+    .filter-block {
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .search-input {
+        display: flex;
+        background: #f5f5f5;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .search-input input {
+        flex: 1;
+        border: none;
+        background: none;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    .search-input button {
+        padding: 0.75rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .search-input button:hover {
+        color: #000;
+    }
+
+    .filter-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #444;
+    }
+
+    .filter-option:hover {
+        color: #000;
+    }
+
+    .filter-option input[type="radio"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #000;
+    }
+
+    /* ========== Main Content ========== */
+    .shop-main {
+        min-height: 600px;
+    }
+
+    .mobile-filter-btn {
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+
+    .shop-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .shop-title h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin: 0 0 0.25rem;
+    }
+
+    .product-count {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .shop-sort select {
+        padding: 0.6rem 2rem 0.6rem 1rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+        font-size: 0.9rem;
+        cursor: pointer;
+        appearance: none;
+    }
+
+    /* ========== Products Grid ========== */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .product-card {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #f0f0f0;
+    }
+
+    .product-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .product-image-wrapper {
+        position: relative;
+        aspect-ratio: 1;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .product-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.08);
+    }
+
+    .badge-discount {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .overlay-soldout {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+    }
+
+    .overlay-soldout span {
+        background: #fff;
+        color: #333;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* Favorite Button - Fixed Position */
+    .btn-favorite {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        z-index: 4;
+        color: #999;
+    }
+
+    .btn-favorite:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn-favorite.active {
+        color: #ff4757;
+    }
+
+    .btn-favorite.active .heart-icon {
+        fill: #ff4757;
+        stroke: #ff4757;
+    }
+
+    /* Quick View Button */
+    .btn-quickview {
+        position: absolute;
+        bottom: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background: #fff;
+        color: #333;
+        border-radius: 25px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        z-index: 4;
+        white-space: nowrap;
+    }
+
+    .product-card:hover .btn-quickview {
+        bottom: 15px;
+    }
+
+    .btn-quickview:hover {
+        background: #1a1a1a;
+        color: #fff;
+    }
+
+    /* Product Info */
+    .product-info {
+        padding: 1.25rem;
+    }
+
+    .product-brand {
+        font-size: 0.7rem;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .product-name {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        text-decoration: none;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-name:hover {
+        color: #666;
+    }
+
+    .product-variant-info {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .color-tag, .size-tag {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        background: #f5f5f5;
+        border-radius: 4px;
+        color: #666;
+    }
+
+    .product-price {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .price-original {
+        font-size: 0.85rem;
+        color: #999;
+        text-decoration: line-through;
+    }
+
+    .price-sale {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    /* Buttons */
+    .btn-add-cart {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        background: #1a1a1a;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-cart:hover {
+        background: #333;
+        transform: scale(1.02);
+    }
+
+    .btn-add-cart:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-soldout {
+        width: 100%;
+        padding: 12px;
+        background: #f0f0f0;
+        color: #999;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        cursor: not-allowed;
+    }
+
+    /* ========== Pagination ========== */
+    .pagination-nav {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .page-numbers {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .page-link {
+        min-width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        color: #666;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .page-link:hover {
+        border-color: #1a1a1a;
+        color: #1a1a1a;
+    }
+
+    .page-link.active {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: #fff;
+    }
+
+    .page-dots {
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        color: #999;
+    }
+
+    /* ========== Empty State ========== */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        color: #ddd;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.25rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 12px 32px;
+        background: #1a1a1a;
+        color: #fff;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+        background: #333;
+        color: #fff;
+    }
+
+    /* ========== Sidebar Overlay ========== */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+
+    /* ========== Login Modal ========== */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+        display: flex;
+    }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 20px;
+        padding: 2.5rem;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @@keyframes modalSlideIn {
+        from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #999;
+        padding: 0.5rem;
+    }
+
+    .modal-icon {
+        width: 80px;
+        height: 80px;
+        background: #f5f5f5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: #666;
+    }
+
+    .modal-box h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-box p {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn-login {
+        display: block;
+        padding: 14px;
+        background: #1a1a1a;
+        color: #fff;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+
+    .btn-login:hover {
+        background: #333;
+        color: #fff;
+    }
+
+    .btn-register {
+        display: block;
+        padding: 14px;
+        background: #fff;
+        color: #1a1a1a;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .btn-register:hover {
+        border-color: #1a1a1a;
+    }
+
+    /* ========== Toast ========== */
+    .toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: #1a1a1a;
+        color: #fff;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        z-index: 10001;
+        opacity: 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+
+    /* ========== Responsive ========== */
+    @@media (max-width: 1024px) {
+        .shop-container {
+            grid-template-columns: 220px 1fr;
+            gap: 1.5rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .shop-container {
+            grid-template-columns: 1fr;
+        }
+
+        .shop-sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 280px;
+            height: 100vh;
+            z-index: 1000;
+            border-radius: 0;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .shop-sidebar.open {
+            left: 0;
+        }
+
+        .mobile-filter-btn {
+            display: flex;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .shop-container {
+            padding: 1rem;
+        }
+
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-quickview {
+            display: none;
+        }
+    }
+
+    /* Spin animation */
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isAuthenticated = @(isAuthenticated ? "true" : "false");
+    
+    // Load favorite states
+    loadFavoriteStates();
+
+    // Mobile sidebar toggle
+    window.toggleSidebar = function() {
+        const sidebar = document.getElementById('filterSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+    };
+
+    // Favorite functionality
+    document.querySelectorAll('.btn-favorite').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!isAuthenticated) {
+                showLoginModal('Bạn cần đăng nhập để thêm vào yêu thích');
+                return;
+            }
+            
+            const productId = this.dataset.productId;
+            const btn = this;
+            
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const formData = new FormData();
+                formData.append('productId', productId);
+                if (token) formData.append('__RequestVerificationToken', token);
+                
+                const response = await fetch('/Favorite/Toggle', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    btn.classList.toggle('active', data.isFavorite);
+                    showToast(data.message, 'success');
+                } else if (data.requireLogin) {
+                    showLoginModal('Bạn cần đăng nhập để thêm vào yêu thích');
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Có lỗi xảy ra', 'error');
+            }
+        });
+    });
+
+    // Load favorite states on page load
+    async function loadFavoriteStates() {
+        if (!isAuthenticated) return;
+        
+        try {
+            const response = await fetch('/Favorite/GetFavoriteIds');
+            const data = await response.json();
+            
+            if (data.isLoggedIn && data.productIds) {
+                data.productIds.forEach(productId => {
+                    const btn = document.querySelector(`.btn-favorite[data-product-id="${productId}"]`);
+                    if (btn) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading favorites:', error);
+        }
+    }
+
+    // Add to cart
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const requireLogin = this.dataset.requireLogin === 'true';
+            if (requireLogin) {
+                showLoginModal('Bạn cần đăng nhập để thêm vào giỏ hàng');
+                return;
+            }
+            
+            const variantId = this.dataset.variantId;
+            const originalHtml = this.innerHTML;
+            
+            this.disabled = true;
+            this.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Đang thêm...';
+            
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const formData = new FormData();
+                formData.append('productVariantId', variantId);
+                formData.append('quantity', '1');
+                if (token) formData.append('__RequestVerificationToken', token);
+                
+                const response = await fetch('/Cart/AddToCart', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                let data;
+                try {
+                    const text = await response.text();
+                    data = JSON.parse(text);
+                } catch {
+                    data = { success: response.ok };
+                }
+                
+                if (data.success !== false) {
+                    showToast('Đã thêm vào giỏ hàng!', 'success');
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Có lỗi xảy ra', 'error');
+            } finally {
+                this.disabled = false;
+                this.innerHTML = originalHtml;
+            }
+        });
+    });
+
+    // Login Modal
+    function showLoginModal(message) {
+        document.getElementById('loginModalMessage').textContent = message || 'Bạn cần đăng nhập để thực hiện thao tác này';
+        document.getElementById('loginModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    window.closeLoginModal = function() {
+        document.getElementById('loginModal').classList.remove('show');
+        document.body.style.overflow = '';
+    };
+
+    document.getElementById('loginModal').addEventListener('click', function(e) {
+        if (e.target === this) closeLoginModal();
+    });
+
+    // Toast
+    function showToast(message, type = 'info') {
+        document.querySelectorAll('.toast').forEach(t => t.remove());
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                ${type === 'success' 
+                    ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/>'
+                    : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}
+            </svg>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    window.showToast = showToast;
+    window.showLoginModal = showLoginModal;
+});
+</script>

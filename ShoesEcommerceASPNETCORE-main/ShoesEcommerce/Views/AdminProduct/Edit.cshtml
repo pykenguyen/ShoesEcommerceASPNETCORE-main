@@ -1,0 +1,287 @@
+@model ShoesEcommerce.ViewModels.Product.EditProductViewModel
+@{
+    ViewData["Title"] = "Ch?nh s?a S?n ph?m";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a href="/Admin" class="breadcrumb-link">Dashboard</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/Admin/Product" class="breadcrumb-link">S?n ph?m</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="/Admin/Product/Details/@Model.Id" class="breadcrumb-link">@Model.Name</a>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current">Ch?nh s?a</span>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Ch?nh s?a s?n ph?m</h1>
+            <p>ID: #@Model.Id</p>
+        </div>
+        <a href="/Admin/Product/Details/@Model.Id" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Quay l?i
+        </a>
+    </div>
+
+    <!-- Form -->
+    <form asp-action="Edit" method="post" id="editForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-section">
+            <div class="section-header">
+                <h2>Thông tin c? b?n</h2>
+            </div>
+            <div class="section-body">
+                <div class="form-group">
+                    <label asp-for="Name">Tên s?n ph?m <span class="required">*</span></label>
+                    <input asp-for="Name" class="form-input" placeholder="Nh?p tên s?n ph?m" />
+                    <span asp-validation-for="Name" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description">Mô t?</label>
+                    <textarea asp-for="Description" class="form-textarea" rows="4" placeholder="Mô t? chi ti?t v? s?n ph?m..."></textarea>
+                    <span asp-validation-for="Description" class="field-error"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="section-header">
+                <h2>Phân lo?i</h2>
+            </div>
+            <div class="section-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="CategoryId">Danh m?c <span class="required">*</span></label>
+                        <div class="select-wrapper">
+                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories"></select>
+                        </div>
+                        <span asp-validation-for="CategoryId" class="field-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="BrandId">Th??ng hi?u <span class="required">*</span></label>
+                        <div class="select-wrapper">
+                            <select asp-for="BrandId" class="form-select" asp-items="ViewBag.Brands"></select>
+                        </div>
+                        <span asp-validation-for="BrandId" class="field-error"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/Admin/Product/Details/@Model.Id" class="btn-secondary">H?y</a>
+            <button type="submit" class="btn-primary">L?u thay ??i</button>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+<style>
+    .page-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-link { color: #6b7280; text-decoration: none; }
+    .breadcrumb-link:hover { color: #111827; }
+    .breadcrumb-sep { color: #d1d5db; }
+    .breadcrumb-current { color: #111827; font-weight: 500; }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header-content h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.25rem;
+    }
+
+    .header-content p {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.875rem;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        color: #374151;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .btn-back:hover { border-color: #d1d5db; }
+
+    /* Form Sections */
+    .form-section {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .section-header h2 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+
+    .section-body { padding: 1.25rem; }
+
+    /* Form Elements */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group:last-child { margin-bottom: 0; }
+
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .required { color: #dc2626; }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        color: #111827;
+        background: #fff;
+        transition: all 0.15s;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #111827;
+        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .select-wrapper { position: relative; }
+
+    .form-select {
+        appearance: none;
+        padding-right: 2.5rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        cursor: pointer;
+    }
+
+    .field-error {
+        display: block;
+        font-size: 0.8125rem;
+        color: #dc2626;
+        margin-top: 0.375rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    /* Actions */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #111827;
+        border: 1px solid #111827;
+        color: #fff;
+    }
+
+    .btn-primary:hover { background: #1f2937; }
+
+    .btn-secondary {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+
+    @@media (max-width: 640px) {
+        .page-header { flex-direction: column; gap: 1rem; }
+        .form-row { grid-template-columns: 1fr; }
+    }
+</style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

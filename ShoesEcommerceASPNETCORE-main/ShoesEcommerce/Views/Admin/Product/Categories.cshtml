@@ -1,0 +1,172 @@
+@model IEnumerable<ShoesEcommerce.ViewModels.Product.CategoryInfo>
+@{
+    ViewData["Title"] = "Qu?n lý Danh m?c";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="categories-management">
+    <!-- Page Header -->
+    <div class="page-header bg-gradient-primary text-white rounded-3 mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title mb-2">
+                    <i class="fas fa-tags me-2"></i>
+                    Qu?n lý Danh m?c
+                </h2>
+                <p class="page-subtitle mb-0 opacity-75">T? ch?c s?n ph?m theo danh m?c</p>
+            </div>
+            <div class="page-actions">
+                <a asp-action="CreateCategory" class="btn btn-light btn-lg shadow-sm">
+                    <i class="fas fa-plus me-2"></i>
+                    Thêm danh m?c
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Categories Grid -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var category in Model)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100 category-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="category-icon">
+                                    <i class="fas fa-tag fa-2x text-primary"></i>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="editCategory(@category.Id)">
+                                            <i class="fas fa-edit me-2"></i>Ch?nh s?a
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="viewProducts(@category.Id)">
+                                            <i class="fas fa-eye me-2"></i>Xem s?n ph?m
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteCategory(@category.Id, '@category.Name')">
+                                            <i class="fas fa-trash me-2"></i>Xóa
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <h5 class="card-title mb-2">@category.Name</h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary-subtle text-primary">
+                                    @category.ProductCount s?n ph?m
+                                </span>
+                                <a asp-action="Index" asp-route-categoryId="@category.Id" class="btn btn-sm btn-outline-primary">
+                                    Xem s?n ph?m
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="empty-state">
+                <i class="fas fa-tags fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Ch?a có danh m?c nào</h4>
+                <p class="text-muted mb-4">Hãy t?o danh m?c ??u tiên ?? phân lo?i s?n ph?m</p>
+                <a asp-action="CreateCategory" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>
+                    T?o danh m?c ??u tiên
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .category-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 123, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .empty-state i {
+            opacity: 0.3;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function editCategory(id) {
+            // Redirect to edit category page
+            window.location.href = '@Url.Action("EditCategory")/' + id;
+        }
+
+        function viewProducts(categoryId) {
+            // Redirect to products page filtered by category
+            window.location.href = '@Url.Action("Index")' + '?categoryId=' + categoryId;
+        }
+
+        function deleteCategory(id, name) {
+            if (confirm('B?n có ch?c ch?n mu?n xóa danh m?c "' + name + '"?\nT?t c? s?n ph?m trong danh m?c này s? c?n ???c chuy?n sang danh m?c khác.')) {
+                // Create a form to submit delete request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("DeleteCategory")/' + id;
+                
+                // Add CSRF token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (token) {
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '__RequestVerificationToken';
+                    tokenInput.value = token.value;
+                    form.appendChild(tokenInput);
+                }
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+}

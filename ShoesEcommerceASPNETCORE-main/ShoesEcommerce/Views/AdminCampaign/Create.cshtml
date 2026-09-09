@@ -1,0 +1,365 @@
+@using ShoesEcommerce.ViewModels.Product
+@{
+    ViewData["Title"] = "T?o Campaign M?i";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var products = ViewBag.Products as IEnumerable<ProductVariantDisplayInfo>;
+}
+
+<style>
+    .create-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .back-link:hover {
+        color: #1a1a1a;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+    .form-section {
+        padding: 2rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0 0 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #1a1a1a;
+        box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .product-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+    }
+
+    .product-checkbox:hover {
+        background: #f0f0f0;
+    }
+
+    .product-checkbox.selected {
+        border-color: #1a1a1a;
+        background: #fafafa;
+    }
+
+    .product-checkbox input {
+        display: none;
+    }
+
+    .product-checkbox img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .product-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .product-name {
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #1a1a1a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-price {
+        font-size: 0.75rem;
+        color: #22c55e;
+        font-weight: 600;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .btn-primary {
+        background: #1a1a1a;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #333;
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding: 1.5rem 2rem;
+        background: #f8f9fa;
+    }
+
+    .preview-box {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        color: white;
+        margin-top: 1rem;
+    }
+
+    .preview-code {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        margin: 0.5rem 0;
+    }
+
+    @@media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .product-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="create-container">
+    <div class="page-header">
+        <a href="@Url.Action("Index")" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Quay l?i
+        </a>
+        <h1 class="page-title">? T?o Campaign Khuy?n mãi</h1>
+    </div>
+
+    <form asp-action="SendPromotion" method="post">
+        @Html.AntiForgeryToken()
+        
+        <div class="form-card">
+            <!-- Basic Info -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Thông tin c? b?n
+                </h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Tên Campaign *</label>
+                    <input type="text" name="campaignTitle" class="form-input" 
+                           placeholder="VD: Flash Sale Cu?i Tu?n" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tiêu ?? Email *</label>
+                    <input type="text" name="subject" class="form-input" 
+                           placeholder="VD: ?? Gi?m 50% - Ch? hôm nay!" required>
+                </div>
+            </div>
+
+            <!-- Promotion Details -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-tag"></i>
+                    Chi ti?t khuy?n mãi
+                </h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Mã gi?m giá *</label>
+                        <input type="text" name="promoCode" class="form-input" 
+                               placeholder="VD: FLASH50" required style="text-transform: uppercase;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ph?n tr?m gi?m *</label>
+                        <input type="number" name="discountPercent" class="form-input" 
+                               placeholder="50" min="1" max="100" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày h?t h?n *</label>
+                    <input type="date" name="expiryDate" class="form-input" 
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                </div>
+
+                <div class="preview-box" id="previewBox" style="display: none;">
+                    <p style="margin: 0; font-size: 0.875rem; opacity: 0.8;">MÃ GI?M GIÁ</p>
+                    <p class="preview-code" id="previewCode">FLASH50</p>
+                    <p style="margin: 0;">Gi?m <span id="previewPercent">50</span>%</p>
+                </div>
+            </div>
+
+            <!-- Featured Products -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-shopping-bag"></i>
+                    S?n ph?m n?i b?t (tùy ch?n)
+                </h3>
+                <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem;">
+                    Ch?n t?i ?a 4 s?n ph?m ?? hi?n th? trong email
+                </p>
+
+                <div class="product-grid">
+                    @if (products != null)
+                    {
+                        @foreach (var product in products.Take(8))
+                        {
+                            var imageUrl = product.ImageUrl ?? "/images/no-image.svg";
+                            var displayPrice = product.HasActiveDiscount ? product.DiscountedPrice : product.Price;
+                            <label class="product-checkbox" onclick="toggleProduct(this)">
+                                <input type="checkbox" name="productIds" value="@product.ProductId">
+                                <img src="@imageUrl" alt="@product.ProductName">
+                                <div class="product-info">
+                                    <div class="product-name">@product.ProductName</div>
+                                    <div class="product-price">@displayPrice.ToString("N0")?</div>
+                                </div>
+                            </label>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    H?y
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    G?i Campaign
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleProduct(label) {
+        const checkbox = label.querySelector('input[type="checkbox"]');
+        const selectedCount = document.querySelectorAll('.product-checkbox.selected').length;
+        
+        if (!label.classList.contains('selected') && selectedCount >= 4) {
+            alert('Ch? ???c ch?n t?i ?a 4 s?n ph?m');
+            checkbox.checked = false;
+            return;
+        }
+        
+        label.classList.toggle('selected');
+    }
+
+    // Preview promo code
+    document.querySelector('input[name="promoCode"]').addEventListener('input', function() {
+        document.getElementById('previewCode').textContent = this.value.toUpperCase() || 'FLASH50';
+        document.getElementById('previewBox').style.display = 'block';
+    });
+
+    document.querySelector('input[name="discountPercent"]').addEventListener('input', function() {
+        document.getElementById('previewPercent').textContent = this.value || '50';
+        document.getElementById('previewBox').style.display = 'block';
+    });
+</script>

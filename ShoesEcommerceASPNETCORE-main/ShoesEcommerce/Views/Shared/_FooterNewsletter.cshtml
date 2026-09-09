@@ -1,0 +1,109 @@
+@using Microsoft.Extensions.Options
+@using ShoesEcommerce.Services.Options
+@inject IOptions<EmailSettings> EmailSettings
+
+@{
+    var settings = EmailSettings.Value;
+    var userId = settings.MailchimpUserId;
+    var audienceId = settings.MailchimpAudienceId;
+    var serverPrefix = settings.MailchimpServerPrefix;
+    var formAction = $"https://{serverPrefix}.list-manage.com/subscribe/post?u={userId}&id={audienceId}&f_id=00142ae2f0";
+}
+
+<style>
+    .footer-newsletter {
+        margin-bottom: 1.5rem;
+    }
+
+    .footer-newsletter-title {
+        color: #ffffff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 0.75rem;
+    }
+
+    .footer-newsletter-form {
+        display: flex;
+        gap: 8px;
+    }
+
+    .footer-newsletter-input {
+        flex: 1;
+        padding: 10px 16px;
+        border: 1px solid #404040;
+        border-radius: 8px;
+        background: #2d2d2d;
+        color: #ffffff;
+        font-size: 0.875rem;
+        outline: none;
+        transition: all 0.3s;
+    }
+
+    .footer-newsletter-input::placeholder {
+        color: #6b7280;
+    }
+
+    .footer-newsletter-input:focus {
+        border-color: #22c55e;
+    }
+
+    .footer-newsletter-btn {
+        padding: 10px 20px;
+        background: #22c55e;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    .footer-newsletter-btn:hover {
+        background: #16a34a;
+    }
+
+    .footer-newsletter-note {
+        color: #6b7280;
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    @@media (max-width: 480px) {
+        .footer-newsletter-form {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="footer-newsletter">
+    <h4 class="footer-newsletter-title"><i class="fas fa-gift"></i> Nh&#7853;n &#432;u &#273;&#227;i &#273;&#7897;c quy&#7873;n</h4>
+    
+    <form action="@formAction" 
+          method="post" 
+          class="footer-newsletter-form validate" 
+          target="_blank" 
+          novalidate
+          accept-charset="UTF-8">
+        
+        <input type="email" 
+               name="EMAIL" 
+               class="footer-newsletter-input required email" 
+               required 
+               placeholder="Email c&#7911;a b&#7841;n...">
+        
+        <!-- Honeypot -->
+        <div style="position: absolute; left: -5000px;" aria-hidden="true">
+            <input type="text" name="b_@(userId)_@(audienceId)" tabindex="-1" value="">
+        </div>
+        
+        <button type="submit" class="footer-newsletter-btn">
+            &#272;&#259;ng k&#253;
+        </button>
+    </form>
+    
+    <p class="footer-newsletter-note">
+        <i class="fas fa-tag"></i> Gi&#7843;m 10% cho &#273;&#417;n h&#224;ng &#273;&#7847;u ti&#234;n
+    </p>
+</div>

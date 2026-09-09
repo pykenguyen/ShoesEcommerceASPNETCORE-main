@@ -1,0 +1,596 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SPORTS Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-collapsed: 72px;
+            --header-height: 60px;
+            --primary: #1a1a1a;
+            --primary-hover: #333;
+            --accent: #3b82f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-color: #e5e7eb;
+            --bg-white: #ffffff;
+            --bg-gray: #f9fafb;
+            --bg-hover: #f3f4f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-gray);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        /* Sidebar - ERP Style */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        /* Brand */
+        .sidebar-brand {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation */
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0.75rem 0;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        /* Menu Items */
+        .menu-item {
+            margin: 0 0.75rem 2px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .menu-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .menu-link.active {
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.08);
+            font-weight: 600;
+        }
+
+        .menu-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            opacity: 0.7;
+        }
+
+        .menu-link.active .menu-icon,
+        .menu-link:hover .menu-icon {
+            opacity: 1;
+        }
+
+        .menu-text {
+            flex: 1;
+        }
+
+        /* Submenu - Expandable */
+        .menu-submenu .menu-link {
+            cursor: pointer;
+        }
+
+        .menu-arrow {
+            font-size: 0.6rem;
+            transition: transform 0.2s ease;
+            opacity: 0.5;
+        }
+
+        .menu-submenu.open .menu-arrow {
+            transform: rotate(90deg);
+        }
+
+        .submenu-list {
+            display: none;
+            padding: 4px 0 4px 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .menu-submenu.open .submenu-list {
+            display: block;
+        }
+
+        .submenu-item {
+            margin: 0;
+        }
+
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem 0.5rem 2.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.8125rem;
+            font-weight: 400;
+            border-radius: 6px;
+            margin: 0 0.75rem;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .submenu-link::before {
+            content: '';
+            position: absolute;
+            left: 1.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            transition: all 0.15s ease;
+        }
+
+        .submenu-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .submenu-link:hover::before {
+            background: var(--accent);
+        }
+
+        .submenu-link.active {
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.06);
+            font-weight: 500;
+        }
+
+        .submenu-link.active::before {
+            background: var(--accent);
+            width: 6px;
+            height: 6px;
+        }
+
+        /* Section Divider */
+        .menu-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 0.75rem 1rem;
+        }
+
+        .menu-section-title {
+            padding: 0.75rem 1rem 0.5rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        /* Main Content */
+        .admin-main {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .admin-header {
+            position: sticky;
+            top: 0;
+            height: var(--header-height);
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .mobile-toggle:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .page-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .btn-header-outline {
+            background: var(--bg-white);
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-header-outline:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-header-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-header-primary:hover {
+            background: var(--primary-hover);
+            color: #fff;
+        }
+
+        .admin-content {
+            padding: 1.5rem;
+        }
+
+        /* Mobile Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 999;
+            backdrop-filter: blur(2px);
+        }
+
+        @@media (max-width: 1024px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+        }
+
+        /* Animations */
+        .submenu-list {
+            animation: slideDown 0.2s ease;
+        }
+
+        @@keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <a href="/Admin" class="brand-link">
+                <div class="brand-icon">S</div>
+                <div class="brand-text">
+                    <span class="brand-name">SPORTS</span>
+                    <span class="brand-subtitle">Admin Panel</span>
+                </div>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- Dashboard -->
+            <div class="menu-item">
+                <a class="menu-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")" href="/Admin">
+                    <span class="menu-icon"><i class="fas fa-th-large"></i></span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+            </div>
+
+            <div class="menu-divider"></div>
+            <div class="menu-section-title">Quản lý</div>
+
+            <!-- Products -->
+            <div class="menu-item menu-submenu @(ViewContext.RouteData.Values["controller"]?.ToString()?.Contains("Product") == true ? "open" : "")">
+                <a class="menu-link" href="javascript:void(0)">
+                    <span class="menu-icon"><i class="fas fa-box"></i></span>
+                    <span class="menu-text">Sản phẩm</span>
+                    <span class="menu-arrow"><i class="fas fa-chevron-right"></i></span>
+                </a>
+                <ul class="submenu-list">
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Product">Danh sách sản phẩm</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Product/Categories">Danh mục</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Product/Brands">Thương hiệu</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Product/Suppliers">Nhà cung cấp</a></li>
+                </ul>
+            </div>
+
+            <!-- Orders -->
+            <div class="menu-item menu-submenu @(ViewContext.RouteData.Values["controller"]?.ToString()?.Contains("Order") == true ? "open" : "")">
+                <a class="menu-link" href="javascript:void(0)">
+                    <span class="menu-icon"><i class="fas fa-shopping-bag"></i></span>
+                    <span class="menu-text">Đơn hàng</span>
+                    <span class="menu-arrow"><i class="fas fa-chevron-right"></i></span>
+                </a>
+                <ul class="submenu-list">
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Order">Tất cả đơn hàng</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Order/Pending">Chờ xử lý</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Order/Confirmed">Đã xác nhận</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Order/Completed">Hoàn thành</a></li>
+                </ul>
+            </div>
+
+            <!-- Inventory -->
+            <div class="menu-item menu-submenu @(ViewContext.RouteData.Values["controller"]?.ToString()?.Contains("Stock") == true ? "open" : "")">
+                <a class="menu-link" href="javascript:void(0)">
+                    <span class="menu-icon"><i class="fas fa-warehouse"></i></span>
+                    <span class="menu-text">Kho hàng</span>
+                    <span class="menu-arrow"><i class="fas fa-chevron-right"></i></span>
+                </a>
+                <ul class="submenu-list">
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Stock/Inventory">Tồn kho</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Stock/Check">Kiểm kho</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Stock/Import">Nhập hàng</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-divider"></div>
+            <div class="menu-section-title">Kinh doanh</div>
+
+            <!-- Promotions -->
+            <div class="menu-item">
+                <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString()?.Contains("Discount") == true ? "active" : "")" href="/Admin/Discount">
+                    <span class="menu-icon"><i class="fas fa-percent"></i></span>
+                    <span class="menu-text">Khuyến mãi</span>
+                </a>
+            </div>
+
+            <div class="menu-divider"></div>
+            <div class="menu-section-title">Hệ thống</div>
+
+            <!-- Users -->
+            <div class="menu-item menu-submenu @(ViewContext.RouteData.Values["controller"]?.ToString()?.Contains("Staff") == true || ViewContext.RouteData.Values["controller"]?.ToString()?.Contains("Customer") == true ? "open" : "")">
+                <a class="menu-link" href="javascript:void(0)">
+                    <span class="menu-icon"><i class="fas fa-users"></i></span>
+                    <span class="menu-text">Người dùng</span>
+                    <span class="menu-arrow"><i class="fas fa-chevron-right"></i></span>
+                </a>
+                <ul class="submenu-list">
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Staff">Nhân viên</a></li>
+                    <li class="submenu-item"><a class="submenu-link" href="/Admin/Customer">Khách hàng</a></li>
+                </ul>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title">@ViewData["Title"]</h1>
+            </div>
+            <div class="header-actions">
+                <a href="/" class="btn-header btn-header-outline" target="_blank">
+                    <i class="fas fa-external-link-alt"></i>
+                    <span>Cửa hàng</span>
+                </a>
+                <a href="/Account/Profile" class="btn-header btn-header-primary">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Tài khoản</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            @RenderBody()
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const mobileToggle = document.getElementById('mobileToggle');
+
+            // Mobile toggle
+            mobileToggle?.addEventListener('click', () => {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+                document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
+            });
+
+            overlay?.addEventListener('click', () => {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+                document.body.style.overflow = '';
+            });
+
+            // Submenu toggle
+            document.querySelectorAll('.menu-submenu > .menu-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const parent = this.closest('.menu-submenu');
+                    
+                    // Close other submenus (accordion style) - optional
+                    // document.querySelectorAll('.menu-submenu.open').forEach(m => {
+                    //     if (m !== parent) m.classList.remove('open');
+                    // });
+                    
+                    parent.classList.toggle('open');
+                });
+            });
+
+            // Mark current page as active
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.submenu-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                    link.closest('.menu-submenu')?.classList.add('open');
+                }
+            });
+        });
+    </script>
+
+    @{ await Html.RenderPartialAsync("_SubizChat"); }
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

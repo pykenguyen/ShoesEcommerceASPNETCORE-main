@@ -1,0 +1,520 @@
+@model ShoesEcommerce.Models.Products.Product
+@{
+    ViewData["Title"] = "Xóa S?n ph?m";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="product-delete">
+    <!-- Page Header -->
+    <div class="page-header bg-gradient-danger text-white rounded-3 mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title mb-2">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Xóa S?n ph?m
+                </h2>
+                <p class="page-subtitle mb-0 opacity-75">Xác nh?n xóa s?n ph?m kh?i h? th?ng</p>
+            </div>
+            <div class="page-actions">
+                <a asp-action="Index" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Quay l?i
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Alert -->
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <div class="alert-icon me-3">
+                <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading mb-1">?? C?nh báo!</h6>
+                <p class="mb-0">
+                    B?n ?ang th?c hi?n thao tác <strong>XÓA V?NH VI?N</strong> s?n ph?m này. 
+                    Thao tác này <strong>KHÔNG TH? HOÀN TÁC</strong> và s? xóa toàn b? d? li?u liên quan.
+                </p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row">
+        <!-- Product Information -->
+        <div class="col-lg-8 col-md-12 mb-4">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Thông tin s?n ph?m s? b? xóa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="product-info">
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>ID S?n ph?m:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <span class="badge bg-dark fs-6">#@Model.Id</span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Tên s?n ph?m:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <h6 class="text-danger mb-0">@Model.Name</h6>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Mô t?:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                @if (!string.IsNullOrEmpty(Model.Description))
+                                {
+                                    <p class="mb-0">@Model.Description</p>
+                                }
+                                else
+                                {
+                                    <em class="text-muted">Ch?a có mô t?</em>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Danh m?c:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-tags me-1"></i>
+                                    @Model.Category?.Name
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <strong>Th??ng hi?u:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <span class="badge bg-info fs-6">
+                                    <i class="fas fa-award me-1"></i>
+                                    @Model.Brand?.Name
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <strong>S? phiên b?n:</strong>
+                            </div>
+                            <div class="col-sm-9">
+                                <span class="badge bg-primary fs-6">
+                                    <i class="fas fa-palette me-1"></i>
+                                    @Model.Variants?.Count ?? 0 phiên b?n
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Impact Analysis -->
+        <div class="col-lg-4 col-md-12 mb-4">
+            <div class="card border-warning shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Tác ??ng c?a vi?c xóa
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="impact-analysis">
+                        <div class="impact-item mb-3 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-palette text-warning fa-lg me-2"></i>
+                                <strong>Phiên b?n s?n ph?m</strong>
+                            </div>
+                            <p class="mb-0 small">
+                                T?t c? <strong>@(Model.Variants?.Count ?? 0) phiên b?n</strong> c?a s?n ph?m này s? b? xóa v?nh vi?n, 
+                                bao g?m thông tin v? màu s?c, kích th??c, giá và t?n kho.
+                            </p>
+                        </div>
+
+                        <div class="impact-item mb-3 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-shopping-cart text-info fa-lg me-2"></i>
+                                <strong>??n hàng</strong>
+                            </div>
+                            <p class="mb-0 small">
+                                Các ??n hàng ?ã có s?n ph?m này s? không b? ?nh h??ng, 
+                                nh?ng không th? t?o ??n hàng m?i v?i s?n ph?m này.
+                            </p>
+                        </div>
+
+                        <div class="impact-item mb-3 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-heart text-danger fa-lg me-2"></i>
+                                <strong>Danh sách yêu thích</strong>
+                            </div>
+                            <p class="mb-0 small">
+                                S?n ph?m s? b? xóa kh?i danh sách yêu thích c?a 
+                                <strong>@(Model.Favorites?.Count ?? 0) khách hàng</strong>.
+                            </p>
+                        </div>
+
+                        <div class="impact-item mb-3 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-comments text-primary fa-lg me-2"></i>
+                                <strong>Bình lu?n & Q&A</strong>
+                            </div>
+                            <p class="mb-0 small">
+                                <strong>@(Model.Comments?.Count ?? 0) bình lu?n</strong> và 
+                                <strong>@(Model.QAs?.Count ?? 0) câu h?i</strong> s? b? xóa v?nh vi?n.
+                            </p>
+                        </div>
+
+                        <div class="impact-item mb-3 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-chart-bar text-success fa-lg me-2"></i>
+                                <strong>Báo cáo & Th?ng kê</strong>
+                            </div>
+                            <p class="mb-0 small">
+                                D? li?u l?ch s? bán hàng và th?ng kê c?a s?n ph?m này s? b? m?t.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alternative Actions -->
+            <div class="card border-info shadow-sm mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Thay th? khác
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-3">Thay vì xóa v?nh vi?n, b?n có th?:</p>
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit me-2"></i>
+                            Ch?nh s?a thông tin
+                        </a>
+                        <a asp-action="CreateVariant" asp-route-productId="@Model.Id" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-plus me-2"></i>
+                            Thêm phiên b?n m?i
+                        </a>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-eye me-2"></i>
+                            Xem chi ti?t ??y ??
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Form -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Xác nh?n xóa s?n ph?m
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Safety Check -->
+                    <div class="safety-check mb-4">
+                        <h6 class="text-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            ?? xác nh?n, vui lòng nh?p tên s?n ph?m: <strong>"@Model.Name"</strong>
+                        </h6>
+                        <input type="text" id="confirmationInput" class="form-control form-control-lg mt-2" 
+                               placeholder="Nh?p chính xác tên s?n ph?m ?? xác nh?n"
+                               autocomplete="off">
+                        <div class="form-text text-danger">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Vi?c xác nh?n tên s?n ph?m giúp tránh xóa nh?m
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <form method="post" asp-action="Delete" asp-route-id="@Model.Id" id="deleteForm">
+                        @Html.AntiForgeryToken()
+                        <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center">
+                            <div class="d-flex gap-2">
+                                <button type="submit" id="confirmDeleteBtn" class="btn btn-danger btn-lg px-4" disabled>
+                                    <i class="fas fa-trash me-2"></i>
+                                    Xác nh?n xóa v?nh vi?n
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-lg" onclick="showDeletePreview()">
+                                    <i class="fas fa-eye me-2"></i>
+                                    Xem tr??c tác ??ng
+                                </button>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Xem chi ti?t
+                                </a>
+                                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>
+                                    H?y
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Preview Modal -->
+    <div class="modal fade" id="deletePreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-preview me-2"></i>
+                        Xem tr??c tác ??ng c?a vi?c xóa
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="preview-content">
+                        <h6 class="text-danger mb-3">Sau khi xóa s?n ph?m "@Model.Name", h? th?ng s?:</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check text-danger me-3"></i>
+                                Xóa v?nh vi?n s?n ph?m kh?i danh sách
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check text-danger me-3"></i>
+                                Xóa t?t c? <strong>@(Model.Variants?.Count ?? 0) phiên b?n</strong> c?a s?n ph?m
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check text-danger me-3"></i>
+                                Xóa kh?i danh sách yêu thích c?a <strong>@(Model.Favorites?.Count ?? 0) khách hàng</strong>
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check text-danger me-3"></i>
+                                Xóa <strong>@(Model.Comments?.Count ?? 0) bình lu?n</strong> và <strong>@(Model.QAs?.Count ?? 0) câu h?i</strong>
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-check text-danger me-3"></i>
+                                Xóa d? li?u th?ng kê và báo cáo
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="fas fa-times text-success me-3"></i>
+                                <strong>KHÔNG</strong> ?nh h??ng ??n ??n hàng ?ã t?n t?i
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">?óng</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="focusConfirmationInput()">
+                        Tôi hi?u, ti?p t?c xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        
+        .alert-icon {
+            flex-shrink: 0;
+        }
+        
+        .product-info .row {
+            align-items: center;
+        }
+        
+        .impact-item {
+            border-left: 4px solid #dc3545;
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .impact-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .safety-check {
+            border: 2px dashed #dc3545;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            background: rgba(220, 53, 69, 0.05);
+        }
+        
+        #confirmationInput {
+            border: 2px solid #dc3545;
+        }
+        
+        #confirmationInput:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        
+        #confirmationInput.valid {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .list-group-item {
+            border: none;
+            padding: 0.75rem 0;
+        }
+        
+        @@media (max-width: 768px) {
+            .page-header .page-actions {
+                margin-top: 1rem;
+            }
+            
+            .d-flex.gap-3.justify-content-between {
+                flex-direction: column;
+            }
+            
+            .impact-item {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmationInput = document.getElementById('confirmationInput');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const deleteForm = document.getElementById('deleteForm');
+            const expectedText = '@Html.Raw(Model.Name)';
+            
+            console.log('Expected text:', expectedText);
+            console.log('Delete confirmation setup complete');
+            
+            // Real-time validation
+            confirmationInput.addEventListener('input', function() {
+                const inputValue = this.value.trim();
+                console.log('Input value:', inputValue);
+                console.log('Expected value:', expectedText);
+                console.log('Match:', inputValue === expectedText);
+                
+                const isValid = inputValue === expectedText;
+                
+                if (isValid) {
+                    this.classList.add('valid');
+                    this.classList.remove('is-invalid');
+                    confirmDeleteBtn.disabled = false;
+                    confirmDeleteBtn.classList.remove('btn-outline-danger');
+                    confirmDeleteBtn.classList.add('btn-danger');
+                    console.log('Button enabled');
+                } else {
+                    this.classList.remove('valid');
+                    confirmDeleteBtn.disabled = true;
+                    confirmDeleteBtn.classList.remove('btn-danger');
+                    confirmDeleteBtn.classList.add('btn-outline-danger');
+                    console.log('Button disabled');
+                }
+            });
+
+            // Form submission validation
+            deleteForm.addEventListener('submit', function(e) {
+                const inputValue = confirmationInput.value.trim();
+                if (inputValue !== expectedText) {
+                    e.preventDefault();
+                    alert('Vui lòng nh?p chính xác tên s?n ph?m ?? xác nh?n xóa!');
+                    confirmationInput.focus();
+                    return false;
+                }
+                
+                // Final confirmation
+                const finalConfirm = confirm(
+                    `XÁC NH?N CU?I CÙNG!\n\n` +
+                    `B?n có CH?C CH?N mu?n xóa v?nh vi?n s?n ph?m "${expectedText}"?\n\n` +
+                    `Thao tác này KHÔNG TH? HOÀN TÁC!`
+                );
+                
+                if (!finalConfirm) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Show loading state
+                confirmDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>?ang xóa...';
+                confirmDeleteBtn.disabled = true;
+            });
+
+            // Prevent accidental form submission
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.target !== confirmationInput) {
+                    e.preventDefault();
+                }
+            });
+            
+            // Add focus to input for better UX
+            confirmationInput.focus();
+        });
+
+        function showDeletePreview() {
+            const modal = new bootstrap.Modal(document.getElementById('deletePreviewModal'));
+            modal.show();
+        }
+
+        function focusConfirmationInput() {
+            setTimeout(() => {
+                document.getElementById('confirmationInput').focus();
+            }, 300);
+        }
+
+        // Auto-hide alerts
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                if (alert.classList.contains('alert-dismissible')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            });
+        }, 10000);
+
+        // Warn before leaving page
+        let hasUnsavedChanges = false;
+        document.getElementById('confirmationInput').addEventListener('input', function() {
+            hasUnsavedChanges = this.value.trim().length > 0;
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+}

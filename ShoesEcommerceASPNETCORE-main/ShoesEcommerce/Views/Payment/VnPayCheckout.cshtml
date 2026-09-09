@@ -1,0 +1,312 @@
+﻿@model ShoesEcommerce.Models.Orders.Order
+
+@{
+    ViewData["Title"] = "Thanh toán VNPay";
+    var totalAmount = Model.TotalAmount;
+    var subtotal = Model.OrderDetails?.Sum(od => od.Quantity * od.UnitPrice) ?? Model.TotalAmount;
+    var discountAmount = subtotal - totalAmount;
+    var invoiceNumber = $"INV-{Model.Id}-{DateTime.UtcNow:yyyyMMdd}";
+}
+
+<div class="vnpay-page">
+    <div class="vnpay-breadcrumb">
+        <a href="@Url.Action("Index", "Home")">Trang chủ</a>
+        <span>/</span>
+        <a href="@Url.Action("Index", "Cart")">Giỏ hàng</a>
+        <span>/</span>
+        <strong>Thanh toán VNPay</strong>
+    </div>
+
+    <div class="vnpay-layout">
+        <!-- Main Payment Card -->
+        <section class="card clean-card">
+            <header class="card-header">
+                <div class="card-title">
+                    <div class="logo-chip">
+                        <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/9/06ncktiwd6dc1694418196384.png" alt="VNPay" />
+                    </div>
+                    <div>
+                        <p class="eyebrow">Thanh toán an toàn</p>
+                        <h1>VNPay Checkout</h1>
+                        <p class="muted">Thẻ nội địa, Visa, MasterCard hoặc QR</p>
+                    </div>
+                </div>
+                <div class="pill">@totalAmount.ToString("N0") đ</div>
+            </header>
+
+            <!-- Order & Invoice Info -->
+            <div class="card-grid">
+                <div class="card-block">
+                    <h4 class="block-title">
+                        <i class="fas fa-file-invoice"></i> Thông tin hóa đơn
+                    </h4>
+                    <div class="info-pair">
+                        <span class="muted">Số hóa đơn</span>
+                        <span class="strong highlight">@invoiceNumber</span>
+                    </div>
+                    <div class="info-pair">
+                        <span class="muted">Mã đơn hàng</span>
+                        <span class="strong">#@Model.Id</span>
+                    </div>
+                    <div class="info-pair">
+                        <span class="muted">Ngày tạo</span>
+                        <span class="strong">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="info-pair">
+                        <span class="muted">Trạng thái</span>
+                        <span class="status-chip">Chờ thanh toán</span>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                @if (Model.ShippingAddress != null)
+                {
+                    <div class="card-block">
+                        <h4 class="block-title">
+                            <i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng
+                        </h4>
+                        <div class="shipping-info">
+                            <div class="shipping-name">@Model.ShippingAddress.FullName</div>
+                            <div class="shipping-phone">
+                                <i class="fas fa-phone"></i> @Model.ShippingAddress.PhoneNumber
+                            </div>
+                            <div class="shipping-address">
+                                @Model.ShippingAddress.Address, @Model.ShippingAddress.District, @Model.ShippingAddress.City
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="methods-section">
+                <p class="muted">Hỗ trợ thanh toán:</p>
+                <div class="method-tags">
+                    <span><i class="fas fa-credit-card"></i> ATM nội địa</span>
+                    <span><i class="fab fa-cc-visa"></i> Visa</span>
+                    <span><i class="fab fa-cc-mastercard"></i> MasterCard</span>
+                    <span><i class="fas fa-qrcode"></i> QR Code</span>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <form asp-action="VnPayCheckout" asp-controller="Payment" method="post" id="vnpayForm" class="pay-row">
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                <input type="hidden" name="amount" value="@Model.TotalAmount" />
+
+                <div class="secure-note">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Giao dịch được bảo mật bởi VNPay</span>
+                </div>
+
+                <button type="submit" class="btn-primary" id="vnpayPayBtn">
+                    <span>Thanh toán @totalAmount.ToString("N0") đ</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- Payment Info Box -->
+            <div class="info-box">
+                <h4>
+                    <i class="fas fa-info-circle"></i> Thông tin sẽ hiển thị trên VNPay
+                </h4>
+                <ul>
+                    <li><strong>Nội dung:</strong> SPORTS Vietnam - Don hang #@Model.Id - @invoiceNumber</li>
+                    <li><strong>Số tiền:</strong> @totalAmount.ToString("N0") VND</li>
+                    <li><strong>Thời hạn:</strong> 15 phút kể từ khi tạo giao dịch</li>
+                </ul>
+            </div>
+
+            <footer class="card-footer">
+                <a class="ghost-link" href="@Url.Action("Index", "Cart")">
+                    <i class="fas fa-arrow-left"></i> Quay lại giỏ hàng
+                </a>
+            </footer>
+        </section>
+
+        <!-- Order Summary Sidebar -->
+        <aside class="card summary-card clean-card">
+            <div class="summary-head">
+                <h3>Tóm tắt đơn hàng</h3>
+                <span class="muted">@(Model.OrderDetails?.Count() ?? 0) sản phẩm</span>
+            </div>
+
+            @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+            {
+                <div class="summary-list">
+                    @foreach (var item in Model.OrderDetails)
+                    {
+                        <div class="summary-item">
+                            <div class="thumb">
+                                <img src="@(item.ProductVariant?.ImageUrl ?? "/images/no-image.svg")" alt="@(item.ProductVariant?.Product?.Name ?? "Sản phẩm")" onerror="this.src='/images/no-image.svg'" />
+                                <span class="badge">@item.Quantity</span>
+                            </div>
+                            <div class="summary-info">
+                                <div class="title">@(item.ProductVariant?.Product?.Name ?? "Sản phẩm")</div>
+                                <div class="muted">@(item.ProductVariant?.Color ?? "") · Size @(item.ProductVariant?.Size ?? "")</div>
+                            </div>
+                            <div class="price">@((item.Quantity * item.UnitPrice).ToString("N0")) đ</div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="divider"></div>
+
+            <div class="totals">
+                <div class="row">
+                    <span class="muted">Tạm tính</span>
+                    <span>@subtotal.ToString("N0") đ</span>
+                </div>
+                @if (discountAmount > 0)
+                {
+                    <div class="row success">
+                        <span>Giảm giá</span>
+                        <span>-@discountAmount.ToString("N0") đ</span>
+                    </div>
+                }
+                <div class="row">
+                    <span class="muted">Phí vận chuyển</span>
+                    <span class="success">Miễn phí</span>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="total-row">
+                <span>Tổng cộng</span>
+                <span class="grand-total">@totalAmount.ToString("N0") đ</span>
+            </div>
+        </aside>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    :root {
+        --bg: #f5f5f5;
+        --card: #ffffff;
+        --text: #1a1a1a;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --accent: #c41e3a;
+        --dark: #1a1a1a;
+        --radius: 12px;
+        --shadow: 0 10px 30px rgba(0,0,0,0.06);
+        --vnpay-blue: #0066b3;
+    }
+
+    .vnpay-page { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    .vnpay-breadcrumb { display: flex; gap: 10px; align-items: center; font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+    .vnpay-breadcrumb a { color: var(--muted); text-decoration: none; }
+    .vnpay-breadcrumb a:hover { color: var(--text); }
+    .vnpay-breadcrumb strong { color: var(--text); }
+
+    .vnpay-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; align-items: start; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .clean-card { padding: 28px; }
+
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; }
+    .card-title { display: flex; gap: 14px; align-items: center; }
+    .logo-chip { width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(135deg, #e8f4fc 0%, #f0f6ff 100%); display: grid; place-items: center; border: 1px solid #d0e4f0; }
+    .logo-chip img { height: 26px; }
+    .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--vnpay-blue); margin: 0; font-weight: 600; }
+    .card-header h1 { font-size: 24px; margin: 2px 0 4px; color: var(--text); }
+    .muted { color: var(--muted); font-size: 14px; }
+    .pill { background: var(--dark); color: #fff; padding: 12px 18px; border-radius: 999px; font-weight: 700; font-size: 16px; }
+
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .card-block { border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; background: linear-gradient(135deg, #fafbfc 0%, #ffffff 100%); }
+    .block-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--text); margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+    .block-title i { color: var(--vnpay-blue); }
+    
+    .info-pair { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+    .info-pair .strong { font-weight: 600; color: var(--text); }
+    .info-pair .highlight { color: var(--vnpay-blue); font-size: 15px; }
+    .status-chip { background: #fff4e5; color: #b45309; padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: 13px; }
+
+    /* Shipping Info */
+    .shipping-info { line-height: 1.6; }
+    .shipping-name { font-weight: 600; font-size: 15px; color: var(--text); margin-bottom: 6px; }
+    .shipping-phone { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+    .shipping-phone i { color: var(--vnpay-blue); font-size: 12px; }
+    .shipping-address { font-size: 14px; color: var(--muted); }
+
+    /* Methods Section */
+    .methods-section { margin-bottom: 20px; }
+    .method-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .method-tags span { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: #f3f4f6; font-size: 13px; color: var(--text); font-weight: 500; transition: all 0.2s; }
+    .method-tags span:hover { background: #e5e7eb; }
+    .method-tags i { color: var(--vnpay-blue); }
+
+    .pay-row { display: grid; gap: 14px; margin-bottom: 20px; }
+    .secure-note { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; background: #f0fdf4; padding: 12px 16px; border-radius: 10px; border: 1px solid #bbf7d0; }
+    .secure-note i { color: #16a34a; }
+
+    .btn-primary { width: 100%; display: inline-flex; justify-content: center; align-items: center; gap: 12px; padding: 16px 24px; background: linear-gradient(135deg, var(--vnpay-blue) 0%, #004a8c 100%); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; letter-spacing: 0.02em; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0, 102, 179, 0.25); }
+    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Info Box */
+    .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; }
+    .info-box h4 { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: #1e40af; margin: 0 0 12px; }
+    .info-box ul { margin: 0; padding-left: 20px; }
+    .info-box li { font-size: 13px; color: #1e40af; margin-bottom: 6px; line-height: 1.5; }
+    .info-box li:last-child { margin-bottom: 0; }
+    .info-box li strong { color: #1e3a8a; }
+
+    .card-footer { margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .ghost-link { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; transition: color 0.2s; }
+    .ghost-link:hover { color: var(--text); }
+
+    /* Summary Card */
+    .summary-card { position: sticky; top: 100px; }
+    .summary-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .summary-head h3 { font-size: 18px; margin: 0; }
+    .summary-list { display: flex; flex-direction: column; gap: 14px; }
+    .summary-item { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
+    .thumb { position: relative; width: 60px; height: 60px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: #f3f4f6; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .badge { position: absolute; top: -6px; right: -6px; background: var(--dark); color: #fff; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .summary-info .title { font-weight: 600; color: var(--text); font-size: 14px; }
+    .price { font-weight: 600; color: var(--text); white-space: nowrap; }
+
+    .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+    .totals .row { display: flex; justify-content: space-between; padding: 8px 0; color: var(--text); font-size: 14px; }
+    .totals .row.success { color: #059669; }
+    .totals .row .success { color: #059669; }
+
+    .total-row { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 18px; color: var(--text); padding-top: 8px; }
+    .grand-total { color: var(--vnpay-blue); font-size: 24px; }
+
+    @@media (max-width: 992px) {
+        .vnpay-layout { grid-template-columns: 1fr; }
+        .summary-card { position: static; }
+    }
+
+    @@media (max-width: 640px) {
+        .card-header { flex-direction: column; align-items: flex-start; }
+        .pill { width: 100%; text-align: center; }
+        .card-grid { grid-template-columns: 1fr; }
+        .clean-card { padding: 20px; }
+    }
+</style>
+}
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('vnpayForm');
+    const payBtn = document.getElementById('vnpayPayBtn');
+    if (!form || !payBtn) return;
+
+    form.addEventListener('submit', function() {
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Đang chuyển hướng đến VNPay...</span>';
+    });
+});
+</script>
+}

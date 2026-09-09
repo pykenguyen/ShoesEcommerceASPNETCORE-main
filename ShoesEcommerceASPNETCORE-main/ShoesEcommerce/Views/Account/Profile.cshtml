@@ -1,0 +1,244 @@
+﻿@model ShoesEcommerce.ViewModels.Account.CustomerProfileViewModel
+@{
+    ViewData["Title"] = "Thông tin tài khoản";
+}
+
+<style>
+    :root {
+        --color-black: #000000;
+        --color-white: #ffffff;
+        --color-gray-100: #f5f5f5;
+        --color-gray-200: #e5e5e5;
+        --color-gray-300: #d1d1d1;
+        --color-gray-500: #737373;
+        --color-gray-600: #525252;
+        --color-gray-700: #404040;
+        --color-gray-800: #262626;
+    }
+
+    .profile-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--color-gray-200);
+    }
+
+        .profile-header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--color-black);
+            margin-bottom: 0.5rem;
+        }
+
+    .profile-card {
+        background: var(--color-white);
+        border: 1px solid var(--color-gray-200);
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-info {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--color-gray-100);
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+    .info-label {
+        font-weight: 500;
+        color: var(--color-gray-700);
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: var(--color-black);
+        font-weight: 500;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: var(--color-black);
+        color: var(--color-white);
+    }
+
+        .btn-primary:hover {
+            background: var(--color-gray-800);
+            color: var(--color-white);
+        }
+
+    .btn-secondary {
+        background: var(--color-white);
+        color: var(--color-black);
+        border: 1px solid var(--color-gray-300);
+    }
+
+        .btn-secondary:hover {
+            background: var(--color-gray-100);
+            color: var(--color-black);
+        }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        background: var(--color-gray-100);
+        border-radius: 6px;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--color-black);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: var(--color-gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>Thông tin tài khoản</h1>
+        <p style="color: var(--color-gray-600);">Quản lý thông tin cá nhân của bạn</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">@Model.TotalOrders</div>
+            <div class="stat-label">Đơn hàng</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@Model.TotalSpent.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</div>
+            <div class="stat-label">Tổng chi tiêu</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@((DateTime.Now - Model.CreatedAt).Days)</div>
+            <div class="stat-label">Ngày thành viên</div>
+        </div>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="profile-card">
+        <div class="profile-info">
+            <div class="info-row">
+                <span class="info-label">Họ và tên:</span>
+                <span class="info-value">@Model.FullName</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">@Model.Email</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Số điện thoại:</span>
+                <span class="info-value">@Model.PhoneNumber</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Ngày sinh:</span>
+                <span class="info-value">@Model.DateOfBirth.ToString("dd/MM/yyyy")</span>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Address))
+            {
+                <div class="info-row">
+                    <span class="info-label">Địa chỉ:</span>
+                    <span class="info-value">@Model.Address</span>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.City))
+            {
+                <div class="info-row">
+                    <span class="info-label">Thành phố:</span>
+                    <span class="info-value">@Model.City</span>
+                </div>
+            }
+            <div class="info-row">
+                <span class="info-label">Ngày đăng ký:</span>
+                <span class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy")</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="profile-actions">
+        <a asp-action="EditProfile" class="btn btn-primary">Chỉnh sửa thông tin</a>
+        <a asp-action="ChangePassword" class="btn btn-secondary">Đổi mật khẩu</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Về trang chủ</a>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 1050;" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 1050;" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<script>
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            if (alert.querySelector('.btn-close')) {
+                alert.querySelector('.btn-close').click();
+            }
+        });
+    }, 5000);
+</script>

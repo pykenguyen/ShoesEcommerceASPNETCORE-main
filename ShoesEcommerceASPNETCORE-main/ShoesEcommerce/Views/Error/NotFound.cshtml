@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Không tìm th?y trang";
+}
+
+<div class="container text-center" style="padding: 60px 15px;">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="error-template">
+                <h1 style="font-size: 120px; font-weight: bold; color: #dc3545;">
+                    404
+                </h1>
+                <h2 style="margin-bottom: 30px;">
+                    Oops! Không tìm th?y trang
+                </h2>
+                <div class="error-details" style="margin-bottom: 30px; font-size: 18px; color: #6c757d;">
+                    Trang b?n ?ang tìm ki?m không t?n t?i ho?c ?ã ???c di chuy?n.
+                </div>
+                <div class="error-actions">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg" style="margin-right: 10px;">
+                        <i class="fas fa-home"></i> V? trang ch?
+                    </a>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left"></i> Quay l?i
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewData["RequestId"]?.ToString()))
+{
+    <div class="text-center" style="margin-top: 30px;">
+        <small class="text-muted">ID yêu c?u: @ViewData["RequestId"]</small>
+    </div>
+}

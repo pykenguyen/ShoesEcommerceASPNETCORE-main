@@ -1,0 +1,74 @@
+﻿@model ShoesEcommerce.ViewModels.Product.EditCategoryViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa Danh mục";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div style="max-width: 600px; margin: 0 auto; padding: 2rem;">
+    <!-- Back Button -->
+    <a href="/Admin/Product/Categories" style="display: inline-flex; align-items: center; gap: 0.5rem; color: #666; text-decoration: none; margin-bottom: 1.5rem;">
+        <i class="fas fa-arrow-left"></i>
+        Quay lại danh sách danh mục
+    </a>
+
+    <!-- Form Card -->
+    <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden;">
+        <!-- Header -->
+        <div style="background: #f9fafb; padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
+            <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #1f2937;">
+                <i class="fas fa-edit" style="margin-right: 0.5rem; color: #6b7280;"></i>
+                Chỉnh sửa danh mục
+            </h2>
+        </div>
+
+        <!-- Form -->
+        <div style="padding: 1.5rem;">
+            <form asp-action="EditCategory" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="border-radius: 8px;"></div>
+
+                <!-- Name -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label asp-for="Name" style="display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">
+                        Tên danh mục <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input asp-for="Name" 
+                           style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9375rem; transition: border-color 0.2s;"
+                           placeholder="Nhập tên danh mục..." />
+                    <span asp-validation-for="Name" style="color: #ef4444; font-size: 0.875rem;"></span>
+                </div>
+
+                <!-- Description -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label asp-for="Description" style="display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">
+                        Mô tả
+                    </label>
+                    <textarea asp-for="Description" 
+                              rows="3"
+                              style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9375rem; resize: vertical;"
+                              placeholder="Nhập mô tả danh mục..."></textarea>
+                    <span asp-validation-for="Description" style="color: #ef4444; font-size: 0.875rem;"></span>
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <a href="/Admin/Product/Categories" 
+                       style="flex: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; background: #f3f4f6; color: #374151; border-radius: 8px; text-decoration: none; font-weight: 500;">
+                        Hủy bỏ
+                    </a>
+                    <button type="submit" 
+                            style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #1a1a1a; color: #fff; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                        <i class="fas fa-save"></i>
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

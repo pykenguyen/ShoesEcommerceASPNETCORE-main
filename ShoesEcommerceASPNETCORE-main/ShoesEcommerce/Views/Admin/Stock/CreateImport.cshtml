@@ -1,0 +1,205 @@
+@model ShoesEcommerce.ViewModels.Stock.CreateStockImportViewModel
+
+@{
+    ViewData["Title"] = "T?o phi?u nh?p hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div style="background: #f8f9fa; min-height: 100vh; padding: 20px;">
+    <!-- Page Header -->
+    <div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0; color: #2d3748; font-weight: 600; font-size: 20px;">
+                    <i class="fas fa-plus-circle" style="color: #718096; margin-right: 8px; font-size: 16px;"></i>
+                    T?o phi?u nh?p hàng
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #718096; font-size: 14px;">
+                    Thêm phi?u nh?p hàng m?i vào h? th?ng
+                </p>
+            </div>
+            <div>
+                <a href="/Admin/Stock/Import" class="btn btn-sm" 
+                   style="background: #e2e8f0; color: #4a5568; border: none; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                    <i class="fas fa-arrow-left" style="margin-right: 4px;"></i> Quay l?i
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Form -->
+    <div style="background: white; border-radius: 8px; padding: 32px; border: 1px solid #e9ecef;">
+        <form asp-action="CreateImport" method="post">
+            @Html.AntiForgeryToken()
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                <!-- Left Column -->
+                <div>
+                    <h5 style="color: #2d3748; margin-bottom: 20px; font-size: 16px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0;">
+                        <i class="fas fa-info-circle" style="color: #4299e1; margin-right: 8px; font-size: 14px;"></i>
+                        Thông tin c? b?n
+                    </h5>
+
+                    <div style="margin-bottom: 20px;">
+                        <label asp-for="ProductVariantId" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 6px; display: block; font-size: 13px;">
+                            S?n ph?m <span style="color: #f56565;">*</span>
+                        </label>
+                        <select asp-for="ProductVariantId" class="form-select" required 
+                                style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; font-size: 14px;">
+                            <option value="">-- Ch?n s?n ph?m --</option>
+                            @foreach (var variant in Model.ProductVariants)
+                            {
+                                <option value="@variant.Id">@variant.DisplayName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="ProductVariantId" class="text-danger" style="font-size: 11px;"></span>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label asp-for="SupplierId" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 6px; display: block; font-size: 13px;">
+                            Nhà cung c?p <span style="color: #f56565;">*</span>
+                        </label>
+                        <select asp-for="SupplierId" class="form-select" required 
+                                style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; font-size: 14px;">
+                            <option value="">-- Ch?n nhà cung c?p --</option>
+                            @foreach (var supplier in Model.Suppliers)
+                            {
+                                <option value="@supplier.Id">@supplier.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="SupplierId" class="text-danger" style="font-size: 11px;"></span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                        <div>
+                            <label asp-for="QuantityReceived" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 6px; display: block; font-size: 13px;">
+                                S? l??ng <span style="color: #f56565;">*</span>
+                            </label>
+                            <input asp-for="QuantityReceived" type="number" min="1" class="form-control" 
+                                   placeholder="Nh?p s? l??ng" required
+                                   style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; font-size: 14px;">
+                            <span asp-validation-for="QuantityReceived" class="text-danger" style="font-size: 11px;"></span>
+                        </div>
+
+                        <div>
+                            <label asp-for="UnitCost" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 6px; display: block; font-size: 13px;">
+                                Giá nh?p (VN?) <span style="color: #f56565;">*</span>
+                            </label>
+                            <input asp-for="UnitCost" type="number" step="0.01" min="0.01" class="form-control" 
+                                   placeholder="Nh?p giá" required
+                                   style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; font-size: 14px;">
+                            <span asp-validation-for="UnitCost" class="text-danger" style="font-size: 11px;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <h5 style="color: #2d3748; margin-bottom: 20px; font-size: 16px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0;">
+                        <i class="fas fa-clipboard-list" style="color: #48bb78; margin-right: 8px; font-size: 14px;"></i>
+                        Thông tin b? sung
+                    </h5>
+
+                    <div style="margin-bottom: 20px;">
+                        <label asp-for="BatchNumber" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 6px; display: block; font-size: 13px;">
+                            S? lô hàng
+                        </label>
+                        <input asp-for="BatchNumber" type="text" class="form-control" 
+                               placeholder="Nh?p s? lô (tùy ch?n)"
+                               style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; font-size: 14px;">
+                        <span asp-validation-for="BatchNumber" class="text-danger" style="font-size: 11px;"></span>
+                        <small style="color: #718096; font-size: 11px; margin-top: 4px; display: block;">Ví d?: BATCH001, LOT-2025-01</small>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label asp-for="ReceivedBy" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 6px; display: block; font-size: 13px;">
+                            Ng??i nh?n hàng <span style="color: #f56565;">*</span>
+                        </label>
+                        <input asp-for="ReceivedBy" type="text" class="form-control" 
+                               placeholder="Tên ng??i nh?n hàng" required
+                               style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; font-size: 14px;">
+                        <span asp-validation-for="ReceivedBy" class="text-danger" style="font-size: 11px;"></span>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label asp-for="Notes" class="form-label" style="font-weight: 600; color: #2d3748; margin-bottom: 6px; display: block; font-size: 13px;">
+                            Ghi chú
+                        </label>
+                        <textarea asp-for="Notes" class="form-control" rows="4" 
+                                  placeholder="Nh?p ghi chú v? lô hàng (tùy ch?n)"
+                                  style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; font-size: 14px; resize: vertical;"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger" style="font-size: 11px;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Section -->
+            <div style="background: #f7fafc; border-radius: 6px; padding: 20px; margin: 24px 0; border-left: 3px solid #4299e1;">
+                <h6 style="color: #2d3748; margin-bottom: 12px; font-size: 14px; font-weight: 600;">
+                    <i class="fas fa-calculator" style="color: #4299e1; margin-right: 6px;"></i>
+                    Tóm t?t phi?u nh?p
+                </h6>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; font-size: 13px;">
+                    <div>
+                        <strong style="color: #4a5568;">S? l??ng:</strong>
+                        <span id="summaryQuantity" style="color: #2d3748; font-weight: 600;">0</span>
+                    </div>
+                    <div>
+                        <strong style="color: #4a5568;">Giá nh?p:</strong>
+                        <span id="summaryUnitCost" style="color: #2d3748; font-weight: 600;">0 VN?</span>
+                    </div>
+                    <div>
+                        <strong style="color: #4a5568;">T?ng ti?n:</strong>
+                        <span id="summaryTotal" style="color: #e53e3e; font-weight: 700; font-size: 15px;">0 VN?</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <div>
+                    <small style="color: #718096; font-size: 11px;">
+                        <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
+                        Các tr??ng có d?u <span style="color: #f56565;">*</span> là b?t bu?c
+                    </small>
+                </div>
+                
+                <div style="display: flex; gap: 8px;">
+                    <a href="/Admin/Stock/Import" class="btn" style="background: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                        <i class="fas fa-times" style="margin-right: 4px;"></i>
+                        H?y
+                    </a>
+                    <button type="submit" class="btn" style="background: #48bb78; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px;">
+                        <i class="fas fa-save" style="margin-right: 4px;"></i>
+                        T?o phi?u nh?p
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantityInput = document.getElementById('QuantityReceived');
+        const unitCostInput = document.getElementById('UnitCost');
+        
+        function updateSummary() {
+            const quantity = parseInt(quantityInput.value) || 0;
+            const unitCost = parseFloat(unitCostInput.value) || 0;
+            const total = quantity * unitCost;
+            
+            document.getElementById('summaryQuantity').textContent = quantity.toLocaleString();
+            document.getElementById('summaryUnitCost').textContent = unitCost.toLocaleString() + ' VN?';
+            document.getElementById('summaryTotal').textContent = total.toLocaleString() + ' VN?';
+        }
+        
+        quantityInput.addEventListener('input', updateSummary);
+        unitCostInput.addEventListener('input', updateSummary);
+        
+        // Initialize summary
+        updateSummary();
+    });
+</script>
+}

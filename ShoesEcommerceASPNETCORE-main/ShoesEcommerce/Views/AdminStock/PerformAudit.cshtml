@@ -1,0 +1,237 @@
+﻿@model ShoesEcommerce.ViewModels.Stock.PerformAuditViewModel
+
+@{
+    ViewData["Title"] = "Thực hiện kiểm kho";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div style="background: #f9fafb; min-height: 100vh; padding: 24px;">
+    <!-- Page Header -->
+    <div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="margin: 0; color: #111827; font-weight: 600; font-size: 22px;">
+                    <i class="fas fa-search" style="color: #4f46e5; margin-right: 8px; font-size: 16px;"></i>
+                    Thực hiện kiểm kho
+                </h4>
+                <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">
+                    Kiểm tra và cập nhật số lượng tồn kho thực tế
+                </p>
+            </div>
+            <div>
+                <a href="/Admin/Stock/Check" class="btn btn-sm"
+                   style="background: #e0f2fe; color: #0d253f; border: none; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                    <i class="fas fa-arrow-left" style="margin-right: 4px;"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Form -->
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div style="background: white; border-radius: 8px; padding: 32px; border: 1px solid #e5e7eb;">
+            <!-- Product Information -->
+            <div style="background: #f3f4f6; border-radius: 6px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #2563eb;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="width: 56px; height: 56px; border-radius: 6px; background: #e0f2fe; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-box" style="font-size: 24px; color: #0d253f;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h5 style="margin: 0 0 4px 0; font-weight: 600; color: #111827; font-size: 16px;">@Model.ProductName</h5>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span style="background: #e7f3fe; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #2563eb;">
+                                Màu: @Model.Color
+                            </span>
+                            <span style="background: #e7f3fe; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #2563eb;">
+                                Size: @Model.Size
+                            </span>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Số lượng hệ thống</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #111827;">@Model.SystemQuantity</div>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="PerformAudit" method="post">
+                @Html.AntiForgeryToken()
+                <input asp-for="ProductVariantId" type="hidden" />
+                <input asp-for="ProductName" type="hidden" />
+                <input asp-for="Color" type="hidden" />
+                <input asp-for="Size" type="hidden" />
+                <input asp-for="SystemQuantity" type="hidden" />
+
+                <!-- Audit Information -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 24px;">
+                    <!-- Left Column -->
+                    <div>
+                        <h6 style="color: #111827; margin-bottom: 16px; font-size: 14px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb;">
+                            <i class="fas fa-clipboard-check" style="color: #4f46e5; margin-right: 6px;"></i>
+                            Thông tin kiểm tra
+                        </h6>
+
+                        <div style="margin-bottom: 16px;">
+                            <label class="form-label" style="font-weight: 600; color: #111827; margin-bottom: 6px; display: block; font-size: 13px;">
+                                Số lượng hệ thống
+                            </label>
+                            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; text-align: center;">
+                                <span style="font-size: 20px; font-weight: bold; color: #374151;">@Model.SystemQuantity</span>
+                                <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">Số lượng trong hệ thống</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label asp-for="ActualQuantity" class="form-label" style="font-weight: 600; color: #111827; margin-bottom: 6px; display: block; font-size: 13px;">
+                                Số lượng thực tế <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input asp-for="ActualQuantity" type="number" min="0" class="form-control"
+                                   placeholder="Nhập số lượng đếm được" required
+                                   style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; font-size: 16px; text-align: center; font-weight: bold;"
+                                   onchange="calculateDifference()">
+                            <span asp-validation-for="ActualQuantity" class="text-danger" style="font-size: 11px;"></span>
+                        </div>
+
+                        <!-- Difference Display -->
+                        <div style="margin-bottom: 16px;">
+                            <label class="form-label" style="font-weight: 600; color: #111827; margin-bottom: 6px; display: block; font-size: 13px;">
+                                Chênh lệch
+                            </label>
+                            <div id="differenceDisplay" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; text-align: center;">
+                                <span id="differenceValue" style="font-size: 18px; font-weight: bold;">0</span>
+                                <div id="differenceText" style="font-size: 11px; color: #6b7280; margin-top: 2px;">Chênh lệch</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div>
+                        <h6 style="color: #111827; margin-bottom: 16px; font-size: 14px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb;">
+                            <i class="fas fa-user-edit" style="color: #34d399; margin-right: 6px;"></i>
+                            Thông tin người kiểm tra
+                        </h6>
+
+                        <div style="margin-bottom: 16px;">
+                            <label asp-for="AuditedBy" class="form-label" style="font-weight: 600; color: #111827; margin-bottom: 6px; display: block; font-size: 13px;">
+                                Người kiểm tra <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input asp-for="AuditedBy" type="text" class="form-control"
+                                   placeholder="Nhập tên người kiểm tra" required
+                                   style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 12px; font-size: 14px;">
+                            <span asp-validation-for="AuditedBy" class="text-danger" style="font-size: 11px;"></span>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label asp-for="Notes" class="form-label" style="font-weight: 600; color: #111827; margin-bottom: 6px; display: block; font-size: 13px;">
+                                Ghi chú kiểm tra
+                            </label>
+                            <textarea asp-for="Notes" class="form-control" rows="4"
+                                      placeholder="Nhập ghi chú về quá trình kiểm kho (tùy chọn)"
+                                      style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 12px; font-size: 14px; resize: vertical;"></textarea>
+                            <span asp-validation-for="Notes" class="text-danger" style="font-size: 11px;"></span>
+                        </div>
+
+                        <!-- Audit Guidelines -->
+                        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px; border-radius: 6px;">
+                            <h6 style="color: #1e40af; margin-bottom: 8px; font-size: 12px; font-weight: 600;">
+                                <i class="fas fa-info-circle"></i> Hướng dẫn kiểm kho
+                            </h6>
+                            <ul style="margin: 0; padding-left: 16px; color: #1e40af; font-size: 11px; line-height: 1.6;">
+                                <li>Đếm chính xác số lượng sản phẩm thực tế</li>
+                                <li>Kiểm tra tình trạng sản phẩm</li>
+                                <li>Ghi chú các vấn đề phát hiện (nếu có)</li>
+                                <li>Đảm bảo tính chính xác của việc kiểm đếm</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <div>
+                        <small style="color: #6b7280; font-size: 11px;">
+                            <i class="fas fa-clock" style="margin-right: 4px;"></i>
+                            Thời gian kiểm tra: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                        <a href="/Admin/Stock/Check" class="btn" style="background: #e0f2fe; color: #0d253f; border: none; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                            <i class="fas fa-times" style="margin-right: 4px;"></i>
+                            Hủy
+                        </a>
+                        <button type="submit" class="btn" style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px;">
+                            <i class="fas fa-check" style="margin-right: 4px;"></i>
+                            Hoàn thành kiểm kho
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 20px;">
+            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; text-align: center;">
+                <i class="fas fa-balance-scale" style="font-size: 24px; color: #34d399; margin-bottom: 8px;"></i>
+                <h6 style="margin: 0; color: #111827; font-size: 13px; font-weight: 600;">Số lượng khớp</h6>
+                <p style="font-size: 11px; color: #6b7280; margin: 2px 0 0 0;">Nhập số lượng bằng hệ thống</p>
+            </div>
+
+            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; text-align: center;">
+                <i class="fas fa-arrow-up" style="font-size: 24px; color: #2563eb; margin-bottom: 8px;"></i>
+                <h6 style="margin: 0; color: #111827; font-size: 13px; font-weight: 600;">Thừa hàng</h6>
+                <p style="font-size: 11px; color: #6b7280; margin: 2px 0 0 0;">Số lượng thực tế > hệ thống</p>
+            </div>
+
+            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; text-align: center;">
+                <i class="fas fa-arrow-down" style="font-size: 24px; color: #ed8936; margin-bottom: 8px;"></i>
+                <h6 style="margin: 0; color: #111827; font-size: 13px; font-weight: 600;">Thiếu hàng</h6>
+                <p style="font-size: 11px; color: #6b7280; margin: 2px 0 0 0;">Số lượng thực tế < hệ thống</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function calculateDifference() {
+            const systemQuantity = @Model.SystemQuantity;
+            const actualQuantity = parseInt(document.getElementById('ActualQuantity').value) || 0;
+            const difference = actualQuantity - systemQuantity;
+
+            const differenceValueEl = document.getElementById('differenceValue');
+            const differenceTextEl = document.getElementById('differenceText');
+            const differenceDisplayEl = document.getElementById('differenceDisplay');
+
+            // Update difference value
+            differenceValueEl.textContent = difference > 0 ? '+' + difference : difference;
+
+            // Update styling and text based on difference
+            if (difference === 0) {
+                differenceDisplayEl.style.background = '#f0fff4';
+                differenceDisplayEl.style.borderColor = '#48bb78';
+                differenceValueEl.style.color = '#22543d';
+                differenceTextEl.textContent = 'Số lượng khớp';
+                differenceTextEl.style.color = '#22543d';
+            } else if (difference > 0) {
+                differenceDisplayEl.style.background = '#eff6ff';
+                differenceDisplayEl.style.borderColor = '#4299e1';
+                differenceValueEl.style.color = '#2d3748';
+                differenceTextEl.textContent = 'Thừa ' + difference + ' sản phẩm';
+                differenceTextEl.style.color = '#2d3748';
+            } else {
+                differenceDisplayEl.style.background = '#fffaf0';
+                differenceDisplayEl.style.borderColor = '#ed8936';
+                differenceValueEl.style.color = '#9c4221';
+                differenceTextEl.textContent = 'Thiếu ' + Math.abs(difference) + ' sản phẩm';
+                differenceTextEl.style.color = '#9c4221';
+            }
+        }
+
+        // Initialize difference calculation
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateDifference();
+            document.getElementById('ActualQuantity').focus();
+        });
+    </script>
+}

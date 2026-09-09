@@ -1,0 +1,120 @@
+@model ShoesEcommerce.ViewModels.Product.CreateCategoryViewModel
+@{
+    ViewData["Title"] = "Thêm Danh m?c m?i";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="create-category">
+    <!-- Page Header -->
+    <div class="page-header bg-gradient-primary text-white rounded-3 mb-4 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title mb-2">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Thêm Danh m?c m?i
+                </h2>
+                <p class="page-subtitle mb-0 opacity-75">T?o danh m?c ?? phân lo?i s?n ph?m</p>
+            </div>
+            <div class="page-actions">
+                <a asp-action="Categories" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Quay l?i
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="CreateCategory" method="post" class="needs-validation" novalidate>
+                <div class="row">
+                    <!-- Category Name -->
+                    <div class="col-lg-12 col-md-12 mb-4">
+                        <label asp-for="Name" class="form-label fw-semibold required">
+                            <i class="fas fa-tag me-1"></i>Tên danh m?c
+                        </label>
+                        <input asp-for="Name" class="form-control form-control-lg" 
+                               placeholder="VD: Giày th? thao" maxlength="100" required>
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Tên danh m?c nên ng?n g?n, d? hi?u
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12 mb-4">
+                        <label asp-for="Description" class="form-label fw-semibold">
+                            <i class="fas fa-align-left me-1"></i>Mô t? danh m?c
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="4" 
+                                  placeholder="Mô t? v? danh m?c này..." maxlength="500"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Mô t? ng?n v? lo?i s?n ph?m trong danh m?c này
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="submit" class="btn btn-primary btn-lg px-4">
+                        <i class="fas fa-save me-2"></i>
+                        L?u danh m?c
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-undo me-2"></i>
+                        ??t l?i
+                    </button>
+                    <a asp-action="Categories" class="btn btn-light btn-lg">
+                        <i class="fas fa-times me-2"></i>
+                        H?y
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

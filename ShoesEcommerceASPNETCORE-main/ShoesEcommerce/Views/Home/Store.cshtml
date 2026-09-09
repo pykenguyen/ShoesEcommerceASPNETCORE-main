@@ -1,0 +1,220 @@
+﻿@{
+    ViewData["Title"] = "Hệ thống cửa hàng SPORTS";
+    ViewData["MetaDescription"] = "Tìm cửa hàng SPORTS gần bạn nhất. Hỗ trợ thử giày, tư vấn chuyên nghiệp.";
+}
+
+<div class="store-page">
+    <!-- Hero Section -->
+    <section class="store-hero">
+        <div class="container">
+            <h1 class="store-title">HỆ THỐNG <span class="text-accent">CỬA HÀNG</span></h1>
+            <p class="store-subtitle">Ghé thăm cửa hàng gần bạn nhất để được tư vấn và thử giày trực tiếp</p>
+        </div>
+    </section>
+
+    <!-- Store List -->
+    <section class="store-section">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Store 1 -->
+                <div class="col-lg-6">
+                    <div class="store-card">
+                        <div class="store-image">
+                            <!-- Placeholder: Upload hình cửa hàng 600x400px -->
+                            <img src="/images/stores/store-1.jpg" alt="SPORTS Quận 1" onerror="this.src='/images/no-image.svg'">
+                        </div>
+                        <div class="store-info">
+                            <h3>SPORTS Quận 1</h3>
+                            <div class="store-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>123 Đường ABC, Phường XYZ, Quận 1, TP.HCM</span>
+                            </div>
+                            <div class="store-detail">
+                                <i class="fas fa-phone-alt"></i>
+                                <span>0939 345 555</span>
+                            </div>
+                            <div class="store-detail">
+                                <i class="fas fa-clock"></i>
+                                <span>8:00 - 21:00 (Tất cả các ngày)</span>
+                            </div>
+                            <a href="https://maps.google.com" target="_blank" class="btn-direction">
+                                <i class="fas fa-directions me-2"></i>Chỉ đường
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Store 2 -->
+                <div class="col-lg-6">
+                    <div class="store-card">
+                        <div class="store-image">
+                            <img src="/images/stores/store-2.jpg" alt="SPORTS Quận 3" onerror="this.src='/images/no-image.svg'">
+                        </div>
+                        <div class="store-info">
+                            <h3>SPORTS Quận 3</h3>
+                            <div class="store-detail">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>456 Đường DEF, Phường UVW, Quận 3, TP.HCM</span>
+                            </div>
+                            <div class="store-detail">
+                                <i class="fas fa-phone-alt"></i>
+                                <span>0939 345 556</span>
+                            </div>
+                            <div class="store-detail">
+                                <i class="fas fa-clock"></i>
+                                <span>8:00 - 21:00 (Tất cả các ngày)</span>
+                            </div>
+                            <a href="https://maps.google.com" target="_blank" class="btn-direction">
+                                <i class="fas fa-directions me-2"></i>Chỉ đường
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="store-contact">
+        <div class="container text-center">
+            <h2>CẦN HỖ TRỢ?</h2>
+            <p>Liên hệ với chúng tôi qua hotline hoặc ghé thăm cửa hàng gần nhất</p>
+            <a href="tel:0939345555" class="btn-hotline">
+                <i class="fas fa-phone-alt me-2"></i>0939 345 555
+            </a>
+        </div>
+    </section>
+</div>
+
+<style>
+    .store-page {
+        --accent-red: #c41e3a;
+        --primary-black: #1a1a1a;
+    }
+
+    .store-hero {
+        padding: 80px 0;
+        background: linear-gradient(135deg, var(--primary-black) 0%, #2d2d2d 100%);
+        color: white;
+        text-align: center;
+    }
+
+    .store-title {
+        font-size: 48px;
+        font-weight: 900;
+        margin-bottom: 15px;
+    }
+
+    .text-accent {
+        color: var(--accent-red);
+    }
+
+    .store-subtitle {
+        font-size: 18px;
+        opacity: 0.8;
+    }
+
+    .store-section {
+        padding: 80px 0;
+    }
+
+    .store-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+
+    .store-image {
+        height: 250px;
+        overflow: hidden;
+    }
+
+    .store-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .store-info {
+        padding: 30px;
+    }
+
+    .store-info h3 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .store-detail {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        color: #666;
+    }
+
+    .store-detail i {
+        color: var(--accent-red);
+        width: 20px;
+        text-align: center;
+        margin-top: 3px;
+    }
+
+    .btn-direction {
+        display: inline-block;
+        margin-top: 15px;
+        background: var(--primary-black);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-direction:hover {
+        background: var(--accent-red);
+        color: white;
+    }
+
+    .store-contact {
+        padding: 80px 0;
+        background: #f5f5f5;
+    }
+
+    .store-contact h2 {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 15px;
+    }
+
+    .store-contact p {
+        color: #666;
+        margin-bottom: 30px;
+    }
+
+    .btn-hotline {
+        display: inline-block;
+        background: var(--accent-red);
+        color: white;
+        padding: 16px 40px;
+        border-radius: 50px;
+        font-size: 20px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-hotline:hover {
+        background: #a01830;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    @@media (max-width: 768px) {
+        .store-title {
+            font-size: 32px;
+        }
+    }
+</style>

@@ -1,0 +1,1335 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-89DR657S6S"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-89DR657S6S');
+    </script>
+    
+    <!-- SEO Meta Tags -->
+    @using Microsoft.Extensions.Options
+    @using ShoesEcommerce.Services.Options
+    @inject IOptions<SocialChatOptions> SocialChatOptionsAccessor
+    @inject IConfiguration Configuration
+    @{
+        var pageTitle = ViewData["Title"]?.ToString() ?? "Giày Thể Thao Chính Hãng";
+        var siteName = "SPORTS";
+        var fullTitle = pageTitle.Length > 50 ? pageTitle : $"{pageTitle} | {siteName}";
+        if (fullTitle.Length > 60)
+        {
+            fullTitle = fullTitle.Substring(0, 57) + "...";
+        }
+        
+        var metaDescription = ViewData["MetaDescription"]?.ToString() 
+            ?? "SPORTS - Chuyên giày thể thao, giày đá bóng, futsal chính hãng Nike, Adidas, Puma, Mizuno. Miễn phí ship. Đổi trả 30 ngày.";
+        if (metaDescription.Length > 155)
+        {
+            metaDescription = metaDescription.Substring(0, 152) + "...";
+        }
+        
+        // Use configured SiteUrl for production to ensure HTTPS and correct domain
+        var siteUrl = Configuration["SiteUrl"];
+        var baseUrl = !string.IsNullOrEmpty(siteUrl) 
+            ? siteUrl.TrimEnd('/') 
+            : $"{Context.Request.Scheme}://{Context.Request.Host}";
+        
+        var canonicalUrl = ViewData["CanonicalUrl"]?.ToString();
+        if (string.IsNullOrEmpty(canonicalUrl))
+        {
+            canonicalUrl = $"{baseUrl}{Context.Request.Path}";
+        }
+        else if (!canonicalUrl.StartsWith("http"))
+        {
+            canonicalUrl = $"{baseUrl}{canonicalUrl}";
+        }
+        if (canonicalUrl.Contains("?"))
+        {
+            canonicalUrl = canonicalUrl.Split('?')[0];
+        }
+        
+        var ogType = ViewData["OgType"]?.ToString() ?? "website";
+        
+        // Use a guaranteed publicly accessible image for OG
+        // Priority: ViewData OgImage -> Default placeholder
+        var ogImage = ViewData["OgImage"]?.ToString();
+        if (string.IsNullOrEmpty(ogImage) || ogImage.StartsWith("/images/og-") || ogImage == "/images/no-image.svg")
+        {
+            // Use a CDN-hosted placeholder that Facebook can access
+            ogImage = "https://placehold.co/1200x630/1a1a1a/ffffff/png?text=SPORTS+Vietnam+-+Giay+The+Thao";
+        }
+        else if (ogImage.StartsWith("/"))
+        {
+            // Convert relative path to absolute
+            ogImage = $"{baseUrl}{ogImage}";
+        }
+        // Note: Supabase URLs are already absolute, so they pass through unchanged
+        
+        var ogImageWidth = ViewData["OgImageWidth"]?.ToString() ?? "1200";
+        var ogImageHeight = ViewData["OgImageHeight"]?.ToString() ?? "630";
+        var ogImageAlt = ViewData["OgImageAlt"]?.ToString() ?? pageTitle;
+        
+        var socialChatOptions = SocialChatOptionsAccessor.Value;
+        var fbAppId = socialChatOptions?.Facebook?.AppId;
+        
+        var productPrice = ViewData["ProductPrice"]?.ToString();
+        var productCurrency = ViewData["ProductCurrency"]?.ToString() ?? "VND";
+        var productAvailability = ViewData["ProductAvailability"]?.ToString() ?? "in stock";
+    }
+    <title>@fullTitle</title>
+    <meta name="description" content="@metaDescription">
+    <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "giày thể thao, giày đá bóng, giày futsal, nike, adidas, puma, mizuno, giày chính hãng")">
+    <meta name="author" content="SPORTS Vietnam">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="googlebot" content="index, follow">
+    
+    <link rel="canonical" href="@canonicalUrl">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="@ogType">
+    <meta property="og:url" content="@canonicalUrl">
+    <meta property="og:title" content="@fullTitle">
+    <meta property="og:description" content="@metaDescription">
+    <meta property="og:image" content="@ogImage">
+    <meta property="og:image:secure_url" content="@ogImage">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="@ogImageWidth">
+    <meta property="og:image:height" content="@ogImageHeight">
+    <meta property="og:image:alt" content="@ogImageAlt">
+    <meta property="og:site_name" content="@siteName">
+    <meta property="og:locale" content="vi_VN">
+    @if (!string.IsNullOrEmpty(fbAppId))
+    {
+        <meta property="fb:app_id" content="@fbAppId">
+    }
+    
+    @if (ogType == "product" && !string.IsNullOrEmpty(productPrice))
+    {
+        <meta property="product:price:amount" content="@productPrice">
+        <meta property="product:price:currency" content="@productCurrency">
+        <meta property="product:availability" content="@productAvailability">
+    }
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@fullTitle">
+    <meta name="twitter:description" content="@metaDescription">
+    <meta name="twitter:image" content="@ogImage">
+    <meta name="twitter:image:alt" content="@ogImageAlt">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ShoesEcommerce.styles.css" asp-append-version="true" />
+    
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "SportingGoodsStore",
+        "name": "SPORTS Vietnam",
+        "url": "@baseUrl",
+        "description": "@metaDescription",
+        "logo": "https://placehold.co/200x200/1a1a1a/ffffff/png?text=SPORTS",
+        "image": "@ogImage",
+        "address": {
+            "@@type": "PostalAddress",
+            "streetAddress": "123 Đường ABC",
+            "addressLocality": "TP. Hồ Chí Minh",
+            "addressCountry": "VN"
+        },
+        "geo": {
+            "@@type": "GeoCoordinates",
+            "latitude": "10.762622",
+            "longitude": "106.660172"
+        },
+        "telephone": "+84939345555",
+        "openingHoursSpecification": {
+            "@@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "opens": "08:00",
+            "closes": "21:00"
+        },
+        "priceRange": "₫₫",
+        "sameAs": [
+            "https://facebook.com/sportsvn",
+            "https://instagram.com/sportsvn"
+        ]
+    }
+    </script>
+    
+    <!-- Structured Data - Website Search -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
+        "name": "@siteName",
+        "url": "@baseUrl",
+        "potentialAction": {
+            "@@type": "SearchAction",
+            "target": {
+                "@@type": "EntryPoint",
+                "urlTemplate": "@baseUrl/san-pham?searchString={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    
+    @await RenderSectionAsync("StructuredData", required: false)
+    
+    <script>
+        window.currentUserId = '@(User?.Identity?.IsAuthenticated == true ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value : "anonymous")';
+        window.sessionId = '@Context.Session.Id';
+        window.environmentName = '@Html.Raw(ViewContext.HttpContext.RequestServices.GetService<IWebHostEnvironment>()?.EnvironmentName)';
+    </script>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Sports Header -->
+    <header class="sports-header" role="banner">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <span class="top-bar-text">
+                            <i class="fas fa-phone-alt me-2"></i>Hotline: <strong>0939 345 555</strong>
+                        </span>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="top-bar-text">
+                            <i class="fas fa-truck me-2"></i>Miễn phí ship đơn từ 500K
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Navigation -->
+        <nav class="navbar navbar-expand-lg sports-navbar" aria-label="Main navigation">
+            <div class="container">
+                <!-- Brand Logo -->
+                <a class="navbar-brand sports-logo" asp-area="" asp-controller="Home" asp-action="Index" title="SPORTS - Giày thể thao chính hãng">
+                    <span class="logo-text">sports</span>
+                </a>
+                
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Navigation Menu -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto main-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">TRANG CHỦ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/gioi-thieu">GIỚI THIỆU</a>
+                        </li>
+                        <li class="nav-item dropdown mega-dropdown">
+                            <a class="nav-link dropdown-toggle" href="/san-pham" id="productDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                SẢN PHẨM <i class="fas fa-chevron-down ms-1"></i>
+                            </a>
+                            <div class="dropdown-menu mega-menu" aria-labelledby="productDropdown">
+                                @await Component.InvokeAsync("Navbar")
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                GIỎ HÀNG <i class="fas fa-chevron-down ms-1"></i>
+                            </a>
+                            <ul class="dropdown-menu sports-dropdown" aria-labelledby="cartDropdown">
+                                <li><a class="dropdown-item" href="/gio-hang"><i class="fas fa-shopping-cart me-2"></i>Xem giỏ hàng</a></li>
+                                <li><a class="dropdown-item" href="/thanh-toan"><i class="fas fa-credit-card me-2"></i>Thanh toán</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="orderDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                ĐƠN HÀNG <i class="fas fa-chevron-down ms-1"></i>
+                            </a>
+                            <ul class="dropdown-menu sports-dropdown" aria-labelledby="orderDropdown">
+                                <li><a class="dropdown-item" href="/don-hang"><i class="fas fa-box me-2"></i>Đơn hàng của tôi</a></li>
+                                <li><a class="dropdown-item" href="/tra-cuu-don-hang"><i class="fas fa-search me-2"></i>Tra cứu đơn hàng</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/cua-hang">CỬA HÀNG</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#lien-he">LIÊN HỆ</a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Search Box -->
+                    <form class="d-flex sports-search" action="/san-pham" method="get" role="search">
+                        <div class="input-group">
+                            <input class="form-control" type="search" name="searchString" placeholder="Tìm kiếm..." aria-label="Tìm kiếm">
+                            <button class="btn btn-search" type="submit" aria-label="Tìm kiếm">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Right Side Icons -->
+                    <div class="navbar-nav sports-icons">
+                        <!-- Cart -->
+                        <a class="nav-link icon-link" href="/gio-hang" title="Giỏ hàng">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-badge" id="cartCount">0</span>
+                        </a>
+                        
+                        <!-- User Menu -->
+                        <div class="nav-item dropdown">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <a class="nav-link icon-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Tài khoản">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end sports-dropdown" aria-labelledby="userDropdown">
+                                    <li class="dropdown-header">
+                                        <strong>@(User.FindFirst("FullName")?.Value ?? "Khách hàng")</strong>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/tai-khoan"><i class="fas fa-user-circle me-2"></i>Tài khoản</a></li>
+                                    <li><a class="dropdown-item" href="/don-hang"><i class="fas fa-box me-2"></i>Đơn hàng</a></li>
+                                    <li><a class="dropdown-item" href="/yeu-thich"><i class="fas fa-heart me-2"></i>Yêu thích</a></li>
+                                    
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                                    {
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" asp-area="Admin" asp-controller="Admin" asp-action="Index">
+                                            <i class="fas fa-cog me-2"></i>Quản trị
+                                        </a></li>
+                                    }
+                                    
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            }
+                            else
+                            {
+                                <a class="nav-link icon-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Đăng nhập">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end sports-dropdown" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="/dang-nhap"><i class="fas fa-sign-in-alt me-2"></i>Đăng nhập</a></li>
+                                    <li><a class="dropdown-item" href="/dang-ky"><i class="fas fa-user-plus me-2"></i>Đăng ký</a></li>
+                                </ul>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main" id="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Sports Footer -->
+    <footer class="sports-footer" role="contentinfo" id="lien-he">
+        <div class="container">
+            <!-- Footer Main -->
+            <div class="row footer-main">
+                <!-- About -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="footer-brand">
+                        <span class="footer-logo">sports</span>
+                    </div>
+                    <p class="footer-desc">
+                        Chuyên cung cấp giày thể thao, giày đá bóng, futsal chính hãng từ các thương hiệu hàng đầu thế giới: Nike, Adidas, Puma, Mizuno, Joma...
+                    </p>
+                    <!-- ShareThis Follow Buttons -->
+                    <div class="footer-follow-section">
+                        <span class="follow-label-footer">Theo dõi chúng tôi:</span>
+                        <div class="sharethis-inline-follow-buttons"></div>
+                    </div>
+                </div>
+                
+                <!-- Policies -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="footer-title">CHÍNH SÁCH</h5>
+                    <ul class="footer-links">
+                        <li><a href="/chinh-sach-bao-hanh">Chính sách bảo hành</a></li>
+                        <li><a href="/chinh-sach-doi-tra">Chính sách đổi trả</a></li>
+                        <li><a href="/chinh-sach-giao-hang">Chính sách giao hàng</a></li>
+                        <li><a href="/chinh-sach-bao-mat">Chính sách bảo mật</a></li>
+                        <li><a href="/chinh-sach-thanh-toan">Chính sách thanh toán</a></li>
+                    </ul>
+                </div>
+                
+                <!-- About Us -->
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="footer-title">VỀ CHÚNG TÔI</h5>
+                    <ul class="footer-links">
+                        <li><a href="/gioi-thieu">Giới thiệu</a></li>
+                        <li><a href="/lien-he">Liên hệ</a></li>
+                        <li><a href="/tin-tuc">Tin tức</a></li>
+                        <li><a href="/tuyen-dung">Tuyển dụng</a></li>
+                        <li><a href="/doi-tac">Đối tác</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 class="footer-title">LIÊN HỆ</h5>
+                    <address class="footer-contact">
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>123 Đường ABC, Quận XYZ, TP.HCM</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>Hotline: <a href="tel:0939345555"><strong>0939 345 555</strong></a></span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email: <a href="mailto:contact@sports.vn">contact@sports.vn</a></span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-clock"></i>
+                            <span>Giờ mở cửa: 8:00 - 21:00</span>
+                        </div>
+                    </address>
+                    
+                    <!-- Newsletter Subscribe -->
+                    @await Html.PartialAsync("_FooterNewsletter")
+                </div>
+            </div>
+            
+            <!-- Footer Services -->
+            <div class="row footer-services">
+                <div class="col-md-3 col-6">
+                    <div class="service-box">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <strong>Giao hàng nhanh</strong>
+                            <span>Toàn quốc 2-5 ngày</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="service-box">
+                        <i class="fas fa-undo"></i>
+                        <div>
+                            <strong>Đổi trả 30 ngày</strong>
+                            <span>Miễn phí đổi size</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="service-box">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <strong>100% Chính hãng</strong>
+                            <span>Cam kết bảo hành</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="service-box">
+                        <i class="fas fa-headset"></i>
+                        <div>
+                            <strong>Hỗ trợ 24/7</strong>
+                            <span>Tư vấn miễn phí</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="row">
+                <div class="col-12 text-center">
+                    <div class="footer-copyright">
+                        &copy; 2025 SPORTS Vietnam. All rights reserved. | 
+                        <a href="/dieu-khoan-su-dung">Điều khoản sử dụng</a> | 
+                        <a href="/chinh-sach-bao-mat">Chính sách bảo mật</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/error-logger.js" asp-append-version="true"></script>
+    
+    @if (TempData["ShowSuccessPopup"] != null && TempData["SuccessMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showSuccessPopup('@Html.Raw(TempData["SuccessMessage"])');
+            });
+        </script>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showErrorAlert('@Html.Raw(TempData["Error"])');
+            });
+        </script>
+    }
+    
+    @if (TempData["Success"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showSuccessAlert('@Html.Raw(TempData["Success"])');
+            });
+        </script>
+    }
+    
+    @if (TempData["Info"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showInfoAlert('@Html.Raw(TempData["Info"])');
+            });
+        </script>
+    }
+    
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Sports Theme Styles -->
+    <style>
+        :root {
+            --sports-black: #1a1a1a;
+            --sports-dark: #2d2d2d;
+            --sports-accent: #c41e3a;
+            --sports-white: #ffffff;
+            --sports-gray-50: #fafafa;
+            --sports-gray-100: #f5f5f5;
+            --sports-gray-200: #e5e5e5;
+            --sports-gray-300: #d4d4d4;
+            --sports-gray-500: #737373;
+            --sports-gray-700: #404040;
+            --sports-gray-800: #262626;
+            --sports-success: #16a34a;
+            --sports-error: #dc2626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--sports-gray-800);
+            line-height: 1.6;
+            background: var(--sports-white);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: var(--sports-black);
+            color: var(--sports-white);
+            padding: 10px 0;
+            font-size: 13px;
+        }
+
+        .top-bar-text {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .top-bar-text strong {
+            color: var(--sports-white);
+        }
+
+        /* Sports Navbar */
+        .sports-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--sports-white);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .sports-navbar {
+            background: var(--sports-white);
+            padding: 0;
+        }
+
+        .sports-logo .logo-text {
+            font-family: 'Arial Black', Arial, sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--sports-black);
+            text-transform: lowercase;
+            letter-spacing: -1px;
+            text-decoration: none;
+        }
+
+        /* Main Nav - Larger Text */
+        .main-nav .nav-link {
+            color: var(--sports-black);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 20px 12px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .main-nav .nav-link:hover {
+            color: var(--sports-accent);
+        }
+
+        .main-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 12px;
+            right: 12px;
+            height: 3px;
+            background: var(--sports-accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .main-nav .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        .main-nav .nav-link .fa-chevron-down {
+            font-size: 9px;
+            transition: transform 0.3s ease;
+        }
+
+        .main-nav .dropdown:hover .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        /* Standard Dropdown */
+        .sports-dropdown {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            padding: 12px 0;
+            margin-top: 0;
+            border-top: 3px solid var(--sports-accent);
+            animation: dropdownFadeIn 0.3s ease;
+        }
+
+        @@keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sports-dropdown .dropdown-item {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--sports-gray-700);
+            transition: all 0.2s ease;
+        }
+
+        .sports-dropdown .dropdown-item:hover {
+            background: var(--sports-gray-50);
+            color: var(--sports-accent);
+            padding-left: 28px;
+        }
+
+        .sports-dropdown .dropdown-item i {
+            width: 20px;
+            color: var(--sports-gray-500);
+        }
+
+        .sports-dropdown .dropdown-item:hover i {
+            color: var(--sports-accent);
+        }
+
+        .sports-dropdown .dropdown-header {
+            font-size: 13px;
+            color: var(--sports-gray-500);
+            padding: 12px 24px;
+            font-weight: 600;
+        }
+
+        .sports-dropdown .dropdown-divider {
+            margin: 8px 0;
+            border-color: var(--sports-gray-200);
+        }
+
+        /* Mega Menu */
+        .mega-dropdown {
+            position: static;
+        }
+
+        .mega-menu {
+            width: 100%;
+            left: 0;
+            right: 0;
+            border: none;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            padding: 0;
+            margin-top: 0;
+            border-top: 3px solid var(--sports-accent);
+            animation: megaMenuFadeIn 0.3s ease;
+        }
+
+        @@keyframes megaMenuFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mega-menu-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.5fr;
+            gap: 0;
+            padding: 30px 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .mega-menu-col {
+            padding: 0 20px;
+        }
+
+        .mega-menu-col:not(:last-child) {
+            border-right: 1px solid var(--sports-gray-200);
+        }
+
+        .mega-menu-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--sports-gray-500);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--sports-gray-200);
+        }
+
+        .mega-menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .mega-menu-list li {
+            margin-bottom: 8px;
+        }
+
+        .mega-menu-list a {
+            color: var(--sports-gray-700);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+            padding: 8px 0;
+            transition: all 0.2s ease;
+        }
+
+        .mega-menu-list a:hover {
+            color: var(--sports-accent);
+            padding-left: 8px;
+        }
+
+        /* Promo Box in Mega Menu */
+        .mega-menu-promo {
+            display: flex;
+            align-items: center;
+        }
+
+        .promo-box {
+            background: var(--sports-black);
+            color: var(--sports-white);
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        .promo-tag {
+            display: inline-block;
+            background: var(--sports-accent);
+            color: var(--sports-white);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .promo-box h5 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .promo-box p {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-bottom: 16px;
+        }
+
+        .promo-link {
+            color: var(--sports-white);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: opacity 0.2s ease;
+        }
+
+        .promo-link:hover {
+            opacity: 0.8;
+            color: var(--sports-white);
+        }
+
+        /* Search Box - Fixed */
+        .sports-search {
+            margin-left: 15px;
+        }
+
+        .sports-search .input-group {
+            flex-wrap: nowrap;
+        }
+
+        .sports-search .form-control {
+            border: 2px solid var(--sports-gray-200);
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+            padding: 8px 14px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+            width: 180px;
+            min-width: 150px;
+            background: var(--sports-white);
+        }
+
+        .sports-search .form-control:focus {
+            border-color: var(--sports-black);
+            box-shadow: none;
+            outline: none;
+        }
+
+        .sports-search .form-control::placeholder {
+            color: var(--sports-gray-500);
+        }
+
+        .sports-search .btn-search {
+            background: var(--sports-black);
+            color: var(--sports-white);
+            border: 2px solid var(--sports-black);
+            border-radius: 0 6px 6px 0;
+            padding: 8px 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sports-search .btn-search:hover {
+            background: var(--sports-accent);
+            border-color: var(--sports-accent);
+        }
+
+        .sports-search .btn-search i {
+            font-size: 14px;
+        }
+
+        /* Icon Links */
+        .sports-icons {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .sports-icons .icon-link {
+            position: relative;
+            color: var(--sports-black);
+            font-size: 18px;
+            padding: 10px;
+            transition: color 0.2s ease;
+        }
+
+        .sports-icons .icon-link:hover {
+            color: var(--sports-accent);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: var(--sports-accent);
+            color: var(--sports-white);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Sports Footer */
+        .sports-footer {
+            background: var(--sports-gray-800);
+            color: var(--sports-white);
+            padding: 60px 0 30px;
+            margin-top: 60px;
+        }
+
+        .footer-brand {
+            margin-bottom: 20px;
+        }
+
+        .footer-logo {
+            font-family: 'Arial Black', Arial, sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--sports-white);
+            text-transform: lowercase;
+        }
+
+        .footer-desc {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        /* ShareThis Follow Buttons in Footer */
+        .footer-follow-section {
+            margin-top: 15px;
+        }
+        
+        .follow-label-footer {
+            display: block;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 10px;
+        }
+        
+        .footer-follow-section .sharethis-inline-follow-buttons {
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .footer-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            color: var(--sports-white);
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--sports-white);
+        }
+
+        .footer-contact {
+            font-style: normal;
+        }
+
+        .contact-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .contact-item i {
+            color: var(--sports-accent);
+            width: 16px;
+            text-align: center;
+            margin-top: 3px;
+        }
+
+        .contact-item a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            color: var(--sports-white);
+        }
+
+        .footer-services {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 30px 0;
+            margin: 40px 0 30px;
+        }
+
+        .service-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+        }
+
+        .service-box i {
+            font-size: 24px;
+            color: var(--sports-accent);
+        }
+
+        .service-box strong {
+            display: block;
+            font-size: 13px;
+            color: var(--sports-white);
+            margin-bottom: 2px;
+        }
+
+        .service-box span {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .footer-copyright {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            padding-top: 20px;
+        }
+
+        .footer-copyright a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+        }
+
+        .footer-copyright a:hover {
+            color: var(--sports-white);
+        }
+
+        /* Alert Toast */
+        .alert-toast {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 320px;
+            max-width: 420px;
+            border-radius: 8px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            animation: slideInFromRight 0.3s ease-out;
+            background: white;
+            border-left: 4px solid var(--sports-gray-500);
+        }
+
+        .alert-toast.error { border-left-color: var(--sports-error); }
+        .alert-toast.success { border-left-color: var(--sports-success); }
+        .alert-toast.warning { border-left-color: #d97706; }
+
+        .alert-toast .toast-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .alert-toast .toast-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .alert-toast.error .toast-icon { color: var(--sports-error); }
+        .alert-toast.success .toast-icon { color: var(--sports-success); }
+
+        .alert-toast .toast-body {
+            font-size: 13px;
+            color: var(--sports-gray-500);
+        }
+
+        .alert-toast .toast-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--sports-gray-300);
+            cursor: pointer;
+        }
+
+        .alert-toast.removing {
+            animation: slideOutToRight 0.3s ease-out forwards;
+        }
+
+        @@keyframes slideInFromRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @@keyframes slideOutToRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Success Popup */
+        .success-popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+        }
+
+        .success-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            z-index: 10000;
+            min-width: 360px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .success-popup .popup-icon {
+            font-size: 50px;
+            color: var(--sports-success);
+            margin-bottom: 20px;
+        }
+
+        .success-popup h3 {
+            font-size: 22px;
+            margin-bottom: 12px;
+            color: var(--sports-black);
+        }
+
+        .success-popup p {
+            color: var(--sports-gray-500);
+            margin-bottom: 24px;
+        }
+
+        .success-popup .popup-button {
+            background: var(--sports-black);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .success-popup .popup-button:hover {
+            background: var(--sports-accent);
+        }
+
+        /* Mobile Responsive */
+        @@media (max-width: 991px) {
+            .top-bar .text-end {
+                display: none;
+            }
+
+            .sports-search {
+                width: 100%;
+                margin: 15px 0;
+            }
+
+            .sports-search .form-control {
+                width: 100%;
+            }
+
+            .sports-icons {
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 1px solid var(--sports-gray-200);
+                margin-left: 0;
+            }
+
+            .main-nav .nav-link {
+                padding: 15px 0;
+                font-size: 14px;
+            }
+
+            .main-nav .nav-link::after {
+                display: none;
+            }
+
+            .mega-menu {
+                position: absolute;
+                width: auto;
+            }
+
+            .mega-menu-inner {
+                display: block;
+                padding: 20px;
+            }
+
+            .mega-menu-col {
+                padding: 15px 0;
+                border-right: none !important;
+                border-bottom: 1px solid var(--sports-gray-200);
+            }
+
+            .mega-menu-col:last-child {
+                border-bottom: none;
+            }
+
+            .promo-box {
+                margin-top: 10px;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .footer-main .col-lg-4,
+            .footer-main .col-lg-2 {
+                text-align: center;
+            }
+
+            .footer-social {
+                justify-content: center;
+            }
+
+            .service-box {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+
+            .alert-toast {
+                left: 15px;
+                right: 15px;
+                min-width: auto;
+            }
+        }
+    </style>
+    
+    <!-- Alert JavaScript -->
+    <script>
+        function showAlert(message, type, duration) {
+            type = type || 'info';
+            duration = duration || 5000;
+            
+            var alertDiv = document.createElement('div');
+            alertDiv.className = 'alert-toast ' + type;
+            
+            var iconMap = {
+                error: 'fas fa-exclamation-circle',
+                success: 'fas fa-check-circle',
+                info: 'fas fa-info-circle',
+                warning: 'fas fa-exclamation-triangle'
+            };
+            
+            var titleMap = {
+                error: 'Lỗi',
+                success: 'Thành công',
+                info: 'Thông báo',
+                warning: 'Cảnh báo'
+            };
+            
+            alertDiv.innerHTML = '<div class="toast-header"><i class="toast-icon ' + (iconMap[type] || iconMap.info) + '"></i><span>' + (titleMap[type] || titleMap.info) + '</span></div><div class="toast-body">' + message + '</div><button class="toast-close" onclick="removeAlert(this.parentElement)">&times;</button>';
+            
+            document.body.appendChild(alertDiv);
+            setTimeout(function() { removeAlert(alertDiv); }, duration);
+        }
+        
+        function removeAlert(alertElement) {
+            if (alertElement && alertElement.parentNode) {
+                alertElement.classList.add('removing');
+                setTimeout(function() { alertElement.remove(); }, 300);
+            }
+        }
+        
+        function showErrorAlert(msg, dur) { showAlert(msg, 'error', dur || 7000); }
+        function showSuccessAlert(msg, dur) { showAlert(msg, 'success', dur || 5000); }
+        function showInfoAlert(msg, dur) { showAlert(msg, 'info', dur || 5000); }
+        function showWarningAlert(msg, dur) { showAlert(msg, 'warning', dur || 6000); }
+        
+        function showSuccessPopup(message) {
+            var overlay = document.createElement('div');
+            overlay.className = 'success-popup-overlay';
+            
+            var popup = document.createElement('div');
+            popup.className = 'success-popup';
+            popup.innerHTML = '<div class="popup-icon"><i class="fas fa-check-circle"></i></div><h3>Thành công!</h3><p>' + message + '</p><button class="popup-button" onclick="closeSuccessPopup()">Đóng</button>';
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(popup);
+            
+            overlay.addEventListener('click', closeSuccessPopup);
+            setTimeout(closeSuccessPopup, 5000);
+        }
+        
+        function closeSuccessPopup() {
+            document.querySelectorAll('.success-popup, .success-popup-overlay').forEach(function(el) { el.remove(); });
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSuccessPopup();
+                document.querySelectorAll('.alert-toast').forEach(removeAlert);
+            }
+        });
+    </script>
+    
+    <!-- ShareThis Share & Follow Buttons Script -->
+    <script type="text/javascript" src="https://platform-api.sharethis.com/js/sharethis.js#property=69510a6be0891b98fd79a9c6&product=inline-share-buttons&product=inline-follow-buttons" async="async"></script>
+    
+    <!-- Chat Widgets -->
+    @{ await Html.RenderPartialAsync("_ChatWidgets"); }
+</body>
+</html>
